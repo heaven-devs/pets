@@ -1,6 +1,6 @@
 #!/bin/bash
 #configFile="$(dirname "$0")/$(basename "$0" .sh).conf"
-configFile="$(dirname "$0")/src/main/resources/application.properties"
+configFile="$(dirname "$0")/src/main/resources/application-dev.properties"
 version=0.0.1
 author=alrepin
 declare -A params_key_value

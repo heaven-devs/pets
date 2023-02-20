@@ -14,7 +14,7 @@ public class PeripheralServiceImpl implements PeripheralService {
     }
     
     @Override
-    public String Index() {
-        return null;
+    public String index() {
+        return "frontend will be here soon";
     }
 }

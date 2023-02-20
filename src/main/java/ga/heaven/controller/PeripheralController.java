@@ -20,7 +20,7 @@ public class PeripheralController {
     @Hidden
     @GetMapping()
     public String showIndexPage() {
-        return peripheralService.Index();
+        return peripheralService.index();
     }
     
 }
