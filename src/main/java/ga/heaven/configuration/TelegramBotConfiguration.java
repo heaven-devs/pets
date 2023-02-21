@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/* пока закоментировал, мешает запуску
 @Configuration
 public class TelegramBotConfiguration {
     
@@ -18,4 +19,4 @@ public class TelegramBotConfiguration {
         bot.execute(new DeleteMyCommands());
         return bot;
     }
-}
+}*/
