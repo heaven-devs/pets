@@ -27,7 +27,7 @@ public class Pet {
     // ------------------ фото -----------------
 
     private LocalDateTime decisionDate; // дата принятия решения по усыновлению
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name="id_shelter")
     private Shelter shelter; // ссылка на приют питомца
 
