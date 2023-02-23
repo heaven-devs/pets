@@ -4,9 +4,13 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-public class Rules {
+public class Info { // Таблица: Информация (Info) - документы, правила
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
     private String area; // область правил (key): транспортировка, обустройства дома щенка, взрослого, советы кинолога, проверенные кинологи, причина отказа
+
     private String instructions; // правила (инструкции)
 
     public String getArea() {
@@ -29,8 +33,8 @@ public class Rules {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Rules rules = (Rules) o;
-        return Objects.equals(area, rules.area) && Objects.equals(instructions, rules.instructions);
+        Info info = (Info) o;
+        return Objects.equals(area, info.area) && Objects.equals(instructions, info.instructions);
     }
 
     @Override

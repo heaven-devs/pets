@@ -5,8 +5,11 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-public class PetsCareRecommendations {
+public class Breed {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
     private String breed; // порода питомца (key field)
     private String recommendationsChild; // рекомендации по уходу за щенком
     private String recommendationsAdult; // рекомендации по уходу за взрослой собакой
@@ -48,7 +51,7 @@ public class PetsCareRecommendations {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PetsCareRecommendations that = (PetsCareRecommendations) o;
+        Breed that = (Breed) o;
         return childAge == that.childAge && Objects.equals(breed, that.breed) && Objects.equals(recommendationsChild, that.recommendationsChild) && Objects.equals(recommendationsAdult, that.recommendationsAdult);
     }
 

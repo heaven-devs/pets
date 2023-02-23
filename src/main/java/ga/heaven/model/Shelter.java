@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 @Entity
-public class PetShop {
+public class Shelter { // Таблица: Приют
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id; // уникальный id
@@ -78,8 +78,8 @@ public class PetShop {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PetShop petShop = (PetShop) o;
-        return id == petShop.id && fileSize == petShop.fileSize && Objects.equals(name, petShop.name) && Objects.equals(address, petShop.address) && Objects.equals(filePath, petShop.filePath) && Objects.equals(mediaType, petShop.mediaType) && Arrays.equals(locationMap, petShop.locationMap);
+        Shelter shelter = (Shelter) o;
+        return id == shelter.id && fileSize == shelter.fileSize && Objects.equals(name, shelter.name) && Objects.equals(address, shelter.address) && Objects.equals(filePath, shelter.filePath) && Objects.equals(mediaType, shelter.mediaType) && Arrays.equals(locationMap, shelter.locationMap);
     }
 
     @Override
