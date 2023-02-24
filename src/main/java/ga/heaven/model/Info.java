@@ -9,6 +9,10 @@ public class Info { // Таблица: Информация (Info) - докум�
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    public long getId() {
+        return id;
+    }
+
     private String area; // область правил (key): транспортировка, обустройства дома щенка, взрослого, советы кинолога, проверенные кинологи, причина отказа
 
     private String instructions; // правила (инструкции)
@@ -27,6 +31,10 @@ public class Info { // Таблица: Информация (Info) - докум�
 
     public void setInstructions(String instructions) {
         this.instructions = instructions;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     @Override

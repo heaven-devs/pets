@@ -10,9 +10,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface InfoRepository extends JpaRepository<Info, String> {
+public interface InfoRepository extends JpaRepository<Info, Long> {
     Optional<Info> findFirstByAreaContainingIgnoreCase(String key);
 
     @Query(value = "SELECT * FROM Info ORDER BY id", nativeQuery = true)
     List<Info> findAll();
+
+    Optional<Info> findInfoById(long id);
 }
