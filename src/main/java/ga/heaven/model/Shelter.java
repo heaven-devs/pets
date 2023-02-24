@@ -11,12 +11,7 @@ public class Shelter { // Таблица: Приют
     private long id; // уникальный id
     private String name; // название приюта питомцев
     private String address; // адрес
-
-    // Описание файла со схемой проезда
-    private String filePath;
-    private long fileSize;
-    private String mediaType;
-    private byte[] locationMap; // схема проезда
+    private String locationMap; // ссылка на схему проезда
 
     public long getId() {
         return id;
@@ -28,22 +23,6 @@ public class Shelter { // Таблица: Приют
 
     public String getAddress() {
         return address;
-    }
-
-    public String getFilePath() {
-        return filePath;
-    }
-
-    public long getFileSize() {
-        return fileSize;
-    }
-
-    public String getMediaType() {
-        return mediaType;
-    }
-
-    public byte[] getLocationMap() {
-        return locationMap;
     }
 
     public void setId(long id) {
@@ -58,19 +37,11 @@ public class Shelter { // Таблица: Приют
         this.address = address;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public String getLocationMap() {
+        return locationMap;
     }
 
-    public void setFileSize(long fileSize) {
-        this.fileSize = fileSize;
-    }
-
-    public void setMediaType(String mediaType) {
-        this.mediaType = mediaType;
-    }
-
-    public void setLocationMap(byte[] locationMap) {
+    public void setLocationMap(String locationMap) {
         this.locationMap = locationMap;
     }
 
@@ -78,14 +49,31 @@ public class Shelter { // Таблица: Приют
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+
         Shelter shelter = (Shelter) o;
-        return id == shelter.id && fileSize == shelter.fileSize && Objects.equals(name, shelter.name) && Objects.equals(address, shelter.address) && Objects.equals(filePath, shelter.filePath) && Objects.equals(mediaType, shelter.mediaType) && Arrays.equals(locationMap, shelter.locationMap);
+
+        if (id != shelter.id) return false;
+        if (name != null ? !name.equals(shelter.name) : shelter.name != null) return false;
+        if (address != null ? !address.equals(shelter.address) : shelter.address != null) return false;
+        return locationMap != null ? locationMap.equals(shelter.locationMap) : shelter.locationMap == null;
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(id, name, address, filePath, fileSize, mediaType);
-        result = 31 * result + Arrays.hashCode(locationMap);
+        int result = (int) (id ^ (id >>> 32));
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (address != null ? address.hashCode() : 0);
+        result = 31 * result + (locationMap != null ? locationMap.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Shelter{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", address='" + address + '\'' +
+                ", locationMap='" + locationMap + '\'' +
+                '}';
     }
 }
