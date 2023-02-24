@@ -13,8 +13,8 @@ import java.util.Optional;
 public interface InfoRepository extends JpaRepository<Info, Long> {
     Optional<Info> findFirstByAreaContainingIgnoreCase(String key);
 
-    @Query(value = "SELECT * FROM Info ORDER BY id", nativeQuery = true)
-    List<Info> findAll();
+    //@Query(value = "SELECT * FROM Info ORDER BY id", nativeQuery = true)
+    //List<Info> findAll();
 
     Optional<Info> findInfoById(long id);
 }

@@ -12,8 +12,5 @@ import java.util.Optional;
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Optional<Customer> findCustomerByChatId(Long chatId);
 
-    @Query(value = "SELECT * FROM Сustomer ORDER BY id", nativeQuery = true)
-    List<Customer> findAll();
-
     Optional<Customer> findCustomerById(Long id);
 }
