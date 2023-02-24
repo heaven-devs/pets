@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequestMapping("info")
 @RestController
 public class InfoController {
@@ -17,12 +19,12 @@ public class InfoController {
     }
 
     @GetMapping("/get-info-records")
-    public ResponseEntity getAllInfoRecords() {
+    public ResponseEntity <List<Info>> getAllInfoRecords() {
         return ResponseEntity.ok(infoService.getAll());
     }
 
     @GetMapping("{id}")
-    public ResponseEntity getInfoById(@PathVariable long id) {
+    public ResponseEntity <Info> getInfoById(@PathVariable long id) {
         Info info = infoService.findInfoById(id);
         if (info == null) {
             return ResponseEntity.notFound().build();
@@ -32,12 +34,12 @@ public class InfoController {
     }
 
     @PostMapping
-    public ResponseEntity createInfo(@RequestBody Info info) {
+    public ResponseEntity <Info> createInfo(@RequestBody Info info) {
         return ResponseEntity.ok(infoService.createInfo(info));
     }
 
     @PutMapping
-    public ResponseEntity updateInfo(@RequestBody Info newInfo) {
+    public ResponseEntity <Info> updateInfo(@RequestBody Info newInfo) {
         Info info = infoService.updateInfo(newInfo);
         if (info == null) {
             return ResponseEntity.notFound().build();
@@ -47,7 +49,7 @@ public class InfoController {
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity removeInfo(@PathVariable Long id) {
+    public ResponseEntity <Info> removeInfo(@PathVariable Long id) {
         Info info = infoService.deleteInfoById(id);
         if (info == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
