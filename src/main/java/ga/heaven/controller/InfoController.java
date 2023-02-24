@@ -18,7 +18,8 @@ public class InfoController {
         this.infoService = infoService;
     }
 
-    @GetMapping("/get-info-records")
+    //@GetMapping("/get-info-records")
+    @GetMapping
     public ResponseEntity <List<Info>> getAllInfoRecords() {
         return ResponseEntity.ok(infoService.getAll());
     }
