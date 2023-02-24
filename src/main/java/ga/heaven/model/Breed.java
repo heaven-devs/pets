@@ -15,6 +15,10 @@ public class Breed {
     private String recommendationsAdult; // рекомендации по уходу за взрослой собакой
     private int childAge; // ≥ возраст взрослой собаки (признак взрослой собаки, если больше этого значения)
 
+    public long getId() {
+        return id;
+    }
+
     public String getBreed() {
         return breed;
     }
