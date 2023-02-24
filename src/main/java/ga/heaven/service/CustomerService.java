@@ -27,11 +27,13 @@ public class CustomerService {
         return customerRepository.save(customer);
     }
 
+    /*
     private Customer getCustomerById(Long id) {
         return customerRepository.findCustomerById(id).orElse(null);
     }
+    */
     public Customer updateCustomer(Customer customer) {
-        if (getCustomerById(customer.getId()) == null) {
+        if (findCustomerById(customer.getId()) == null) {
             return null;
         } else {
             return customerRepository.save(customer);
@@ -39,7 +41,7 @@ public class CustomerService {
     }
 
     public Customer deleteCustomerById(Long id) {
-        Customer customer = getCustomerById(id);
+        Customer customer = findCustomerById(id);
         if (customer == null) {
             return null;
         } else {
