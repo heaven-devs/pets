@@ -1,6 +1,5 @@
 package ga.heaven.repository;
 
-import ga.heaven.model.Customer;
 import ga.heaven.model.Info;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
