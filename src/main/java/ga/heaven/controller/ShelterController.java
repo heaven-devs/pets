@@ -4,6 +4,7 @@ import ga.heaven.model.Shelter;
 import ga.heaven.service.ShelterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -31,7 +32,7 @@ public class ShelterController {
                             description = "Found shelters",
                             content = @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = List.class)
+                                    array = @ArraySchema(schema = @Schema(implementation = Shelter.class))
                             )
                     )
             }
@@ -163,6 +164,5 @@ public class ShelterController {
         }
         return ResponseEntity.ok(deletedShelter);
     }
-
 
 }

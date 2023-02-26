@@ -5,6 +5,7 @@ import ga.heaven.model.Shelter;
 import ga.heaven.service.BreedService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -32,7 +33,7 @@ public class BreedController {
                             description = "Found breeds",
                             content = @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = List.class)
+                                    schema = @Schema(implementation = Breed.class)
                             )
                     )
             }
@@ -152,7 +153,7 @@ public class BreedController {
                     description = "if a non-existent id is entered, a 404 error will be returned",
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = Breed.class)
+                            array = @ArraySchema(schema = @Schema(implementation = Breed.class))
                     )
             )
     )
