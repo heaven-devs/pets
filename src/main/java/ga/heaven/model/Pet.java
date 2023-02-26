@@ -23,7 +23,7 @@ public class Pet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // уникальный id
     
-//    @JsonIgnore
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_breed")
     private Breed breed; // порода питомца (many-to-one к табл Pets_care_recommendations)
@@ -45,7 +45,7 @@ public class Pet {
     
     private LocalDateTime decisionDate; // дата принятия решения по усыновлению
     
-//    @JsonIgnore
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_shelter")
     private Shelter shelter; // ссылка на приют питомца
