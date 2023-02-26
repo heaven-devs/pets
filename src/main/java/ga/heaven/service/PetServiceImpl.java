@@ -8,14 +8,12 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class PetServiceImpl implements PetService {
     private final PetRepository petRepository;
     
-    private final Logger LOGGER = LoggerFactory.getLogger(PetService.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(PetService.class);
     
     public PetServiceImpl(PetRepository petRepository) {
         LOGGER.debug("Service wire with Repository");
@@ -52,8 +50,14 @@ public class PetServiceImpl implements PetService {
     }
     
     public Pet delete(Long id) {
-        Optional<Pet> currentPet = petRepository.findById(id);
-        if (currentPet.isPresent()) {
+        Pet currentPet = petRepository.findById(id).orElse(null);
+        if (currentPet == null) {
+            return null;
+        } else {
+            petRepository.deleteById(id);
+            return currentPet;
+        }
+        /*if (currentPet.isPresent()) {
             try {
                 petRepository.deleteAll(currentPet.stream().collect(Collectors.toList()));
             } catch (Exception e) {
@@ -62,6 +66,6 @@ public class PetServiceImpl implements PetService {
                 return currentPet.orElse(null);
             }
         }
-        return null;
+        return null;*/
     }
 }

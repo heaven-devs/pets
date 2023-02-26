@@ -1,3 +1,3 @@
 databaseChangeLog:
-  - include:
-      file: liquibase/scripts/00.sql
+  - includeAll:
+      path: liquibase/scripts
