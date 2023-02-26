@@ -4,7 +4,7 @@ import ga.heaven.model.Shelter;
 import ga.heaven.repository.ShelterRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
+import java.util.List;
 
 @Service
 public class ShelterService {
@@ -14,7 +14,7 @@ public class ShelterService {
         this.shelterRepository = shelterRepository;
     }
 
-    public Collection<Shelter> findAll() {
+    public List<Shelter> findAll() {
         return shelterRepository.findAll();
     }
 
@@ -30,7 +30,11 @@ public class ShelterService {
         return (findById(shelter.getId()) != null) ? shelterRepository.save(shelter) : null;
     }
 
-    public void delete(Long id) {
-        shelterRepository.deleteById(id);
+    public Shelter delete(Long id) {
+        Shelter shelter = findById(id);
+        if (shelter != null) {
+            shelterRepository.delete(shelter);
+        }
+        return shelter;
     }
 }
