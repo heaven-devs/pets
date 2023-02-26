@@ -1,6 +1,5 @@
 package ga.heaven.repository;
 
-import ga.heaven.model.Customer;
 import ga.heaven.model.Info;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,8 +12,8 @@ import java.util.Optional;
 public interface InfoRepository extends JpaRepository<Info, Long> {
     Optional<Info> findFirstByAreaContainingIgnoreCase(String key);
 
-    @Query(value = "SELECT * FROM Info ORDER BY id", nativeQuery = true)
-    List<Info> findAll();
+    //@Query(value = "SELECT * FROM Info ORDER BY id", nativeQuery = true)
+    //List<Info> findAll();
 
     Optional<Info> findInfoById(long id);
 }
