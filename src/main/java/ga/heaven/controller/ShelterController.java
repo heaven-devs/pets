@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/shelter")
+@Tag(name = "\uD83C\uDFE0 Shelter store", description = "Shelter dependence model CRUD endpoints")
 public class ShelterController {
     private final ShelterService shelterService;
 
@@ -24,7 +26,7 @@ public class ShelterController {
     }
 
     @Operation(
-            tags = "Shelter",
+            tags = "\uD83C\uDFE0 Shelter store",
             summary = "search for all shelters in the database.",
             responses = {
                     @ApiResponse(
@@ -44,7 +46,7 @@ public class ShelterController {
     }
 
     @Operation(
-            tags = "Shelter",
+            tags = "\uD83C\uDFE0 Shelter store",
             summary = "search shelter by its ID in the database.",
             responses = {
                     @ApiResponse(
@@ -71,7 +73,7 @@ public class ShelterController {
     }
 
     @Operation(
-            tags = "Shelter",
+            tags = "\uD83C\uDFE0 Shelter store",
             summary = "add new shelter in the database.",
             responses = {
                     @ApiResponse(
@@ -98,7 +100,7 @@ public class ShelterController {
     }
 
     @Operation(
-            tags = "Shelter",
+            tags = "\uD83C\uDFE0 Shelter store",
             summary = "update shelter by its ID in the database.",
             responses = {
                     @ApiResponse(
@@ -132,7 +134,7 @@ public class ShelterController {
     }
 
     @Operation(
-            tags = "Shelter",
+            tags = "\uD83C\uDFE0 Shelter store",
             summary = "delete shelter by its ID in the database.",
             responses = {
                     @ApiResponse(

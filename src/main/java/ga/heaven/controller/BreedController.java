@@ -1,7 +1,6 @@
 package ga.heaven.controller;
 
 import ga.heaven.model.Breed;
-import ga.heaven.model.Shelter;
 import ga.heaven.service.BreedService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -9,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/breed")
+@Tag(name = "\uD83E\uDDE9 Breed store", description = "Breed dependence model CRUD endpoints")
 public class BreedController {
     private final BreedService breedService;
 
@@ -25,7 +26,7 @@ public class BreedController {
     }
 
     @Operation(
-            tags = "Breed",
+            tags = "\uD83E\uDDE9 Breed store",
             summary = "search for all breed in the database.",
             responses = {
                     @ApiResponse(
@@ -45,7 +46,7 @@ public class BreedController {
     }
 
     @Operation(
-            tags = "Breed",
+            tags = "\uD83E\uDDE9 Breed store",
             summary = "search breed by its ID in the database.",
             responses = {
                     @ApiResponse(
@@ -72,7 +73,7 @@ public class BreedController {
     }
 
     @Operation(
-            tags = "Breed",
+            tags = "\uD83E\uDDE9 Breed store",
             summary = "add new breed in the database.",
             responses = {
                     @ApiResponse(
@@ -99,7 +100,7 @@ public class BreedController {
     }
 
     @Operation(
-            tags = "Breed",
+            tags = "\uD83E\uDDE9 Breed store",
             summary = "update breed by its ID in the database.",
             responses = {
                     @ApiResponse(
@@ -133,7 +134,7 @@ public class BreedController {
     }
 
     @Operation(
-            tags = "Breed",
+            tags = "\uD83E\uDDE9 Breed store",
             summary = "delete breed by its ID in the database.",
             responses = {
                     @ApiResponse(
