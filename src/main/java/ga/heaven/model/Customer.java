@@ -16,6 +16,15 @@ public class Customer {
     private String secondName; // отчество
     private String phone; // тлф формата +70000000000
     private String address; // адрес
+    private String status; // статус диалога с пользователем
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public Customer() {
     }

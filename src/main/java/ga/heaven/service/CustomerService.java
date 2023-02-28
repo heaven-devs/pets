@@ -1,7 +1,6 @@
 package ga.heaven.service;
 
 import ga.heaven.model.Customer;
-import ga.heaven.model.Info;
 import ga.heaven.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
 
@@ -49,4 +48,9 @@ public class CustomerService {
             return customer;
         }
     }
+
+    public Customer findCustomerByChatId(Long id) {
+        return customerRepository.findCustomerByChatId(id).orElse(null);
+    }
+
 }

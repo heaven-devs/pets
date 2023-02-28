@@ -25,12 +25,14 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     
     private final CustomerRepository customerRepository;
     private final InfoRepository infoRepository;
+
+    private final ReportListener reportListener;
     
-    
-    public TelegramBotUpdatesListener(TelegramBot telegramBot, CustomerRepository customerRepository, InfoRepository infoRepository) {
+    public TelegramBotUpdatesListener(TelegramBot telegramBot, CustomerRepository customerRepository, InfoRepository infoRepository, ReportListener reportListener) {
         this.telegramBot = telegramBot;
         this.customerRepository = customerRepository;
         this.infoRepository = infoRepository;
+        this.reportListener = reportListener;
     }
     
     @PostConstruct
@@ -93,6 +95,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
             telegramBot.execute(sendMessage.replyMarkup(kbMarkup));
             return;
         }
+        reportListener.processingReportQueries(update, telegramBot);
         
         
     }

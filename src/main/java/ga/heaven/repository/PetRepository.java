@@ -17,5 +17,5 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
      * Поиск по бд питомцев по усыновителю.
      */
     List<Pet> findPetsByCustomer(Customer customer);
-    
+    List<Pet> findPetsByCustomerOrderById(Customer customer);
 }
