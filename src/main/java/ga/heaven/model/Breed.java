@@ -13,7 +13,8 @@ public class Breed {
     private String breed; // порода питомца (key field)
     private String recommendationsChild; // рекомендации по уходу за щенком
     private String recommendationsAdult; // рекомендации по уходу за взрослой собакой
-    private int childAge; // ≥ возраст взрослой собаки (признак взрослой собаки, если больше этого значения)
+    
+    private int adultPetFromAge; // ≥ возраст взрослой собаки (признак взрослой собаки, если больше этого значения)
 
     public long getId() {
         return id;
@@ -31,8 +32,8 @@ public class Breed {
         return recommendationsAdult;
     }
 
-    public int getChildAge() {
-        return childAge;
+    public int getAdultPetFromAge() {
+        return adultPetFromAge;
     }
 
     public void setBreed(String breed) {
@@ -47,8 +48,8 @@ public class Breed {
         this.recommendationsAdult = recommendationsAdult;
     }
 
-    public void setChildAge(int childAge) {
-        this.childAge = childAge;
+    public void setAdultPetFromAge(int adultPetFromAge) {
+        this.adultPetFromAge = adultPetFromAge;
     }
 
     @Override
@@ -56,11 +57,11 @@ public class Breed {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Breed that = (Breed) o;
-        return childAge == that.childAge && Objects.equals(breed, that.breed) && Objects.equals(recommendationsChild, that.recommendationsChild) && Objects.equals(recommendationsAdult, that.recommendationsAdult);
+        return adultPetFromAge == that.adultPetFromAge && Objects.equals(breed, that.breed) && Objects.equals(recommendationsChild, that.recommendationsChild) && Objects.equals(recommendationsAdult, that.recommendationsAdult);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(breed, recommendationsChild, recommendationsAdult, childAge);
+        return Objects.hash(breed, recommendationsChild, recommendationsAdult, adultPetFromAge);
     }
 }

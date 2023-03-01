@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.hibernate.annotations.Parameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,57 +18,63 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/report")
+@Tag(name = "\uD83D\uDCCB Report store", description = "Report dependence model CRUD endpoints")
 public class ReportController {
     private final ReportService reportService;
-
+    
     public ReportController(ReportService reportService) {
         this.reportService = reportService;
     }
-
-    @Operation (
-            summary = "Search for all report by its ID in the database.",
+    
+    @Operation(
+            tags = "\uD83D\uDCCB Report store",
+            summary = "Search for all reports",
             responses = {
-        @ApiResponse(
-                responseCode = "200",
-                description = "Found reports",
-                content = @Content(
-                        mediaType = MediaType.APPLICATION_JSON_VALUE,
-                        schema = @Schema(implementation = List.class)
-                )
-        ),
-
-},
-            tags = "Report"
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Found reports",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = List.class)
+                            )
+                    ),
+                
+            }
     )
     @GetMapping
-    public ResponseEntity<List<Report>> findAllReport(){
+    public ResponseEntity<List<Report>> findAllReport() {
         return ResponseEntity.ok(reportService.findAllReports());
     }
-
-    @ApiResponses({
-        @ApiResponse(
-                responseCode = "200",
-                description = "Search for all report by its ID in the database.",
-                content = @Content(
-                        mediaType = MediaType.APPLICATION_JSON_VALUE,
-                        schema = @Schema(implementation = Report[].class)
-                )
-        )
-        })
-
+    
+    @Operation(
+            tags = "\uD83D\uDCCB Report store",
+            summary = "Search a report by its ID in the database.",
+            responses = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Report JSON",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Report[].class)
+                    )
+            )
+    })
     @GetMapping("/{reportId}")
-    public ResponseEntity<Report> findReportById(@PathVariable long id){
+    public ResponseEntity<Report> findReportById(@PathVariable long id) {
         Report report = reportService.findReportsById(id);
-        if(report==null){
+        if (report == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(report);
     }
-
-    @ApiResponses({
+    
+    @Operation(
+            tags = "\uD83D\uDCCB Report store",
+            summary = "Deleting  for a report by its ID in the database.",
+            responses = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Deleting  for a report by its ID in the database.",
+                    description = "Report JSON",
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = Report[].class)
@@ -75,10 +82,10 @@ public class ReportController {
             )
     })
     @DeleteMapping("/{reportId}")
-    public ResponseEntity<Report> deleteReport(@PathVariable Long id){
+    public ResponseEntity<Report> deleteReport(@PathVariable Long id) {
         reportService.deleteReport(id);
         return ResponseEntity.ok().build();
     }
-
-
+    
+    
 }

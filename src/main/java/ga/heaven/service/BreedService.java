@@ -4,7 +4,7 @@ import ga.heaven.model.Breed;
 import ga.heaven.repository.BreedRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
+import java.util.List;
 
 @Service
 public class BreedService {
@@ -14,7 +14,7 @@ public class BreedService {
         this.breedRepository = breedRepository;
     }
 
-    public Collection<Breed> findAll() {
+    public List<Breed> findAll() {
         return breedRepository.findAll();
     }
 
@@ -30,7 +30,11 @@ public class BreedService {
         return (findById(breed.getId()) != null) ? breedRepository.save(breed) : null;
     }
 
-    public void delete(Long id) {
-        breedRepository.deleteById(id);
+    public Breed delete(Long id) {
+        Breed breed = findById(id);
+        if (breed != null) {
+            breedRepository.delete(breed);
+        }
+        return breed;
     }
 }
