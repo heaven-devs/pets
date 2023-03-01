@@ -29,3 +29,7 @@ SELECT 24, 'щенок Гав'
 WHERE NOT EXISTS(
         SELECT id, name FROM public.pet WHERE name = 'щенок Гав'
     );
+
+-- changeset Alex Turaev:4
+INSERT INTO public.info (id, area, instructions)
+VALUES (2, 'dating_rules', 'Обращайтесь с питомцами хорошо');

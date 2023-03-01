@@ -1,3 +1,5 @@
 databaseChangeLog:
-  - includeAll:
-      path: liquibase/scripts
+  - include:
+      file: liquibase/scripts/migrations.sql
+  - include:
+      file: liquibase/scripts/pet.sql

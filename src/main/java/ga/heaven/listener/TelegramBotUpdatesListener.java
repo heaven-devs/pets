@@ -18,45 +18,47 @@ import java.util.List;
 
 @Service
 public class TelegramBotUpdatesListener implements UpdatesListener {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(TelegramBotUpdatesListener.class);
-    
+
     private final TelegramBot telegramBot;
-    
+
     private final CustomerRepository customerRepository;
     private final InfoRepository infoRepository;
-    
-    
-    public TelegramBotUpdatesListener(TelegramBot telegramBot, CustomerRepository customerRepository, InfoRepository infoRepository) {
+
+    private final PetListener petListener;
+
+    public TelegramBotUpdatesListener(TelegramBot telegramBot, CustomerRepository customerRepository, InfoRepository infoRepository, PetListener petListener) {
         this.telegramBot = telegramBot;
         this.customerRepository = customerRepository;
         this.infoRepository = infoRepository;
+        this.petListener = petListener;
     }
-    
+
     @PostConstruct
     public void init() {
         telegramBot.setUpdatesListener(this);
     }
-    
+
     @Override
     public int process(List<Update> updates) {
         try {
             updates.forEach(this::processUpdate);
         } catch (Exception e) {
-            
+
             LOGGER.debug(e.getMessage());
         } finally {
             return UpdatesListener.CONFIRMED_UPDATES_ALL;
         }
-        
+
     }
-    
+
     private void processUpdate(Update update) {
         LOGGER.debug("Processing update: {}", update);
         Long chatId = null;
         String text = null;
-        
-        
+
+
         try {
             text = update.message().text();
             chatId = update.message().chat().id();
@@ -67,36 +69,44 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
             LOGGER.debug("blank msg from " + chatId);
             return;
         }
-        
-        if ("/start".equals(text)) {
-            if (!this.customerRepository.findCustomerByChatId(chatId).isPresent()) {
-                sendMessage(chatId,
-                        this.infoRepository
-                                .findFirstByAreaContainingIgnoreCase("common_info")
-                                .orElseThrow()
-                                .getInstructions());
-                Customer customerRecord = new Customer();
-                customerRecord.setChatId(chatId);
-                LOGGER.debug(String.valueOf(chatId));
-                customerRecord = customerRepository.save(customerRecord);
-                
-            }
-            SendMessage sendMessage = new SendMessage(chatId, "shelter choice:");
+
+        switch (text) {
+            case "/start":
+                // ---------- МОЖНО ВЫДЕЛИТЬ В private method -----------------------------
+                /*if ("/start".equals(text))*/ {
+                    if (!this.customerRepository.findCustomerByChatId(chatId).isPresent()) {
+                        sendMessage(chatId,
+                                this.infoRepository
+                                        .findFirstByAreaContainingIgnoreCase("common_info")
+                                        .orElseThrow()
+                                        .getInstructions());
+                        Customer customerRecord = new Customer();
+                        customerRecord.setChatId(chatId);
+                        LOGGER.debug(String.valueOf(chatId));
+                        customerRecord = customerRepository.save(customerRecord);
+
+                    }
+                    SendMessage sendMessage = new SendMessage(chatId, "shelter choice:");
 //            SendResponse response;
-            InlineKeyboardMarkup kbMarkup = new InlineKeyboardMarkup();
-            InlineKeyboardButton keyboardButton1 = new InlineKeyboardButton("shelter1");
-            InlineKeyboardButton keyboardButton2 = new InlineKeyboardButton("shelter2");
-            keyboardButton1.callbackData(keyboardButton1.text());
-            keyboardButton2.callbackData(keyboardButton2.text());
-            kbMarkup.addRow(keyboardButton1, keyboardButton2);
+                    InlineKeyboardMarkup kbMarkup = new InlineKeyboardMarkup();
+                    InlineKeyboardButton keyboardButton1 = new InlineKeyboardButton("shelter1");
+                    InlineKeyboardButton keyboardButton2 = new InlineKeyboardButton("shelter2");
+                    keyboardButton1.callbackData(keyboardButton1.text());
+                    keyboardButton2.callbackData(keyboardButton2.text());
+                    kbMarkup.addRow(keyboardButton1, keyboardButton2);
 //            response =
-            telegramBot.execute(sendMessage.replyMarkup(kbMarkup));
-            return;
+                    telegramBot.execute(sendMessage.replyMarkup(kbMarkup));
+                    //return;
+
+                }
+                // ------------------------------------------------------------------------------
+                break;
+            case "/dating_rules":
+                petListener.processUpdate(update);
+                break;
         }
-        
-        
     }
-    
+
     private void sendMessage(Long chatId, String text) {
         telegramBot.execute(new SendMessage(chatId, text));
     }
