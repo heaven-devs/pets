@@ -49,4 +49,9 @@ public class InfoService {
             return info;
         }
     }
+
+    public Info findInfoByArea(String area) {
+        Info info = infoRepository.findInfoByArea(area).orElse(null);
+        return info;
+    }
 }

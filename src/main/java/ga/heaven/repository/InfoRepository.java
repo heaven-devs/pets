@@ -16,4 +16,6 @@ public interface InfoRepository extends JpaRepository<Info, Long> {
     //List<Info> findAll();
 
     Optional<Info> findInfoById(long id);
+
+    Optional<Info> findInfoByArea(String area);
 }
