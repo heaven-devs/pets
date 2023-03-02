@@ -37,7 +37,8 @@ public class PetListener {
 
             switch (text){
                 case "/dating_rules":
-                    getDatingRules(chatId);
+                    telegramBot.execute(new SendMessage(chatId,
+                            getDatingRules()));
                     break;
             }
         } catch (RuntimeException e) {
@@ -45,15 +46,12 @@ public class PetListener {
         }
     }
 
-    private void getDatingRules(Long chatId) {
+    public String getDatingRules() {
         Info info = infoService.findInfoByArea(DATING_RULES);
-        String text;
         if (info == null) {
-            text = "Информация по обращению с питомцами не найдена. Обратитесь к администрации";
+            return("Информация по обращению с питомцами не найдена. Обратитесь к администрации");
         } else {
-            text = info.getInstructions();
+            return(info.getInstructions());
         }
-        SendMessage message = new SendMessage(chatId, text);
-        telegramBot.execute(message);
     }
 }
