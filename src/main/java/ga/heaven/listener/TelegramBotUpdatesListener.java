@@ -65,10 +65,11 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         } catch (Exception e) {
             LOGGER.debug(e.getMessage());
         }
-        if (text == null || text.isBlank()) {
+
+        /*if (text == null || text.isBlank()) {
             LOGGER.debug("blank msg from " + chatId);
             return;
-        }
+        }*/
         
         if ("/start".equals(text)) {
             if (!this.customerRepository.findCustomerByChatId(chatId).isPresent()) {

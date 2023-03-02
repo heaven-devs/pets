@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -72,6 +73,11 @@ public class PetServiceImpl implements PetService {
 
     public List<Pet> findPetsByCustomerOrderById(Customer customer) {
         return petRepository.findPetsByCustomerOrderById(customer);
+    }
+
+    public List<Pet> findCustomerPetsWithoutReportsToday(Long customerId, LocalDateTime startTime, LocalDateTime finishTime) {
+        //return petRepository.findCustomerPetsWithoutReportsToday(customerId, startTime, finishTime);
+        return null;
     }
 
 }
