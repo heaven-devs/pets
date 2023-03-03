@@ -9,6 +9,8 @@ public interface Constants {
     String SHELTER1_CMD = "/dogs";
     String SHELTER2_CMD = "/cats";
     String DATING_RULES_CMD = "/dating_rules";
+    String VOLUNTEER_REQUEST_CMD = "/call_volunteer";
+    
     /**
      * Info fields
      */
@@ -19,5 +21,5 @@ public interface Constants {
      * Messages
      */
     String SHELTER_CHOOSE_MSG = "Please select which shelter you are interested in";
-    
+    String DATING_RULES_NOT_FOUND = "No information found regarding handling pets. Please contact the administration.";
 }
