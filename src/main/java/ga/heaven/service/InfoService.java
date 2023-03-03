@@ -49,4 +49,8 @@ public class InfoService {
             return info;
         }
     }
+
+    public Info findInfoByArea(String area) {
+        return infoRepository.findFirstByAreaContainingIgnoreCase(area).orElse(null);
+    }
 }
