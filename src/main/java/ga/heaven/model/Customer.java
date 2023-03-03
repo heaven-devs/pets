@@ -7,6 +7,16 @@ import java.util.Objects;
 // Таблица: Пользователь (Customer) в БД
 @Entity
 public class Customer {
+    
+    public enum CustomerStatus {
+        
+        GUEST,
+        ON_PROBATION,
+        INELIGIBLE,
+        PARENT
+        
+    }
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id; // уникальный id

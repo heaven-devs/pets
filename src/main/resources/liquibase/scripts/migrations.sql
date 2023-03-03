@@ -118,9 +118,9 @@ create table if not exists report
 
 -- changeset alrepin:2
 INSERT INTO public.info
-(id, area, instructions)
-SELECT 1, 'common_info', 'Common info about bot'
+(area, instructions)
+SELECT 'common_info', 'Common info about bot'
     WHERE
     NOT EXISTS (
-        SELECT id FROM public.info WHERE id = 1
+        SELECT area FROM public.info WHERE area = 'common_info'
     );
