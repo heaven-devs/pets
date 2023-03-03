@@ -1,8 +1,7 @@
-package ga.heaven.constants;
+package ga.heaven.configuration;
 
 public class ReportConstants {
     public static final String COMMAND_SUBMIT_REPORT = "/submit_report";
-    public static final String DELIMITER = ":";
     public static final String CARRIAGE_RETURN = "\r\n";
 
     public static final String ANSWER_DONT_HAVE_PETS = "У вас нет питомцев";

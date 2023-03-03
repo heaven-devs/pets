@@ -9,7 +9,7 @@ public interface Constants {
     String SHELTER1_CMD = "/dogs";
     String SHELTER2_CMD = "/cats";
     String DATING_RULES_CMD = "/dating_rules";
-    String REPORT_SUBMIT_CMD = "/report_submit";
+    String REPORT_SUBMIT_CMD = "/submit_report";
 
     /**
      * Info fields

@@ -28,22 +28,21 @@ public class Customer {
     private String secondName; // отчество
     private String phone; // тлф формата +70000000000
     private String address; // адрес
-    private String dialogStatus; // статус диалога с пользователем
 
     @JsonIgnore
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "customer_context_id")
     private CustomerContext customerContext;
 
-    public String getDialogStatus() {
-        return dialogStatus;
-    }
-
-    public void setDialogStatus(String status) {
-        this.dialogStatus = status;
-    }
-
     public Customer() {
+    }
+
+    public CustomerContext getCustomerContext() {
+        return customerContext;
+    }
+
+    public void setCustomerContext(CustomerContext customerContext) {
+        this.customerContext = customerContext;
     }
 
     public long getId() {
@@ -116,8 +115,24 @@ public class Customer {
                 && Objects.equals(address, customer.address);
     }
 
+
+
     @Override
     public int hashCode() {
         return Objects.hash(id, chatId, surname, name, secondName, phone, address);
+    }
+
+    @Override
+    public String toString() {
+        return "Customer{" +
+                "id=" + id +
+                ", chatId=" + chatId +
+                ", surname='" + surname + '\'' +
+                ", name='" + name + '\'' +
+                ", secondName='" + secondName + '\'' +
+                ", phone='" + phone + '\'' +
+                ", address='" + address + '\'' +
+                ", customerContext=" + customerContext +
+                '}';
     }
 }

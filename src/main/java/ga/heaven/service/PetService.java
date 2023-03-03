@@ -3,7 +3,6 @@ package ga.heaven.service;
 import ga.heaven.model.Customer;
 import ga.heaven.model.Pet;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface PetService {
@@ -19,7 +18,5 @@ public interface PetService {
     Pet delete(Long id);
 
     List<Pet> findPetsByCustomerOrderById(Customer customer);
-
-    public List<Pet> findCustomerPetsWithoutReportsToday(Long customerId, LocalDateTime startTime, LocalDateTime finishTime);
     
 }

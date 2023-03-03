@@ -166,9 +166,6 @@ WHERE NOT EXISTS(
 
 -- changeset starasov:1
 
-ALTER TABLE customer
-    ADD dialog_status varchar(20);
-
 INSERT INTO public.customer
 (chat_id, name)
 SELECT 440401693, 'Тарасов Сергей'
