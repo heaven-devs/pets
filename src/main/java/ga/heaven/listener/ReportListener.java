@@ -64,7 +64,7 @@ public class ReportListener {
         this.telegramBot = telegramBot;
         chatId = update.message().chat().id();
         customer = customerService.findCustomerByChatId(chatId);
-        dialogStatus = customer.getStatus();
+        dialogStatus = customer.getDialogStatus();
         userMessage = update.message().text();
         analysisDialogStatus();
         photos =  update.message().photo();
@@ -126,7 +126,7 @@ public class ReportListener {
 
         if (customerPetList.size() == 1) {
             responseText = ANSWER_ONE_PET;
-            customer.setStatus(STATUS_WAIT_REPORT + DELIMITER + "0");
+            customer.setDialogStatus(STATUS_WAIT_REPORT + DELIMITER + "0");
             customerService.updateCustomer(customer);
         } else if (customerPetList.size() > 1) {
             StringBuilder sb = new StringBuilder(ANSWER_ENTER_PET_ID + CARRIAGE_RETURN);
@@ -136,7 +136,7 @@ public class ReportListener {
                 sb.append(petId).append(". ").append(petName).append(CARRIAGE_RETURN);
             }
             responseText = sb.toString();
-            customer.setStatus(STATUS_WAIT_PET_ID);
+            customer.setDialogStatus(STATUS_WAIT_PET_ID);
             customerService.updateCustomer(customer);
         }
 
@@ -158,7 +158,7 @@ public class ReportListener {
 
         if (validIdList.contains(userMessage)) {
             responseText = ANSWER_SEND_REPORT_FOR_PET_WITH_ID + userMessage;
-            customer.setStatus(STATUS_WAIT_REPORT + ":" + userMessage);
+            customer.setDialogStatus(STATUS_WAIT_REPORT + ":" + userMessage);
             customerService.updateCustomer(customer);
         }
         LOGGER.debug("STEP 2: " + responseText);
@@ -185,7 +185,7 @@ public class ReportListener {
         if (photos != null && caption != null) {
             LOGGER.debug("Есть картинка и текст");
             responseText = ANSWER_REPORT_ACCEPTED;
-            customer.setStatus(STATUS_FREE);
+            customer.setDialogStatus(STATUS_FREE);
             customerService.updateCustomer(customer);
 //            savePhotoToDB(telegramBot);
         } else if (photos != null) {

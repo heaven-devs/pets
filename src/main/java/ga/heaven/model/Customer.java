@@ -1,5 +1,7 @@
 package ga.heaven.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.Entity;
 import javax.persistence.*;
 import java.util.Objects;
@@ -26,14 +28,19 @@ public class Customer {
     private String secondName; // отчество
     private String phone; // тлф формата +70000000000
     private String address; // адрес
-    private String status; // статус диалога с пользователем
+    private String dialogStatus; // статус диалога с пользователем
 
-    public String getStatus() {
-        return status;
+    @JsonIgnore
+    @OneToOne
+    @JoinColumn(name = "customer_context_id")
+    private CustomerContext customerContext;
+
+    public String getDialogStatus() {
+        return dialogStatus;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setDialogStatus(String status) {
+        this.dialogStatus = status;
     }
 
     public Customer() {
