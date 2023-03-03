@@ -12,7 +12,6 @@ public class AppLogicService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AppLogicService.class);
     
     private final InfoService infoService;
-    
     private final CustomerService customerService;
     
     private final MsgService msgService;
@@ -40,4 +39,5 @@ public class AppLogicService {
         }
         msgService.sendMsg(chatId, SHELTER_CHOOSE_MSG, msgService.selectShelter());
     }
+
 }

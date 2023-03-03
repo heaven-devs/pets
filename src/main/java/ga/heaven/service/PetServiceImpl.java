@@ -1,5 +1,6 @@
 package ga.heaven.service;
 
+import ga.heaven.model.Customer;
 import ga.heaven.model.Pet;
 import ga.heaven.repository.PetRepository;
 import org.slf4j.Logger;
@@ -68,4 +69,11 @@ public class PetServiceImpl implements PetService {
         }
         return null;*/
     }
+
+    public List<Pet> findPetsByCustomerOrderById(Customer customer) {
+        return petRepository.findPetsByCustomerOrderById(customer);
+    }
+
+
+
 }
