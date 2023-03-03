@@ -16,16 +16,21 @@ public class CmdSelectorService {
     private final AppLogicService appLogicService;
     
     private final PetSelectorService petSelectorService;
+    private final ReportSelectorService reportSelectorService;
     
-    public CmdSelectorService(MsgService msgService, AppLogicService appLogicService, PetSelectorService petSelectorService) {
+    public CmdSelectorService(MsgService msgService, AppLogicService appLogicService, PetSelectorService petSelectorService, ReportSelectorService reportSelectorService) {
         this.msgService = msgService;
         this.appLogicService = appLogicService;
         this.petSelectorService = petSelectorService;
+        this.reportSelectorService = reportSelectorService;
     }
     
     public void processingMsg(Message inputMessage) {
-        if (inputMessage.text() != null) {
+        if (inputMessage.text() != null || inputMessage.photo() != null) {
+            reportSelectorService.switchCmd((inputMessage));
+        } else if (inputMessage.text() != null) {
             petSelectorService.switchCmd(inputMessage);
+
             switch (inputMessage.text()) {
                 
                 // peripheral commands

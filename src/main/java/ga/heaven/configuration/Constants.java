@@ -10,7 +10,8 @@ public interface Constants {
     String SHELTER2_CMD = "/cats";
     String DATING_RULES_CMD = "/dating_rules";
     String VOLUNTEER_REQUEST_CMD = "/call_volunteer";
-    
+    String REPORT_SUBMIT_CMD = "/submit_report";
+
     /**
      * Info fields
      */

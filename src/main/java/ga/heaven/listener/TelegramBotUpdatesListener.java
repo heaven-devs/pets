@@ -20,7 +20,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     private final TelegramBot telegramBot;
     
     private final CmdSelectorService cmdSelectorService;
-    
+
     public TelegramBotUpdatesListener(TelegramBot telegramBot, CmdSelectorService cmdSelectorService) {
         this.telegramBot = telegramBot;
         this.cmdSelectorService = cmdSelectorService;
@@ -42,5 +42,5 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }
-    
+
 }

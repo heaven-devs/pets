@@ -60,4 +60,9 @@ public class CustomerService {
             return customer;
         }
     }
+
+    public Customer findCustomerByChatId(Long id) {
+        return customerRepository.findCustomerByChatId(id).orElse(null);
+    }
+
 }

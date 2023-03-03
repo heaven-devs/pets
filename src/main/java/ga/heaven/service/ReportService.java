@@ -4,6 +4,8 @@ import ga.heaven.model.Report;
 import ga.heaven.repository.ReportRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -44,6 +46,14 @@ public class ReportService {
 
     public void deleteReport(long id){
         reportRepository.deleteById(id);
+    }
+
+    public Report findReportByPetIdAndDateBetween(Long petId, LocalDateTime startTime, LocalDateTime finishTime) {
+        return reportRepository.findReportByPetIdAndDateBetween(petId, startTime, finishTime);
+    }
+
+    public List<Report> findAllByDateBetween(LocalDateTime startTime, LocalDateTime finishTime) {
+        return reportRepository.findAllByDateBetween(startTime, finishTime);
     }
 
 }
