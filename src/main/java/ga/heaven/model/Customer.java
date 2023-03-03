@@ -1,5 +1,7 @@
 package ga.heaven.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.Entity;
 import javax.persistence.*;
 import java.util.Objects;
@@ -7,6 +9,16 @@ import java.util.Objects;
 // Таблица: Пользователь (Customer) в БД
 @Entity
 public class Customer {
+    
+    public enum CustomerStatus {
+        
+        GUEST,
+        ON_PROBATION,
+        INELIGIBLE,
+        PARENT
+        
+    }
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id; // уникальный id
@@ -17,7 +29,20 @@ public class Customer {
     private String phone; // тлф формата +70000000000
     private String address; // адрес
 
+    @JsonIgnore
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "customer_context_id")
+    private CustomerContext customerContext;
+
     public Customer() {
+    }
+
+    public CustomerContext getCustomerContext() {
+        return customerContext;
+    }
+
+    public void setCustomerContext(CustomerContext customerContext) {
+        this.customerContext = customerContext;
     }
 
     public long getId() {
@@ -90,8 +115,24 @@ public class Customer {
                 && Objects.equals(address, customer.address);
     }
 
+
+
     @Override
     public int hashCode() {
         return Objects.hash(id, chatId, surname, name, secondName, phone, address);
+    }
+
+    @Override
+    public String toString() {
+        return "Customer{" +
+                "id=" + id +
+                ", chatId=" + chatId +
+                ", surname='" + surname + '\'' +
+                ", name='" + name + '\'' +
+                ", secondName='" + secondName + '\'' +
+                ", phone='" + phone + '\'' +
+                ", address='" + address + '\'' +
+                ", customerContext=" + customerContext +
+                '}';
     }
 }
