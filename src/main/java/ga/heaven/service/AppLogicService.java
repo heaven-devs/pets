@@ -2,6 +2,7 @@ package ga.heaven.service;
 
 import ga.heaven.model.Customer;
 import ga.heaven.model.CustomerContext;
+import com.pengrad.telegrambot.model.Message;
 import ga.heaven.model.Info;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,12 +28,12 @@ public class AppLogicService {
         this.msgService = msgService;
     }
     
-    public String getDatingRules() {
+    public void sendDatingRules(Long chatId) {
         Info info = infoService.findInfoByArea(DATING_RULES_FIELD);
         if (info == null) {
-            return("Информация по обращению с питомцами не найдена. Обратитесь к администрации");
+            msgService.sendMsg(chatId, DATING_RULES_NOT_FOUND);
         } else {
-            return(info.getInstructions());
+            msgService.sendMsg(chatId, info.getInstructions());
         }
     }
     
@@ -46,5 +47,8 @@ public class AppLogicService {
         }
         msgService.sendMsg(chatId, SHELTER_CHOOSE_MSG, msgService.selectShelter());
     }
-
+    
+    public void volunteerRequest(Message inputMessage) {
+    
+    }
 }
