@@ -1,5 +1,7 @@
 package ga.heaven.service;
 
+import ga.heaven.model.Customer;
+import ga.heaven.model.CustomerContext;
 import com.pengrad.telegrambot.model.Message;
 import ga.heaven.model.Info;
 import org.slf4j.Logger;
@@ -13,15 +15,16 @@ public class AppLogicService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AppLogicService.class);
     
     private final InfoService infoService;
-    
     private final CustomerService customerService;
+    private final CustomerContextService customerContextService;
     
     private final MsgService msgService;
     
     
-    public AppLogicService(InfoService infoService, CustomerService customerService, MsgService msgService) {
+    public AppLogicService(InfoService infoService, CustomerService customerService, CustomerContextService customerContextService, MsgService msgService) {
         this.infoService = infoService;
         this.customerService = customerService;
+        this.customerContextService = customerContextService;
         this.msgService = msgService;
     }
     
@@ -36,8 +39,9 @@ public class AppLogicService {
     
     public void initConversation(Long chatId) {
         if (!customerService.isPresent(chatId)) {
-            msgService.sendMsg(chatId, infoService.findInfoByArea(COMMON_INFO_FIELD).getInstructions());
-            customerService.createCustomer(chatId);
+            msgService.sendMsg(chatId,infoService.findInfoByArea(COMMON_INFO_FIELD).getInstructions());
+            Customer customer = customerService.createCustomer(chatId);
+            customerContextService.create(customer);
         }
         msgService.sendMsg(chatId, SHELTER_CHOOSE_MSG, msgService.selectShelter());
     }

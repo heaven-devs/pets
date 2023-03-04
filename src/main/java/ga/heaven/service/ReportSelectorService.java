@@ -2,6 +2,7 @@ package ga.heaven.service;
 
 import com.pengrad.telegrambot.model.Message;
 import ga.heaven.model.Customer;
+import ga.heaven.model.CustomerContext;
 import ga.heaven.model.Pet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,31 +22,40 @@ public class ReportSelectorService {
 
     private final ReportService reportService;
     private final CustomerService customerService;
+    private final CustomerContextService customerContextService;
     private final PetService petService;
 
     private Message inputMessage;
     private Customer customer;
     private String responseText;
 
-    public ReportSelectorService(MsgService msgService, ReportService reportService, CustomerService customerService, PetService petService) {
+    public ReportSelectorService(MsgService msgService, ReportService reportService, CustomerService customerService, CustomerContextService customerContextService, PetService petService) {
         this.msgService = msgService;
         this.reportService = reportService;
         this.customerService = customerService;
+        this.customerContextService = customerContextService;
         this.petService = petService;
     }
 
+    /**
+     * метод проверяет были ли вызваны команды по работе с отчетом, или было отправлено сообщение с текстом/фото
+     * @param inputMessage сообщение полученное от пользователя
+     */
     public void switchCmd(Message inputMessage) {
         this.inputMessage = inputMessage;
         this.customer = customerService.findCustomerByChatId(inputMessage.chat().id());
-        if (inputMessage.text() != null && inputMessage.text().equals(REPORT_SUBMIT_CMD)) {
+
+        if (customer != null && inputMessage.text() != null
+                && inputMessage.text().equals(REPORT_SUBMIT_CMD)) {
             msgService.sendMsg(inputMessage.chat().id(), processingSubmitReport());
-        } else {
-            msgService.sendMsg(inputMessage.chat().id(), processingUserMessages(inputMessage));
+        } else if (customer != null && inputMessage.text() == null || !inputMessage.text().startsWith("/") ) {
+            msgService.sendMsg(inputMessage.chat().id(), processingUserMessages());
         }
     }
 
     /**
-     * диалог пользователя с ботом при вводе команды "/submit_report"
+     * метод запускается, если пользователь отправил команду "/submit_report" и отправляет ответ пользователю
+     * в зависимости от того сколько питомцев взял пользователь
      */
     private String processingSubmitReport() {
         // todo: сделать проверку, сдавал ли пользователь сегодня отчет?
@@ -63,16 +73,34 @@ public class ReportSelectorService {
         return responseText;
     }
 
+    /**
+     * Метод обновляет значения полей "context" и "petId"
+     * @param context новое значение поля "context"
+     * @param petId новое значение поля "petId"
+     */
     private void updateCustomerContext(String context, long petId) {
-        customer.getCustomerContext().setPetId(petId);
+        CustomerContext customerContext = customerContextService.findCustomerContextByCustomer(customer);
+        customerContext.setPetId(petId);
+        customerContextService.update(customerContext);
         updateCustomerContext(context);
     }
 
+    /**
+     * Метод обновляет значения полей "context"
+     * @param context новое значение поля "context"
+     */
     private void updateCustomerContext(String context) {
-        customer.getCustomerContext().setDialogContext(context);
-        customerService.updateCustomer(customer);
+        CustomerContext customerContext = customerContextService.findCustomerContextByCustomer(customer);
+        customerContext.setDialogContext(context);
+        customerContextService.update(customerContext);
+        //customerService.updateCustomer(customer);
     }
 
+    /**
+     * Метод формирует сообщение пользователю, со списком его питомцев
+     * @param customerPetList
+     * @return
+     */
     private String generateListOfCustomersPets(List<Pet> customerPetList) {
         StringBuilder sb = new StringBuilder(ANSWER_ENTER_PET_ID + CARRIAGE_RETURN);
         for (Pet pet : customerPetList) {
@@ -81,8 +109,12 @@ public class ReportSelectorService {
         return sb.toString();
     }
 
-    private String processingUserMessages(Message inputMessage) {
-        String context = customer.getCustomerContext().getDialogContext();
+    /**
+     * Метод выбирает нужный для запуска метод в зависимости от контекста диалога с пользователем
+     * @return текст ответа пользователю
+     */
+    private String processingUserMessages() {
+        String context = customerContextService.findById(customer.getId()).getDialogContext();
         switch (context) {
             case STATUS_WAIT_PET_ID: responseText = processingMsgWaitPetId(); break;
             case STATUS_WAIT_REPORT: responseText = processingMsgWaitReport(); break;
@@ -91,8 +123,8 @@ public class ReportSelectorService {
     }
 
     /**
-     * Обработка сообщения боту, если статус диалога с покупателем "wait_pet_id"
-     * @return текст ответа
+     * Метод формирует сообщение пользователю, когда пользователь выбирает для какого животного хочет сдать отчет
+     * @return текст ответа пользователю
      */
     private String processingMsgWaitPetId() {
         responseText = ANSWER_NON_EXISTENT_PET;
@@ -109,9 +141,8 @@ public class ReportSelectorService {
     }
 
     /**
-     * Обработка сообщения боту, если статус диалога с покупателем
-     *      "wait_report" или "wait_report:X", где X - id животного
-     * @return текст ответа
+     * Метод формирует ответ пользоваетлю и записывает данные в БД, когда пользователь отправляет отчет
+     * @return текст ответа пользователю
      */
     private String processingMsgWaitReport() {
 
@@ -129,12 +160,16 @@ public class ReportSelectorService {
 
         } else if (inputMessage.text() != null) {
             responseText = ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED;
+
             updateCustomerContext(STATUS_WAIT_REPORT);
         }
 
         return responseText;
     }
 
+    /**
+     * Метод получает фото и записывает его в БД
+     */
     private void savePhotoToDB() {
         // todo: получить фото от бота, разложить на байты, записать в базу. https://www.baeldung.com/java-download-file
     }

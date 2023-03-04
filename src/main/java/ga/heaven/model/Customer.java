@@ -1,6 +1,8 @@
 package ga.heaven.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.Entity;
 import javax.persistence.*;
@@ -8,15 +10,16 @@ import java.util.Objects;
 
 // Таблица: Пользователь (Customer) в БД
 @Entity
+@Getter
+@Setter
+@ToString
 public class Customer {
     
     public enum CustomerStatus {
-        
         GUEST,
         ON_PROBATION,
         INELIGIBLE,
         PARENT
-        
     }
     
     @Id
@@ -29,76 +32,12 @@ public class Customer {
     private String phone; // тлф формата +70000000000
     private String address; // адрес
 
-    @JsonIgnore
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "customer_context_id")
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private CustomerContext customerContext;
-
-    public Customer() {
-    }
-
-    public CustomerContext getCustomerContext() {
-        return customerContext;
-    }
 
     public void setCustomerContext(CustomerContext customerContext) {
         this.customerContext = customerContext;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public long getChatId() {
-        return chatId;
-    }
-
-    public String getSurname() {
-        return surname;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getSecondName() {
-        return secondName;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public void setChatId(long chatId) {
-        this.chatId = chatId;
-    }
-
-    public void setSurname(String surname) {
-        this.surname = surname;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setSecondName(String secondName) {
-        this.secondName = secondName;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
+        this.customerContext.setCustomer(this);
     }
 
     @Override
@@ -115,24 +54,9 @@ public class Customer {
                 && Objects.equals(address, customer.address);
     }
 
-
-
     @Override
     public int hashCode() {
         return Objects.hash(id, chatId, surname, name, secondName, phone, address);
     }
 
-    @Override
-    public String toString() {
-        return "Customer{" +
-                "id=" + id +
-                ", chatId=" + chatId +
-                ", surname='" + surname + '\'' +
-                ", name='" + name + '\'' +
-                ", secondName='" + secondName + '\'' +
-                ", phone='" + phone + '\'' +
-                ", address='" + address + '\'' +
-                ", customerContext=" + customerContext +
-                '}';
-    }
 }
