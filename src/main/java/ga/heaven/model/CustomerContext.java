@@ -16,12 +16,18 @@ public class CustomerContext {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    private String dialogContext;
+    private Context dialogContext;
     private long petId;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn
     private Customer customer;
+
+    public enum Context {
+        FREE,
+        WAIT_PET_ID,
+        WAIT_REPORT
+    }
 
     public CustomerContext() {
     }
