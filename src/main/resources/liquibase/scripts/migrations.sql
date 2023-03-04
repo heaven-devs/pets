@@ -204,14 +204,20 @@ create table if not exists customer_context
     pet_id                bigint
 );
 
-INSERT INTO public.customer_context
-(dialog_context, pet_id)
-SELECT 'wait_report', 1
-WHERE NOT EXISTS(
-        SELECT id, pet_id FROM public.customer_context WHERE pet_id = 1
-    );
-
+-- changeset starasov:2
 ALTER TABLE customer
     ADD customer_context_id bigint;
 
-UPDATE public.customer SET customer_context_id = 1 WHERE chat_id=440401693;
+ALTER TABLE customer_context
+    ADD customer_id bigint;
+
+UPDATE public.customer SET customer_context_id = 1, id = 1 WHERE chat_id = 440401693;
+
+INSERT INTO public.customer_context
+(dialog_context, pet_id, customer_id)
+SELECT 'start', 0, 1
+WHERE NOT EXISTS(
+        SELECT id, customer_id FROM public.customer_context WHERE customer_id = 1
+    );
+
+UPDATE public.pet SET id_customer = 1 WHERE name='котенок Мурзик';
