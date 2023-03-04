@@ -2,6 +2,7 @@ package ga.heaven.service;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.request.Keyboard;
+import com.pengrad.telegrambot.model.request.ParseMode;
 import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import com.pengrad.telegrambot.request.SendMessage;
 import ga.heaven.listener.TelegramBotUpdatesListener;
@@ -38,7 +39,8 @@ public class MsgService {
     }
     
     public void sendMsg(Long chatId, String inputMessage, Keyboard keyboard) {
-        SendMessage outputMessage = new SendMessage(chatId, inputMessage);
+        SendMessage outputMessage = new SendMessage(chatId, inputMessage)
+                .parseMode(ParseMode.HTML);
         if (keyboard != null) {
             outputMessage.replyMarkup(keyboard);
         }

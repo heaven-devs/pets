@@ -3,6 +3,7 @@ package ga.heaven.service;
 import com.pengrad.telegrambot.model.Message;
 import ga.heaven.model.Customer;
 import ga.heaven.model.CustomerContext;
+import ga.heaven.model.CustomerContext.Context;
 import ga.heaven.model.Pet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 
 import static ga.heaven.configuration.Constants.*;
 import static ga.heaven.configuration.ReportConstants.*;
+import static ga.heaven.model.CustomerContext.Context.*;
 
 @Service
 public class ReportSelectorService {
@@ -65,10 +67,10 @@ public class ReportSelectorService {
 
         if (customerPetList.size() == 1) {
             responseText = ANSWER_ONE_PET;
-            updateCustomerContext(STATUS_WAIT_REPORT, customerPetList.get(0).getId());
+            updateCustomerContext(WAIT_REPORT, customerPetList.get(0).getId());
         } else if (customerPetList.size() > 1) {
             responseText = generateListOfCustomersPets(customerPetList);
-            updateCustomerContext(STATUS_WAIT_PET_ID, 0);
+            updateCustomerContext(WAIT_PET_ID, 0);
         }
         return responseText;
     }
@@ -78,7 +80,7 @@ public class ReportSelectorService {
      * @param context новое значение поля "context"
      * @param petId новое значение поля "petId"
      */
-    private void updateCustomerContext(String context, long petId) {
+    private void updateCustomerContext(Context context, long petId) {
         CustomerContext customerContext = customerContextService.findCustomerContextByCustomer(customer);
         customerContext.setPetId(petId);
         customerContextService.update(customerContext);
@@ -89,11 +91,10 @@ public class ReportSelectorService {
      * Метод обновляет значения полей "context"
      * @param context новое значение поля "context"
      */
-    private void updateCustomerContext(String context) {
+    private void updateCustomerContext(Context context) {
         CustomerContext customerContext = customerContextService.findCustomerContextByCustomer(customer);
         customerContext.setDialogContext(context);
         customerContextService.update(customerContext);
-        //customerService.updateCustomer(customer);
     }
 
     /**
@@ -114,10 +115,10 @@ public class ReportSelectorService {
      * @return текст ответа пользователю
      */
     private String processingUserMessages() {
-        String context = customerContextService.findById(customer.getId()).getDialogContext();
+        Context context = customerContextService.findById(customer.getId()).getDialogContext();
         switch (context) {
-            case STATUS_WAIT_PET_ID: responseText = processingMsgWaitPetId(); break;
-            case STATUS_WAIT_REPORT: responseText = processingMsgWaitReport(); break;
+            case WAIT_PET_ID: responseText = processingMsgWaitPetId(); break;
+            case WAIT_REPORT: responseText = processingMsgWaitReport(); break;
         }
         return responseText;
     }
@@ -135,7 +136,7 @@ public class ReportSelectorService {
 
         if (validIdList.contains(inputMessage.text())) {
             responseText = ANSWER_SEND_REPORT_FOR_PET_WITH_ID + inputMessage.text();
-            updateCustomerContext(STATUS_WAIT_REPORT, Long.parseLong(inputMessage.text()));
+            updateCustomerContext(WAIT_REPORT, Long.parseLong(inputMessage.text()));
         }
         return responseText;
     }
@@ -150,18 +151,18 @@ public class ReportSelectorService {
 
         if (inputMessage.photo() != null && inputMessage.caption() != null) {
             responseText = ANSWER_REPORT_ACCEPTED;
-            updateCustomerContext(STATUS_FREE, 0);
+            updateCustomerContext(FREE, 0);
             savePhotoToDB();
 
         } else if (inputMessage.photo() != null) {
             responseText = ANSWER_REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED;
-            updateCustomerContext(STATUS_WAIT_REPORT);
+            updateCustomerContext(WAIT_REPORT);
             savePhotoToDB();
 
         } else if (inputMessage.text() != null) {
             responseText = ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED;
 
-            updateCustomerContext(STATUS_WAIT_REPORT);
+            updateCustomerContext(WAIT_REPORT);
         }
 
         return responseText;

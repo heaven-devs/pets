@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static ga.heaven.model.CustomerContext.Context.*;
+
 @Service
 public class CustomerContextService {
     private final CustomerContextRepository customerContextRepository;
@@ -33,8 +35,9 @@ public class CustomerContextService {
 
     public CustomerContext create(Customer customer) {
         CustomerContext customerContext = new CustomerContext();
-        customerContext.setDialogContext("start");
+        customerContext.setDialogContext(FREE);
         customerContext.setCustomer(customer);
+        customer.setCustomerContext(customerContext);
         return customerContextRepository.save(customerContext);
     }
 

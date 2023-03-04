@@ -41,7 +41,9 @@ public class AppLogicService {
         if (!customerService.isPresent(chatId)) {
             msgService.sendMsg(chatId,infoService.findInfoByArea(COMMON_INFO_FIELD).getInstructions());
             Customer customer = customerService.createCustomer(chatId);
-            customerContextService.create(customer);
+            CustomerContext customerContext = customerContextService.create(customer);
+            customer.setCustomerContext(customerContext);
+            customerService.updateCustomer(customer);
         }
         msgService.sendMsg(chatId, SHELTER_CHOOSE_MSG, msgService.selectShelter());
     }
