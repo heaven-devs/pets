@@ -28,7 +28,9 @@ public class CmdSelectorService {
     public void processingMsg(Message inputMessage) {
         if (inputMessage.text() != null || inputMessage.photo() != null) {
             reportSelectorService.switchCmd((inputMessage));
-        } else if (inputMessage.text() != null) {
+        }
+
+        if (inputMessage.text() != null) {
             petSelectorService.switchCmd(inputMessage);
 
             switch (inputMessage.text()) {

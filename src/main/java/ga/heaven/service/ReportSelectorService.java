@@ -39,8 +39,8 @@ public class ReportSelectorService {
         this.customer = customerService.findCustomerByChatId(inputMessage.chat().id());
         if (inputMessage.text() != null && inputMessage.text().equals(REPORT_SUBMIT_CMD)) {
             msgService.sendMsg(inputMessage.chat().id(), processingSubmitReport());
-        } else {
-            msgService.sendMsg(inputMessage.chat().id(), processingUserMessages(inputMessage));
+        } else if (inputMessage.text() == null || !inputMessage.text().startsWith("/") ) {
+            msgService.sendMsg(inputMessage.chat().id(), processingUserMessages());
         }
     }
 
@@ -81,7 +81,7 @@ public class ReportSelectorService {
         return sb.toString();
     }
 
-    private String processingUserMessages(Message inputMessage) {
+    private String processingUserMessages() {
         String context = customer.getCustomerContext().getDialogContext();
         switch (context) {
             case STATUS_WAIT_PET_ID: responseText = processingMsgWaitPetId(); break;
