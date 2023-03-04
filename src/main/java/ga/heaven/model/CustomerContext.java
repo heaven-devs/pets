@@ -1,9 +1,16 @@
 package ga.heaven.model;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
 import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
+@Getter
+@Setter
+@ToString
 public class CustomerContext {
 
     @Id
@@ -12,28 +19,11 @@ public class CustomerContext {
     private String dialogContext;
     private long petId;
 
-    public long getId() {
-        return id;
-    }
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn
+    private Customer customer;
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getDialogContext() {
-        return dialogContext;
-    }
-
-    public void setDialogContext(String dialogContext) {
-        this.dialogContext = dialogContext;
-    }
-
-    public long getPetId() {
-        return petId;
-    }
-
-    public void setPetId(long petId) {
-        this.petId = petId;
+    public CustomerContext() {
     }
 
     @Override
@@ -49,12 +39,4 @@ public class CustomerContext {
         return Objects.hash(id, dialogContext, petId);
     }
 
-    @Override
-    public String toString() {
-        return "CustomerContext{" +
-                "id=" + id +
-                ", dialogContext='" + dialogContext + '\'' +
-                ", petId=" + petId +
-                '}';
-    }
 }

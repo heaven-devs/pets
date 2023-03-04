@@ -2,6 +2,7 @@ package ga.heaven.service;
 
 import com.pengrad.telegrambot.model.Message;
 import ga.heaven.model.Customer;
+import ga.heaven.model.CustomerContext;
 import ga.heaven.model.Pet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,16 +22,18 @@ public class ReportSelectorService {
 
     private final ReportService reportService;
     private final CustomerService customerService;
+    private final CustomerContextService customerContextService;
     private final PetService petService;
 
     private Message inputMessage;
     private Customer customer;
     private String responseText;
 
-    public ReportSelectorService(MsgService msgService, ReportService reportService, CustomerService customerService, PetService petService) {
+    public ReportSelectorService(MsgService msgService, ReportService reportService, CustomerService customerService, CustomerContextService customerContextService, PetService petService) {
         this.msgService = msgService;
         this.reportService = reportService;
         this.customerService = customerService;
+        this.customerContextService = customerContextService;
         this.petService = petService;
     }
 
@@ -42,9 +45,10 @@ public class ReportSelectorService {
         this.inputMessage = inputMessage;
         this.customer = customerService.findCustomerByChatId(inputMessage.chat().id());
 
-        if (inputMessage.text() != null && inputMessage.text().equals(REPORT_SUBMIT_CMD)) {
+        if (customer != null && inputMessage.text() != null
+                && inputMessage.text().equals(REPORT_SUBMIT_CMD)) {
             msgService.sendMsg(inputMessage.chat().id(), processingSubmitReport());
-        } else if (inputMessage.text() == null || !inputMessage.text().startsWith("/") ) {
+        } else if (customer != null && inputMessage.text() == null || !inputMessage.text().startsWith("/") ) {
             msgService.sendMsg(inputMessage.chat().id(), processingUserMessages());
         }
     }
@@ -75,7 +79,9 @@ public class ReportSelectorService {
      * @param petId новое значение поля "petId"
      */
     private void updateCustomerContext(String context, long petId) {
-        customer.getCustomerContext().setPetId(petId);
+        CustomerContext customerContext = customerContextService.findCustomerContextByCustomer(customer);
+        customerContext.setPetId(petId);
+        customerContextService.update(customerContext);
         updateCustomerContext(context);
     }
 
@@ -84,8 +90,10 @@ public class ReportSelectorService {
      * @param context новое значение поля "context"
      */
     private void updateCustomerContext(String context) {
-        customer.getCustomerContext().setDialogContext(context);
-        customerService.updateCustomer(customer);
+        CustomerContext customerContext = customerContextService.findCustomerContextByCustomer(customer);
+        customerContext.setDialogContext(context);
+        customerContextService.update(customerContext);
+        //customerService.updateCustomer(customer);
     }
 
     /**
@@ -106,7 +114,7 @@ public class ReportSelectorService {
      * @return текст ответа пользователю
      */
     private String processingUserMessages() {
-        String context = customer.getCustomerContext().getDialogContext();
+        String context = customerContextService.findById(customer.getId()).getDialogContext();
         switch (context) {
             case STATUS_WAIT_PET_ID: responseText = processingMsgWaitPetId(); break;
             case STATUS_WAIT_REPORT: responseText = processingMsgWaitReport(); break;
