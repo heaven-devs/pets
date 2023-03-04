@@ -3,12 +3,12 @@ package ga.heaven.model;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.Hibernate;
 
-import javax.persistence.Entity;
 import javax.persistence.*;
 import java.util.Objects;
 
-// Таблица: Пользователь (Customer) в БД
+// Таблица: Клиент (Customer) в БД
 @Entity
 @Getter
 @Setter
@@ -24,15 +24,16 @@ public class Customer {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id; // уникальный id
-    private long chatId; // id Telegram чата
-    private String surname; // фамилия
-    private String name; // имя
-    private String secondName; // отчество
-    private String phone; // тлф формата +70000000000
-    private String address; // адрес
+    private Long id;
+    private Long chatId;
+    private String surname;
+    private String name;
+    private String secondName;
+    private String phone;
+    private String address;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private CustomerContext customerContext;
 
     public void setCustomerContext(CustomerContext customerContext) {
@@ -40,7 +41,7 @@ public class Customer {
         this.customerContext.setCustomer(this);
     }
 
-    @Override
+    /*@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -57,6 +58,18 @@ public class Customer {
     @Override
     public int hashCode() {
         return Objects.hash(id, chatId, surname, name, secondName, phone, address);
+    }*/
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Customer customer = (Customer) o;
+        return id != null && Objects.equals(id, customer.id);
     }
-
+    
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
