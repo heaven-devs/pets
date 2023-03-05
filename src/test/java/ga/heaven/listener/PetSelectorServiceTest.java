@@ -3,6 +3,7 @@ package ga.heaven.listener;
 import ga.heaven.model.Info;
 import ga.heaven.service.InfoService;
 import ga.heaven.service.PetSelectorService;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,7 +32,7 @@ class PetSelectorServiceTest {
 
         when(infoService.findInfoByArea(anyString())).thenReturn(info);
 
-        //assertThat(petListener.getDatingRules()).isEqualTo("Инструкция 1");
+        //Assertions.assertThat(petListener.getDatingRules()).isEqualTo("Инструкция 1");
 
         when(infoService.findInfoByArea(anyString())).thenReturn(null);
         //assertThat(petListener.getDatingRules()).isEqualTo("Информация по обращению с питомцами не найдена. Обратитесь к администрации");
