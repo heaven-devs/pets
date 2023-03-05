@@ -1,10 +1,17 @@
 package ga.heaven.model;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
 import javax.persistence.Entity;
 import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
+@Getter
+@Setter
+@ToString
 public class Breed {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,39 +23,14 @@ public class Breed {
     
     private int adultPetFromAge; // ≥ возраст взрослой собаки (признак взрослой собаки, если больше этого значения)
 
-    public long getId() {
-        return id;
+    public Breed() {
     }
 
-    public String getBreed() {
-        return breed;
-    }
-
-    public String getRecommendationsChild() {
-        return recommendationsChild;
-    }
-
-    public String getRecommendationsAdult() {
-        return recommendationsAdult;
-    }
-
-    public int getAdultPetFromAge() {
-        return adultPetFromAge;
-    }
-
-    public void setBreed(String breed) {
+    public Breed(long id, String breed, String recommendationsChild, String recommendationsAdult, int adultPetFromAge) {
+        this.id = id;
         this.breed = breed;
-    }
-
-    public void setRecommendationsChild(String recommendationsChild) {
         this.recommendationsChild = recommendationsChild;
-    }
-
-    public void setRecommendationsAdult(String recommendationsAdult) {
         this.recommendationsAdult = recommendationsAdult;
-    }
-
-    public void setAdultPetFromAge(int adultPetFromAge) {
         this.adultPetFromAge = adultPetFromAge;
     }
 
