@@ -1,11 +1,13 @@
 package ga.heaven.controller;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import ga.heaven.model.Customer;
 import ga.heaven.repository.CustomerRepository;
 import ga.heaven.service.*;
 import io.swagger.v3.core.util.Json;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,13 +130,65 @@ class CustomerControllerTest {
 
     @Test
     void createCustomer() throws Exception{
+        Customer customer = getTestCustomer(25L, "Иван", "+71111111111");
+        when(customerRepository.save(customer)).thenReturn(customer);
+
+        JSONObject jo = new JSONObject();
+        jo.put("id", 25L);
+        jo.put("name", "Иван");
+        jo.put("phone", "+71111111111");
+
+        mockMvc.perform(MockMvcRequestBuilders
+                .post("/customer")
+                .content(jo.toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(25L));
     }
 
     @Test
     void updateCustomer() throws Exception{
+        when(customerRepository.findById(25L)).thenReturn(Optional.empty());
+
+        JSONObject newCustomerJson = new JSONObject();
+        newCustomerJson.put("id", 25L);
+        newCustomerJson.put("name", "Иван");
+        newCustomerJson.put("phone", "+71111111111");
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .put("/customer")
+                        .content(newCustomerJson.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 
     @Test
     void removeCustomer() throws Exception{
+        when(customerRepository.findById(35L)).thenReturn(Optional.empty()); // нет такого
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .delete("/customer/35")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+        Customer customer = getTestCustomer(25L, "Иван", "+71111111111");
+        when(customerRepository.findById(25L)).thenReturn(Optional.of(customer));
+
+        MockHttpServletResponse response = mockMvc.perform(MockMvcRequestBuilders
+                        .delete("/customer/25")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+
+        Gson gson = new Gson();
+        Customer actual = gson.fromJson(response.getContentAsString(), Customer.class);
+        assertThat(actual).isEqualTo(customer);
+
+        //System.out.println("actual = " + actual);
+        //System.out.println("customer = " + customer);
     }
 }
