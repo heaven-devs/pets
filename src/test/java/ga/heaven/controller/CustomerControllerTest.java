@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -105,7 +106,24 @@ class CustomerControllerTest {
 
     @Test
     void getCustomerById() throws Exception{
+        Customer customer = getTestCustomer(25L, "Иван", "+71111111111");
+        when(customerRepository.findById(25L)).thenReturn(Optional.of(customer));
+        when(customerRepository.findById(35L)).thenReturn(Optional.empty());
 
+        mockMvc.perform(get("/customer/35"))
+                .andExpect(status().isNotFound());
+
+        MockHttpServletResponse response = mockMvc.perform(get("/customer/25"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+
+        Gson gson = new Gson();
+        Customer actual = gson.fromJson(response.getContentAsString(), Customer.class);
+        assertThat(actual).isEqualTo(customer);
+
+        /*System.out.println("actual = " + actual);
+        System.out.println("response = " + response.getContentAsString());*/
     }
 
     @Test
