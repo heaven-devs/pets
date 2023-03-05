@@ -1,47 +1,31 @@
 package ga.heaven.model;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
 import javax.persistence.*;
-import java.util.Arrays;
-import java.util.Objects;
 
 @Entity
+@Getter
+@Setter
+@ToString
 public class Shelter { // Таблица: Приют
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id; // уникальный id
+
     private String name; // название приюта питомцев
     private String address; // адрес
     private String locationMap; // ссылка на схему проезда
 
-    public long getId() {
-        return id;
+    public Shelter() {
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setId(long id) {
+    public Shelter(long id, String name, String address, String locationMap) {
         this.id = id;
-    }
-
-    public void setName(String name) {
         this.name = name;
-    }
-
-    public void setAddress(String address) {
         this.address = address;
-    }
-
-    public String getLocationMap() {
-        return locationMap;
-    }
-
-    public void setLocationMap(String locationMap) {
         this.locationMap = locationMap;
     }
 
@@ -67,13 +51,4 @@ public class Shelter { // Таблица: Приют
         return result;
     }
 
-    @Override
-    public String toString() {
-        return "Shelter{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", address='" + address + '\'' +
-                ", locationMap='" + locationMap + '\'' +
-                '}';
-    }
 }
