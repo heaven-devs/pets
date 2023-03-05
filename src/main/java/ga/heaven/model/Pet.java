@@ -26,8 +26,8 @@ public class Pet {
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_breed")
-    private Breed breed; // порода питомца (many-to-one к табл Pets_care_recommendations)
-    private Integer age; // возраст (месяцев)
+    private Breed breed;
+    private Integer ageInMonths;
     private String name; // имя питомца
     
     @JsonIgnore

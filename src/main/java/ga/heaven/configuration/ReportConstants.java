@@ -1,7 +1,6 @@
 package ga.heaven.configuration;
 
 public class ReportConstants {
-    public static final String COMMAND_SUBMIT_REPORT = "/submit_report";
     public static final String CARRIAGE_RETURN = "\r\n";
 
     public static final String ANSWER_DONT_HAVE_PETS = "У вас нет питомцев";
@@ -19,9 +18,5 @@ public class ReportConstants {
             "3. Изменение в поведении: отказ от старых привычек, приобретение новых.";
     public static final String ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED =
             "<b>Отчет не принят</b>" + CARRIAGE_RETURN + "Пришлите фотографию питомца";
-
-    public static final String STATUS_FREE = "free";
-    public static final String STATUS_WAIT_PET_ID = "wait_pet_id";
-    public static final String STATUS_WAIT_REPORT = "wait_report";
 
 }

@@ -1,80 +1,37 @@
 package ga.heaven.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.Hibernate;
+
 import javax.persistence.*;
 import java.util.Objects;
+import java.util.Set;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 @Entity
 public class Volunteer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id; // уникальный id
-    private long chatId; // id Telegram чата
-    private String surname; // фамилия
-    private String name; // имя
-    private String secondName; // отчество
-    private String phone; // тлф формата +70000000000
-    private String address; // адрес
+    private Long id;
+    private Long chatId;
+    private String surname;
+    private String name;
+    private String secondName;
+    private String phone;
+    private String address;
+    @JsonIgnore
+    @ManyToMany
+    @JoinColumn(name = "id_shelter")
+    private Set<Shelter> shelter;
 
-    public long getId() {
-        return id;
-    }
-
-    public long getChatId() {
-        return chatId;
-    }
-
-    public String getSurname() {
-        return surname;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getSecondName() {
-        return secondName;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public void setChatId(long chatId) {
-        this.chatId = chatId;
-    }
-
-    public void setSurname(String surname) {
-        this.surname = surname;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setSecondName(String secondName) {
-        this.secondName = secondName;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    @Override
+    /*@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -91,5 +48,18 @@ public class Volunteer {
     @Override
     public int hashCode() {
         return Objects.hash(id, chatId, surname, name, secondName, phone, address);
+    }*/
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Volunteer volunteer = (Volunteer) o;
+        return id != null && Objects.equals(id, volunteer.id);
+    }
+    
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

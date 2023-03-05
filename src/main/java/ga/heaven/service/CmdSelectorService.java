@@ -28,7 +28,9 @@ public class CmdSelectorService {
     public void processingMsg(Message inputMessage) {
         if (inputMessage.text() != null || inputMessage.photo() != null) {
             reportSelectorService.switchCmd((inputMessage));
-        } else if (inputMessage.text() != null) {
+        }
+
+        if (inputMessage.text() != null) {
             petSelectorService.switchCmd(inputMessage);
 
             switch (inputMessage.text()) {
@@ -39,6 +41,9 @@ public class CmdSelectorService {
                     appLogicService.initConversation(inputMessage.chat().id());
                     break;
                 
+                case VOLUNTEER_REQUEST_CMD:
+                    appLogicService.volunteerRequest(inputMessage);
+                    break;
                 
                 default:
                     break;
