@@ -1,41 +1,24 @@
 package ga.heaven.model;
 
+import lombok.*;
+
 import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
 public class Info { // Таблица: Информация (Info) - документы, правила
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    public long getId() {
-        return id;
-    }
-
     private String area; // область правил (key): транспортировка, обустройства дома щенка, взрослого, советы кинолога, проверенные кинологи, причина отказа
 
     private String instructions; // правила (инструкции)
-
-    public String getArea() {
-        return area;
-    }
-
-    public String getInstructions() {
-        return instructions;
-    }
-
-    public void setArea(String area) {
-        this.area = area;
-    }
-
-    public void setInstructions(String instructions) {
-        this.instructions = instructions;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
 
     @Override
     public boolean equals(Object o) {

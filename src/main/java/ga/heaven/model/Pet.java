@@ -47,7 +47,12 @@ public class Pet {
     @ManyToOne
     @JoinColumn(name = "id_shelter")
     private Shelter shelter; // ссылка на приют питомца
-    
+
+    public Pet(Long id, Customer customer) {
+        this.id = id;
+        this.customer = customer;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

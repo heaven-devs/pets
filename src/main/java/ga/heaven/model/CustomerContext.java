@@ -1,8 +1,6 @@
 package ga.heaven.model;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.Objects;
@@ -11,6 +9,8 @@ import java.util.Objects;
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class CustomerContext {
 
     @Id
@@ -27,9 +27,6 @@ public class CustomerContext {
         FREE,
         WAIT_PET_ID,
         WAIT_REPORT
-    }
-
-    public CustomerContext() {
     }
 
     @Override
