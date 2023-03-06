@@ -29,11 +29,12 @@ public class InfoService {
         return infoRepository.save(info);
     }
 
-    private Info getInfoById(Long id) {
+    /*private Info getInfoById(Long id) {
         return infoRepository.findInfoById(id).orElse(null);
-    }
+    }*/
     public Info updateInfo(Info info) {
-        if (getInfoById(info.getId()) == null) {
+        //if (getInfoById(info.getId()) == null) {
+        if (findInfoById(info.getId()) == null) {
             return null;
         } else {
             return infoRepository.save(info);
@@ -41,7 +42,7 @@ public class InfoService {
     }
 
     public Info deleteInfoById(Long id) {
-        Info info = getInfoById(id);
+        Info info = findInfoById(id);
         if (info == null) {
             return null;
         } else {
