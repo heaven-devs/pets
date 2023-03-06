@@ -154,7 +154,8 @@ class InfoControllerTest {
                 .andExpect(status().isNotFound());
 
         Info info = getTestInfo(1L, "area1", "instructions1");
-        when(infoRepositoryMock.findInfoById(1L)).thenReturn(Optional.of(info));
+        //when(infoRepositoryMock.findInfoById(1L)).thenReturn(Optional.of(info));
+        when(infoRepositoryMock.findById(1L)).thenReturn(Optional.of(info));
         when(infoRepositoryMock.save(info)).thenReturn(info);
 
         JSONObject newInfoJson2 = new JSONObject();
@@ -181,7 +182,8 @@ class InfoControllerTest {
                 .andExpect(status().isBadRequest());
 
         Info info = getTestInfo(1L, "area1", "instructions1");
-        when(infoRepositoryMock.findInfoById(1L)).thenReturn(Optional.of(info));
+        //when(infoRepositoryMock.findInfoById(1L)).thenReturn(Optional.of(info));
+        when(infoRepositoryMock.findById(1L)).thenReturn(Optional.of(info));
 
         MockHttpServletResponse response = mockMvc.perform(MockMvcRequestBuilders
                         .delete("/info/1")
