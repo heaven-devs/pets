@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/breed")
+@RequestMapping("breed")
 @Tag(name = "\uD83E\uDDE9 Breed store", description = "Breed dependence model CRUD endpoints")
 public class BreedController {
     private final BreedService breedService;
