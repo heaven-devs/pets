@@ -234,3 +234,6 @@ create table if not exists volunteer_shelter
     primary key (volunteer_id, shelter_id)
 );
 
+-- changeset alrepin:6
+alter table volunteer
+    alter column chat_id drop not null;
