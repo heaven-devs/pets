@@ -1,8 +1,6 @@
 package ga.heaven.model;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -10,6 +8,8 @@ import javax.persistence.*;
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class Shelter { // Таблица: Приют
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,16 +18,6 @@ public class Shelter { // Таблица: Приют
     private String name; // название приюта питомцев
     private String address; // адрес
     private String locationMap; // ссылка на схему проезда
-
-    public Shelter() {
-    }
-
-    public Shelter(long id, String name, String address, String locationMap) {
-        this.id = id;
-        this.name = name;
-        this.address = address;
-        this.locationMap = locationMap;
-    }
 
     @Override
     public boolean equals(Object o) {

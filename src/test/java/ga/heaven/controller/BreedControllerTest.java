@@ -108,10 +108,7 @@ public class BreedControllerTest {
 
     @Test
     void findBreedByIdNegative() throws Exception {
-        Long testId = expectedBreed.getId();
-        when(breedRepository.findById(testId)).thenReturn(Optional.empty());
-
-        MockHttpServletResponse response = mockMvc.perform(get(urlPath + "/" + testId))
+        MockHttpServletResponse response = mockMvc.perform(get(urlPath + "/" + expectedBreed.getId()))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
 
@@ -173,8 +170,6 @@ public class BreedControllerTest {
 
     @Test
     void updateBreedNegative() throws Exception {
-        when(breedRepository.findById(expectedBreed.getId())).thenReturn(Optional.empty());
-
         JSONObject jo = new JSONObject();
         jo.put("id", expectedBreed.getId());
         jo.put("breed", expectedBreed.getBreed());
@@ -196,7 +191,7 @@ public class BreedControllerTest {
     }
 
     @Test
-    void deleteBreed() throws Exception {
+    void deleteBreedPositive() throws Exception {
         when(breedRepository.findById(expectedBreed.getId())).thenReturn(Optional.ofNullable(expectedBreed));
 
         MockHttpServletResponse response = mockMvc.perform(MockMvcRequestBuilders
@@ -209,5 +204,19 @@ public class BreedControllerTest {
         Gson gson = new Gson();
         Breed actual = gson.fromJson(response.getContentAsString(), Breed.class);
         assertThat(actual).isEqualTo(expectedBreed);
+    }
+
+    @Test
+    void deleteBreedNegative() throws Exception {
+        MockHttpServletResponse response = mockMvc.perform(MockMvcRequestBuilders
+                        .delete(urlPath + "/" + expectedBreed.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse();
+
+        Gson gson = new Gson();
+        Breed actual = gson.fromJson(response.getContentAsString(), Breed.class);
+        assertThat(actual).isNull();
     }
 }
