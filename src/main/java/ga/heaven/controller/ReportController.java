@@ -42,7 +42,7 @@ public class ReportController {
             }
     )
     @GetMapping
-    public ResponseEntity<List<Report>> findAllReport() {
+    public ResponseEntity<List<Report>> findAllReportFindAllReport() {
         return ResponseEntity.ok(reportService.findAllReports());
     }
     

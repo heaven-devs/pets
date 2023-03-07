@@ -56,6 +56,7 @@ public class VolunteerService {
     /**
      * Deleting  for a volunteer by its ID in the database.(Table - Volunteer)
      * The repository method is used{@link JpaRepository#deleteById(Object)}
+     *
      * @param id - ID of the volunteer we want to delete.
      */
     public void deleteVolunteer(long id){
