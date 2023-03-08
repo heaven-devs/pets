@@ -105,10 +105,7 @@ public class ShelterControllerTest {
 
     @Test
     void findShelterByIdNegative() throws Exception {
-        Long testId = expectedShelter.getId();
-        when(shelterRepository.findById(testId)).thenReturn(Optional.empty());
-
-        MockHttpServletResponse response = mockMvc.perform(get(urlPath + "/" + testId))
+        MockHttpServletResponse response = mockMvc.perform(get(urlPath + "/" + expectedShelter.getId()))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
 
@@ -168,8 +165,6 @@ public class ShelterControllerTest {
 
     @Test
     void updateShelterNegative() throws Exception {
-        when(shelterRepository.findById(expectedShelter.getId())).thenReturn(Optional.empty());
-
         JSONObject jo = new JSONObject();
         jo.put("id", expectedShelter.getId());
         jo.put("name", expectedShelter.getName());
@@ -190,7 +185,7 @@ public class ShelterControllerTest {
     }
 
     @Test
-    void deleteShelter() throws Exception {
+    void deleteShelterPositive() throws Exception {
         when(shelterRepository.findById(expectedShelter.getId())).thenReturn(Optional.ofNullable(expectedShelter));
 
         MockHttpServletResponse response = mockMvc.perform(MockMvcRequestBuilders
@@ -203,6 +198,20 @@ public class ShelterControllerTest {
         Gson gson = new Gson();
         Shelter actual = gson.fromJson(response.getContentAsString(), Shelter.class);
         assertThat(actual).isEqualTo(expectedShelter);
+    }
+
+    @Test
+    void deleteShelterNegative() throws Exception {
+        MockHttpServletResponse response = mockMvc.perform(MockMvcRequestBuilders
+                        .delete(urlPath + "/" + expectedShelter.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse();
+
+        Gson gson = new Gson();
+        Shelter actual = gson.fromJson(response.getContentAsString(), Shelter.class);
+        assertThat(actual).isNull();
     }
 
 
