@@ -91,8 +91,15 @@ public class ReportServiceTest {
     public void findReportsById() {
         when(reportRepository.findById(1L)).thenReturn(Optional.of(testReport()));
         when(reportRepository.findById(5L)).thenReturn(Optional.of(testReportWrong()));
-        Assertions.assertThat(reportService.findReportsById(1L)).isEqualTo(testReport());
-        Assertions.assertThat(reportService.findReportsById(5L)).isNotEqualTo(testReport());
+
+        Report actual = reportService.findReportsById(1L);
+
+        Assertions.assertThat(actual.getId()).isEqualTo(testReport().getId());
+        Assertions.assertThat(actual.getPetReport()).isEqualTo(testReport().getPetReport());
+        Assertions.assertThat(actual.getPhoto()).isEqualTo(testReport().getPhoto());
+        Assertions.assertThat(actual.getDate()).isEqualTo(testReport().getDate());
+
+        Assertions.assertThat(reportService.findReportsById(5L).getId()).isNotEqualTo(testReport().getId());
     }
 
     @Test
