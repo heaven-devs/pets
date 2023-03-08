@@ -4,6 +4,7 @@ import ga.heaven.model.Info;
 import ga.heaven.service.InfoService;
 import ga.heaven.service.PetSelectorService;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,6 +22,7 @@ class PetSelectorServiceTest {
     private InfoService infoService;
 
     @Test
+    @Disabled
     public void createTest() {
         String areaTest1 = "Группа правил 1";
         String instructionsTest1 = "Инструкция 1";

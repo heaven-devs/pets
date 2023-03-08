@@ -42,7 +42,7 @@ public class MsgServiceTest {
     private CustomerContext expectedCustomerContext;
 
     @BeforeEach
-    private void getInitialTestBreeds() {
+    private void initialTest() {
         expectedChatId = 777_777_777L;
         expectedCustomer = new Customer();
         expectedCustomer.setId(1L);
