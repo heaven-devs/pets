@@ -1,91 +1,149 @@
 package ga.heaven.service;
 
+import com.pengrad.telegrambot.TelegramBot;
 import ga.heaven.model.Volunteer;
 import ga.heaven.repository.VolunteerRepository;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import static org.assertj.core.api.Assertions.*;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class VolunteerServiceTest {
-    
+public class VolunteerServiceTest {
+
     @Mock
-    VolunteerRepository vr;
-    
+    private VolunteerRepository volunteerRepository;
+
+    @MockBean
+    private TelegramBot bot;
+
     @InjectMocks
-    VolunteerService vs;
-    
-    
-    static final Long VOLUNTEER_ID_ONE = 1L;
-    static final Long VOLUNTEER_ID_TWO = 2L;
-    static final String VOLUNTEER_NAME_ONE = "Иван";
-    static final String VOLUNTEER_NAME_TWO = "Петр";
-    static final String VOLUNTEER_SURNAME_ONE = "иванов";
-    static final String VOLUNTEER_SURNAME_TWO = "Петров";
-    static final String VOLUNTEER_SECOND_NAME_ONE = "Иванович";
-    static final String VOLUNTEER_SECOND_NAME_TWO = "Петрович";
-    static final Integer NUMBER_OF_INVOCATIONS = 1;
-    
-    static final Volunteer VOLUNTEER_OBJ_ONE = new Volunteer(VOLUNTEER_ID_ONE, null,VOLUNTEER_SURNAME_ONE, VOLUNTEER_NAME_ONE, VOLUNTEER_SECOND_NAME_ONE,null, null, null);
-    static final Volunteer VOLUNTEER_OBJ_TWO = new Volunteer(VOLUNTEER_ID_TWO, null,VOLUNTEER_SURNAME_TWO, VOLUNTEER_NAME_TWO, VOLUNTEER_SECOND_NAME_TWO,null, null, null);
-    static final Volunteer VOLUNTEER_OBJ_ONE_EDITED = new Volunteer(VOLUNTEER_ID_ONE, null,VOLUNTEER_SURNAME_ONE, VOLUNTEER_NAME_ONE, VOLUNTEER_SECOND_NAME_ONE,null, null, null);
-    
-    static final List<Volunteer> LIST_OF_TWO_VOLUNTEERS = List.of(VOLUNTEER_OBJ_ONE, VOLUNTEER_OBJ_TWO);
-    
+    private VolunteerService volunteerService;
+
+    private List<Volunteer> volunteersForTest() {
+
+        Volunteer volunteer1 = createTestVolunteer(1L, 123L, "Blink", "Amanda", "-", "12345", "123 Second Creek Rd, #1");
+        Volunteer volunteer2 = createTestVolunteer(2L, 124L, "Brouni", "Sandra", "-", "67890", "145 Avery Ranch Rd, #2");
+
+        List<Volunteer> volunteers = new ArrayList<>();
+        volunteers.add(volunteer1);
+        volunteers.add(volunteer2);
+
+        return volunteers;
+    }
+
+    private Volunteer createTestVolunteer(Long id, Long chatId, String surname, String name, String secondName, String phone, String address) {
+        Volunteer volunteer = new Volunteer();
+        volunteer.setId(id);
+        volunteer.setChatId(chatId);
+        volunteer.setSurname(surname);
+        volunteer.setName(name);
+        volunteer.setSecondName(secondName);
+        volunteer.setPhone(phone);
+        volunteer.setAddress(address);
+        return (volunteer);
+    }
+
+    private Volunteer testVolunteer() {
+        Volunteer v1 = new Volunteer();
+        v1.setId(1L);
+        v1.setChatId(123L);
+        v1.setSurname("Blink");
+        v1.setName("Amanda");
+        v1.setSecondName("-");
+        v1.setPhone("12345");
+        v1.setAddress("123 Second Creek Rd, #1");
+        return v1;
+
+    }
+
+    private Volunteer testVolunteerWrong() {
+        Volunteer v2 = new Volunteer();
+        v2.setId(3L);
+        v2.setChatId(789L);
+        v2.setSurname("Faber");
+        v2.setName("Susan");
+        v2.setSecondName("-");
+        v2.setPhone("09876");
+        v2.setAddress("453 Parmer Ln, #3");
+        return v2;
+    }
+
+    private Volunteer testVolunteerUpdate() {
+        Volunteer v3 = new Volunteer();
+        v3.setId(3L);
+        v3.setChatId(564L);
+        v3.setSurname("Smith");
+        v3.setName("Susan");
+        v3.setSecondName("-");
+        v3.setPhone("67890");
+        v3.setAddress("453 Parmer Ln, #3");
+        return v3;
+
+    }
+
     @Test
-    void createVolunteerTest() {
-        when(vr.save(VOLUNTEER_OBJ_ONE)).thenReturn(VOLUNTEER_OBJ_ONE);
-        Volunteer actual, expected;
-        expected = VOLUNTEER_OBJ_ONE;
-        actual = vs.createVolunteer(VOLUNTEER_OBJ_ONE);
+    void testFindAllVolunteers(){
+        List<Volunteer> volunteers = volunteersForTest();
+        when(volunteerRepository.findAll()).thenReturn(volunteers);
+        List<Volunteer> actual = volunteerService.findAllVolunteers();
+        Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(volunteers);
+    }
+
+    @Test
+    void  testFindVolunteerById(){
+        when(volunteerRepository.findById(1L)).thenReturn(Optional.of(testVolunteer()));
+        when(volunteerRepository.findById(3L)).thenReturn(Optional.of(testVolunteerWrong()));
+        Assertions.assertThat(volunteerService.findVolunteerById(1L)).isEqualTo(testVolunteer());
+        Assertions.assertThat(volunteerService.findVolunteerById(3L)).isNotEqualTo(testVolunteer());
+    }
+
+    @Test
+    void  testCreateVolunteer(){
+        when(volunteerRepository.
+                save(testVolunteer())).
+                thenReturn(testVolunteer());
+        assertThat(volunteerService.
+                createVolunteer(testVolunteer())).
+                isEqualTo(testVolunteer());
+    }
+
+    @Test
+    public void testUpdateVolunteer() {
+        Volunteer volunteer1 = createTestVolunteer(1L, 123L, "Blink", "Amanda", "-", "12345", "123 Second Creek Rd, #1");
+        Volunteer volunteer2 = createTestVolunteer(1L, 123L, "Faber", "Amanda", "-", "52896", "123 Second Creek Rd, #1");
+        when(volunteerRepository.save(volunteer1)).thenReturn(volunteer2);
+        Volunteer expected = volunteer2;
+        Volunteer actual = volunteerService.updateVolunteer(volunteer2);
         assertEquals(expected, actual);
-        assertEquals(expected.getName(), actual.getName());
-        assertEquals(expected.getId(), actual.getId());
+        assertEquals(expected.getChatId(), actual.getChatId());
+        assertEquals(expected.getSurname(), actual.getSurname());
+        assertEquals(expected.getPhone(), actual.getPhone());
     }
-    
+
     @Test
-    void readVolunteerTest() {
-        when(vr.findById(VOLUNTEER_ID_ONE)).thenReturn(Optional.ofNullable(VOLUNTEER_OBJ_ONE));
-        Volunteer actual, expected;
-        expected = VOLUNTEER_OBJ_ONE;
-        actual = vs.findVolunteerById(VOLUNTEER_ID_ONE);
-        assertEquals(expected, actual);
-        assertEquals(expected.getName(), actual.getName());
-        assertEquals(expected.getId(), actual.getId());
+    public void deleteVolunteer() {
+    when(volunteerRepository.findById(2L)).thenReturn(Optional.empty());
+    Volunteer expected = null;
+    Volunteer actual = volunteerService.deleteVolunteer(2L);
+    Assertions.assertThat(actual).isEqualTo(expected);
+    Volunteer volunteer = createTestVolunteer(3L, 123L, "Blink", "Amanda", "-", "12345", "123 Second Creek Rd, #1");
+    when(volunteerRepository.findById(3L)).thenReturn(Optional.of(volunteer));
+
+    expected = volunteer;
+    actual = volunteerService.deleteVolunteer(3L);
+    Assertions.assertThat(actual).isEqualTo(expected);
     }
-    
-    @Test
-    void readAllVolunteerTest() {
-        when(vr.findAll()).thenReturn(LIST_OF_TWO_VOLUNTEERS);
-        Collection<Volunteer> actual, expected;
-        expected = LIST_OF_TWO_VOLUNTEERS;
-        actual = vs.findAllVolunteers();
-        assertEquals(expected, actual);
-    }
-    
-    @Test
-    void updateVolunteerTest() {
-        when(vr.save(VOLUNTEER_OBJ_ONE)).thenReturn(VOLUNTEER_OBJ_ONE_EDITED);
-        Volunteer actual, expected;
-        actual = vs.updateVolunteer(VOLUNTEER_OBJ_ONE_EDITED);
-        expected = VOLUNTEER_OBJ_ONE_EDITED;
-        assertEquals(expected, actual);
-        assertEquals(expected.getName(), actual.getName());
-        assertEquals(expected.getId(), actual.getId());
-    }
-    
-    @Test
-    void deleteVolunteerTest() {
-        vs.deleteVolunteer(VOLUNTEER_ID_ONE);
-        verify(vr, times(NUMBER_OF_INVOCATIONS)).deleteById(VOLUNTEER_ID_ONE);
-    }
+
 }
