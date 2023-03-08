@@ -57,7 +57,7 @@ public class VolunteerController {
                     )
             )
     })
-    @GetMapping("/{volunteerId}")
+    @GetMapping("/{id}")
         public ResponseEntity<Volunteer> findVolunteerById(@PathVariable  long id) {
         Volunteer volunteer = volunteerService.findVolunteerById(id);
         if (volunteer == null) {
@@ -117,7 +117,7 @@ public class VolunteerController {
                     )
             )
     })
-    @DeleteMapping("/{volunteerId}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Volunteer> deleteVolunteer(@PathVariable long id){
         volunteerService.deleteVolunteer(id);
         return ResponseEntity.ok().build();

@@ -1,7 +1,6 @@
 package ga.heaven.service;
 
 import com.pengrad.telegrambot.TelegramBot;
-import ga.heaven.model.Shelter;
 import ga.heaven.model.Volunteer;
 import ga.heaven.repository.VolunteerRepository;
 import org.assertj.core.api.Assertions;
@@ -12,9 +11,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import static org.assertj.core.api.Assertions.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,7 +55,7 @@ public class VolunteerServiceTest {
         return (volunteer);
     }
 
-    public static Volunteer testVolunteer() {
+    private Volunteer testVolunteer() {
         Volunteer v1 = new Volunteer();
         v1.setId(1L);
         v1.setChatId(123L);
@@ -66,7 +68,7 @@ public class VolunteerServiceTest {
 
     }
 
-    public static Volunteer testVolunteerWrong() {
+    private Volunteer testVolunteerWrong() {
         Volunteer v2 = new Volunteer();
         v2.setId(3L);
         v2.setChatId(789L);
@@ -78,7 +80,7 @@ public class VolunteerServiceTest {
         return v2;
     }
 
-    public static Volunteer testVolunteerUpdate() {
+    private Volunteer testVolunteerUpdate() {
         Volunteer v3 = new Volunteer();
         v3.setId(3L);
         v3.setChatId(564L);
@@ -119,8 +121,31 @@ public class VolunteerServiceTest {
 
     @Test
     public void testUpdateVolunteer() {
-
+        Volunteer volunteer1 = createTestVolunteer(1L, 123L, "Blink", "Amanda", "-", "12345", "123 Second Creek Rd, #1");
+        Volunteer volunteer2 = createTestVolunteer(1L, 123L, "Faber", "Amanda", "-", "52896", "123 Second Creek Rd, #1");
+        when(volunteerRepository.save(volunteer1)).thenReturn(volunteer2);
+        Volunteer expected = volunteer2;
+        Volunteer actual = volunteerService.updateVolunteer(volunteer2);
+        assertEquals(expected, actual);
+        assertEquals(expected.getChatId(), actual.getChatId());
+        assertEquals(expected.getSurname(), actual.getSurname());
+        assertEquals(expected.getPhone(), actual.getPhone());
     }
+
+    @Test
+    public void deleteVolunteer() {
+    when(volunteerRepository.findById(2L)).thenReturn(Optional.empty());
+    Volunteer expected = null;
+    Volunteer actual = volunteerService.deleteVolunteer(2L);
+    Assertions.assertThat(actual).isEqualTo(expected);
+    Volunteer volunteer = createTestVolunteer(3L, 123L, "Blink", "Amanda", "-", "12345", "123 Second Creek Rd, #1");
+    when(volunteerRepository.findById(3L)).thenReturn(Optional.of(volunteer));
+
+    expected = volunteer;
+    actual = volunteerService.deleteVolunteer(3L);
+    Assertions.assertThat(actual).isEqualTo(expected);
+    }
+
 }
 
 

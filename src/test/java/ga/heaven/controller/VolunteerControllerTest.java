@@ -178,33 +178,19 @@ public class VolunteerControllerTest {
 
     @Test
     public void deleteVolunteer() throws Exception{
-        Long id = 1L;
-        Long chatId = 123L;
-        String surname = "Blink";
-        String name = "Amanda";
-        String secondName = "-";
-        String phone = "12345";
-        String address = "123 Second Creek Rd, #1";
-
-    Volunteer volunteer = new Volunteer();
-        volunteer.setId(id);
-        volunteer.setChatId(chatId);
-        volunteer.setSurname(surname);
-        volunteer.setName(name);
-        volunteer.setSecondName(secondName);
-        volunteer.setPhone(phone);
-        volunteer.setAddress(address);
-
-        when(volunteerRepository.findById(id)).thenReturn(Optional.of(volunteer));
+        Volunteer volunteer = createTestVolunteer(1L, 123L,"Blink", "Amanda", "-", "12345",  "123 Second Creek Rd, #1");
+        when(volunteerRepository.findById(1L)).thenReturn(Optional.of(volunteer));
 
         mockMvc.perform(MockMvcRequestBuilders
-                .delete("/volunteer/{id}", id)
-            .contentType(MediaType.APPLICATION_JSON)
+                        .delete("/volunteer/{id}", 1)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
+                .andExpect(status().isOk());
 
-    verify(volunteerRepository, atLeastOnce()).deleteById(id);
-}
+        verify(volunteerRepository, atLeastOnce()).deleteById(1L);
+    }
+
+
     private List<Volunteer> volunteersForTest() {
 
         Volunteer volunteer1 = createTestVolunteer(1L, 123L,"Blink", "Amanda", "-", "12345",  "123 Second Creek Rd, #1");

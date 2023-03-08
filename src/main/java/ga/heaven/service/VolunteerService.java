@@ -1,8 +1,11 @@
 package ga.heaven.service;
 
+import ga.heaven.model.Report;
 import ga.heaven.model.Volunteer;
 import ga.heaven.repository.VolunteerRepository;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +27,9 @@ public class VolunteerService {
     }
 
     /**
-     *  Search for a volunteer by its ID in the database. (Table - Volunteer)
-     *  The repository method is used{@link JpaRepository#findById(Object)}
+     * Search for a volunteer by its ID in the database. (Table - Volunteer)
+     * The repository method is used{@link JpaRepository#findById(Object)}
+     *
      * @param id -  ID of the volunteer we are looking for.
      * @return - found volunteers.
      */
@@ -58,8 +62,14 @@ public class VolunteerService {
      * The repository method is used{@link JpaRepository#deleteById(Object)}
      *
      * @param id - ID of the volunteer we want to delete.
+     * @return
      */
-    public void deleteVolunteer(long id){
-        volunteerRepository.deleteById(id);
+    public Volunteer deleteVolunteer(long id){
+        Volunteer volunteer = findVolunteerById(id);
+        if (volunteer != null) {
+            volunteerRepository.delete(volunteer);
+        }
+        return volunteer;
+
     }
 }
