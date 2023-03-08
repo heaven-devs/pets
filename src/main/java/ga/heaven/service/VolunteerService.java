@@ -53,8 +53,13 @@ public class VolunteerService {
      * @param volunteer - ID of the volunteer we want to update.
      * @return - updated volunteer.
      */
-    public Volunteer updateVolunteer(Volunteer volunteer){
-        return volunteerRepository.save(volunteer);
+    public Volunteer updateVolunteer(Volunteer volunteer) {
+        if (findVolunteerById(volunteer.getId()) != null) {
+            return volunteerRepository.save(volunteer);
+        }
+        return null;
+
+//        return volunteerRepository.save(volunteer);
     }
 
     /**
@@ -62,7 +67,7 @@ public class VolunteerService {
      * The repository method is used{@link JpaRepository#deleteById(Object)}
      *
      * @param id - ID of the volunteer we want to delete.
-     * @return
+     * @return - deleted volunteer
      */
     public Volunteer deleteVolunteer(long id){
         Volunteer volunteer = findVolunteerById(id);
