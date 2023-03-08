@@ -40,15 +40,19 @@ public class AppLogicService {
     public void initConversation(Long chatId) {
         if (!customerService.isPresent(chatId)) {
             msgService.sendMsg(chatId,infoService.findInfoByArea(COMMON_INFO_FIELD).getInstructions());
-            Customer customer = customerService.createCustomer(chatId);
-            CustomerContext customerContext = customerContextService.create(customer);
-            customer.setCustomerContext(customerContext);
-            customerService.updateCustomer(customer);
+            createNewCustomer(chatId);
         }
         msgService.sendMsg(chatId, SHELTER_CHOOSE_MSG, msgService.selectShelter());
     }
-    
+
+    private void createNewCustomer(Long chatId) {
+        Customer customer = customerService.createCustomer(chatId);
+        CustomerContext customerContext = customerContextService.create(customer);
+        customer.setCustomerContext(customerContext);
+        customerService.updateCustomer(customer);
+    }
+
     public void volunteerRequest(Message inputMessage) {
-    
+
     }
 }
