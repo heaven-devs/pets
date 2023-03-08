@@ -59,7 +59,7 @@ public class ReportController {
                     )
             )
     })
-    @GetMapping("/{reportId}")
+    @GetMapping("/{id}")
     public ResponseEntity<Report> findReportById(@PathVariable long id) {
         Report report = reportService.findReportsById(id);
         if (report == null) {
@@ -81,7 +81,7 @@ public class ReportController {
                     )
             )
     })
-    @DeleteMapping("/{reportId}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Report> deleteReport(@PathVariable Long id) {
         reportService.deleteReport(id);
         return ResponseEntity.ok().build();

@@ -15,7 +15,7 @@ import java.util.Objects;
 @NoArgsConstructor
 public class Report { // Таблица: Отчет (Report) (о питомце)
     @Id
-    private long id; // уникальный id
+    private Long id; // уникальный id
     private String petReport; // отчет текстовый: рацион, самочувствие, поведение питомца
 
     private LocalDateTime date; // дата сдачи отчета
@@ -23,7 +23,7 @@ public class Report { // Таблица: Отчет (Report) (о питомце)
     // ------------------ фото -----------------
     // Описание файла с фото питомца
     private String filePath;
-    private long fileSize;
+    private Long fileSize;
     private String mediaType;
     private byte[] photo; // фото
     // ------------------ фото -----------------
