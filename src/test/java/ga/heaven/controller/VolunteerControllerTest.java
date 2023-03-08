@@ -1,5 +1,8 @@
 package ga.heaven.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import ga.heaven.model.Breed;
 import ga.heaven.model.Volunteer;
 import ga.heaven.repository.VolunteerRepository;
 import ga.heaven.service.VolunteerService;
@@ -12,16 +15,19 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @WebMvcTest(controllers = VolunteerController.class)
@@ -38,33 +44,39 @@ public class VolunteerControllerTest {
     @InjectMocks
     private VolunteerController volunteerController;
 
-
     @Test
     public void testFindAllVolunteers() throws Exception {
         List <Volunteer> volunteers = volunteersForTest();
         when(volunteerRepository.findAll()).thenReturn(volunteers);
-        mockMvc.perform(MockMvcRequestBuilders
-                        .get("/volunteer")
+        mockMvc.perform(get("/volunteer")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
     }
 
-
     @Test
-    public  void testFindVolunteerById(){
-        when(volunteerRepository.findById(1L)).thenReturn(Optional.of(testVolunteer()));
-        when(volunteerRepository.findById(3L)).thenReturn(Optional.of(testVolunteerWrong()));
-        Volunteer expected = testVolunteer();
-        Volunteer actual = volunteerService.findVolunteerById(1L);
+    public void testFindVolunteerById() throws Exception {
+        Volunteer expected = createTestVolunteer(1L, 123L, "Blink", "Amanda", "-", "12345", "123 Second Creek Rd, #1");
 
-        Assertions.assertThat(actual).isNotNull();
-        Assertions.assertThat(actual.getId()).isEqualTo(expected.getId());
+        when(volunteerRepository.findById(expected.getId())).thenReturn(Optional.of(expected));
+        MockHttpServletResponse response = mockMvc.perform(get("/volunteer/" + expected.getId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+        Volunteer actual = new ObjectMapper().readValue(response.getContentAsString(), expected.getClass());
+        assertThat(actual.getId()).isEqualTo(expected.getId());
+        assertThat(actual.getName()).isEqualTo(expected.getName());
+        assertThat(actual.getChatId()).isEqualTo(expected.getChatId());
+        assertThat(actual.getShelter()).isEqualTo(expected.getShelter());
 
-        Volunteer actualWrong= volunteerService.findVolunteerById(3L);
-        Assertions.assertThat(actualWrong.getId()).isNotNull();
-        Assertions.assertThat(actualWrong.getId()).isNotEqualTo(expected.getId());
+        when(volunteerRepository.findById(expected.getId())).thenReturn(Optional.empty());
+        response = mockMvc.perform(get("/volunteer/" + expected.getId()))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse();
+        Gson gson = new Gson();
+        actual = gson.fromJson(response.getContentAsString(), expected.getClass());
+        assertThat(actual).isNull();
     }
 
     @Test
@@ -112,9 +124,8 @@ public class VolunteerControllerTest {
                 .andExpect(jsonPath("$.address").value(address));
     }
 
-
     @Test
-    public void updateVolunteer() throws Exception{
+    public void updateVolunteer() throws Exception {
         Long id = 1L;
         Long oldChatId = 123L;
         String oldSurname = "Blink";
@@ -122,7 +133,6 @@ public class VolunteerControllerTest {
         String oldSecondName = "-";
         String oldPhone = "12345";
         String oldAddress = "123 Second Creek Rd, #1";
-
 
         Long newChatId = 123L;
         String newSurname = "Smith";
@@ -161,35 +171,65 @@ public class VolunteerControllerTest {
     when(volunteerRepository.findById(id)).thenReturn(Optional.of(volunteer));
     when(volunteerRepository.save(any(Volunteer.class))).thenReturn(updatedVolunteer);
 
-        mockMvc.perform(MockMvcRequestBuilders
+        MockHttpServletResponse response = mockMvc.perform(MockMvcRequestBuilders
                 .put("/volunteer")
                 .content(volunteerObj.toString())
-            .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id))
                 .andExpect(jsonPath("$.chatId").value(newChatId))
                 .andExpect(jsonPath("$.surname").value(newSurname))
                 .andExpect(jsonPath("$.name").value(newName))
                 .andExpect(jsonPath("$.secondName").value(newSecondName))
                 .andExpect(jsonPath("$.phone").value(newPhone))
-                .andExpect(jsonPath("$.address").value(newAddress));
+                .andExpect(jsonPath("$.address").value(newAddress))
+                .andReturn().getResponse();
+        Gson gson = new Gson();
+        Volunteer actual = gson.fromJson(response.getContentAsString(), volunteer.getClass());
+        Assertions.assertThat(actual).isEqualTo(volunteer);
+
+        when(volunteerRepository.findById(id)).thenReturn(Optional.empty());
+        response = mockMvc.perform(MockMvcRequestBuilders
+                        .put("/volunteer")
+                        .content(volunteerObj.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse();
+        gson = new Gson();
+        actual = gson.fromJson(response.getContentAsString(), volunteer.getClass());
+        assertThat(actual).isNull();
     }
 
     @Test
-    public void deleteVolunteer() throws Exception{
-        Volunteer volunteer = createTestVolunteer(1L, 123L,"Blink", "Amanda", "-", "12345",  "123 Second Creek Rd, #1");
-        when(volunteerRepository.findById(1L)).thenReturn(Optional.of(volunteer));
+    public void deleteVolunteer() throws Exception {
+        Volunteer expected = createTestVolunteer(1L, 123L, "Blink", "Amanda", "-", "12345", "123 Second Creek Rd, #1");
 
-        mockMvc.perform(MockMvcRequestBuilders
-                        .delete("/volunteer/{id}", 1)
+        when(volunteerRepository.findById(expected.getId())).thenReturn(Optional.of(expected));
+        MockHttpServletResponse response = mockMvc.perform(MockMvcRequestBuilders
+                        .delete("/volunteer/" + expected.getId())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+        Volunteer actual = new ObjectMapper().readValue(response.getContentAsString(), expected.getClass());
+        assertThat(actual.getId()).isEqualTo(expected.getId());
+        assertThat(actual.getChatId()).isEqualTo(expected.getChatId());
+        assertThat(actual.getName()).isEqualTo(expected.getName());
+        assertThat(actual.getPhone()).isEqualTo(expected.getPhone());
+        assertThat(actual.getShelter()).isEqualTo(expected.getShelter());
+
+        when(volunteerRepository.findById(expected.getId())).thenReturn(Optional.empty());
+        response = mockMvc.perform(MockMvcRequestBuilders
+                        .delete("/volunteer/" + expected.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-
-        verify(volunteerRepository, atLeastOnce()).deleteById(1L);
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse();
+        Gson gson = new Gson();
+        actual = gson.fromJson(response.getContentAsString(), expected.getClass());
+        assertThat(actual).isNull();
     }
-
 
     private List<Volunteer> volunteersForTest() {
 
@@ -225,19 +265,18 @@ public class VolunteerControllerTest {
         v1.setPhone("12345");
         v1.setAddress("123 Second Creek Rd, #1");
         return v1;
-
     }
-        public static Volunteer testVolunteerWrong () {
-            Volunteer v2 = new Volunteer();
-            v2.setId(3L);
-            v2.setChatId(789L);
-            v2.setSurname("Faber");
-            v2.setName("Susan");
-            v2.setSecondName("-");
-            v2.setPhone("09876");
-            v2.setAddress("453 Parmer Ln, #3");
-            return v2;
 
+    public static Volunteer testVolunteerWrong() {
+        Volunteer v2 = new Volunteer();
+        v2.setId(3L);
+        v2.setChatId(789L);
+        v2.setSurname("Faber");
+        v2.setName("Susan");
+        v2.setSecondName("-");
+        v2.setPhone("09876");
+        v2.setAddress("453 Parmer Ln, #3");
+        return v2;
     }
 
 }
