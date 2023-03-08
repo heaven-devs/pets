@@ -2,10 +2,7 @@ package ga.heaven.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.Hibernate;
 
 import javax.persistence.*;
@@ -14,6 +11,7 @@ import java.util.Objects;
 
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 @Getter
 @Setter
 @Entity
@@ -49,7 +47,12 @@ public class Pet {
     @ManyToOne
     @JoinColumn(name = "id_shelter")
     private Shelter shelter; // ссылка на приют питомца
-    
+
+    public Pet(Long id, Customer customer) {
+        this.id = id;
+        this.customer = customer;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

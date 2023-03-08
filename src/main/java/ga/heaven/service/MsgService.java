@@ -5,6 +5,7 @@ import com.pengrad.telegrambot.model.request.Keyboard;
 import com.pengrad.telegrambot.model.request.ParseMode;
 import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import com.pengrad.telegrambot.request.SendMessage;
+import com.pengrad.telegrambot.response.SendResponse;
 import ga.heaven.listener.TelegramBotUpdatesListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +46,10 @@ public class MsgService {
             outputMessage.replyMarkup(keyboard);
         }
         try {
-            telegramBot.execute(outputMessage);
+            SendResponse sendResponse = telegramBot.execute(outputMessage);
+            if (!sendResponse.isOk()) {
+                LOGGER.warn(sendResponse.message().text());
+            }
         } catch (Exception e) {
             LOGGER.info("Exception was thrown in sendMessage method with keyboard ");
             e.printStackTrace();

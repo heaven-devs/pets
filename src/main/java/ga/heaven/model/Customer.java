@@ -1,8 +1,6 @@
 package ga.heaven.model;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.Hibernate;
 
 import javax.persistence.*;
@@ -13,6 +11,8 @@ import java.util.Objects;
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class Customer {
     
     public enum CustomerStatus {

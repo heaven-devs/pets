@@ -80,7 +80,7 @@ public class PetController {
     public ResponseEntity<Pet> readPetByID(@PathVariable long id) {
         Pet result = petService.read(id);
         if (result == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
