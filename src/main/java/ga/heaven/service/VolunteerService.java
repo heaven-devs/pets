@@ -58,8 +58,6 @@ public class VolunteerService {
             return volunteerRepository.save(volunteer);
         }
         return null;
-
-//        return volunteerRepository.save(volunteer);
     }
 
     /**
@@ -75,6 +73,5 @@ public class VolunteerService {
             volunteerRepository.delete(volunteer);
         }
         return volunteer;
-
     }
 }

@@ -121,15 +121,11 @@ public class VolunteerServiceTest {
 
     @Test
     public void testUpdateVolunteer() {
-        Volunteer volunteer1 = createTestVolunteer(1L, 123L, "Blink", "Amanda", "-", "12345", "123 Second Creek Rd, #1");
-        Volunteer volunteer2 = createTestVolunteer(1L, 123L, "Faber", "Amanda", "-", "52896", "123 Second Creek Rd, #1");
-        when(volunteerRepository.save(volunteer1)).thenReturn(volunteer2);
-        Volunteer expected = volunteer2;
-        Volunteer actual = volunteerService.updateVolunteer(volunteer2);
-        assertEquals(expected, actual);
-        assertEquals(expected.getChatId(), actual.getChatId());
-        assertEquals(expected.getSurname(), actual.getSurname());
-        assertEquals(expected.getPhone(), actual.getPhone());
+        Volunteer expected = createTestVolunteer(1L, 123L, "Blink", "Amanda", "-", "12345", "123 Second Creek Rd, #1");
+        when(volunteerRepository.findById(expected.getId())).thenReturn(Optional.ofNullable(expected));
+        when(volunteerRepository.save(expected)).thenReturn(expected);
+        Volunteer actual = volunteerService.updateVolunteer(expected);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
