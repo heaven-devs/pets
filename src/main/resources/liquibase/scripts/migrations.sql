@@ -237,3 +237,8 @@ create table if not exists volunteer_shelter
 -- changeset alrepin:6
 alter table volunteer
     alter column chat_id drop not null;
+
+-- changeset telion:3
+ALTER TABLE public.customer ADD CONSTRAINT FK_Customers FOREIGN KEY(customer_context_id) REFERENCES customer(id);
+ALTER TABLE public.customer_context DROP COLUMN customer_id;
+ALTER TABLE public.customer_context RENAME COLUMN pet_id TO current_pet_id;

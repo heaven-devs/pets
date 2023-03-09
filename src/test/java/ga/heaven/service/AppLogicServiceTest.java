@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import static ga.heaven.configuration.Constants.*;
+import static ga.heaven.model.CustomerContext.Context.FREE;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,14 +39,11 @@ public class AppLogicServiceTest {
     @Mock
     private CustomerService customerService;
     @Mock
-    private CustomerContextService customerContextService;
-    @Mock
     private MsgService msgService;
 
     private Info expectedInfo;
     private Long expectedChatId;
     private Customer expectedCustomer;
-    private CustomerContext expectedCustomerContext;
 
     private static final Logger logger = LoggerFactory.getLogger(AppLogicServiceTest.class);
 
@@ -57,8 +55,7 @@ public class AppLogicServiceTest {
         expectedCustomer.setId(1L);
         expectedCustomer.setChatId(expectedChatId);
         expectedCustomer.setName("Ivan");
-        expectedCustomerContext = new CustomerContext(1L, CustomerContext.Context.FREE, 2L, expectedCustomer);
-        expectedCustomer.setCustomerContext(expectedCustomerContext);
+        expectedCustomer.setCustomerContext(new CustomerContext(1L, FREE, 2L));
     }
 
     @Test
@@ -103,7 +100,6 @@ public class AppLogicServiceTest {
         when(customerService.isPresent(expectedChatId)).thenReturn(false);
         when(infoService.findInfoByArea(expectedCommand)).thenReturn(expectedInfo);
         when(customerService.createCustomer(expectedChatId)).thenReturn(expectedCustomer);
-        when(customerContextService.create(expectedCustomer)).thenReturn(expectedCustomerContext);
 
         Update update = getUpdateFromResourceFile("text_update.json", expectedCommand);
         appLogicService.initConversation(update.message().chat().id());
