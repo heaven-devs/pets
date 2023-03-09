@@ -149,6 +149,7 @@ public class ReportSelectorService {
 
         // todo: реализовать запись данных в таблицу report
 
+        System.out.println("inputMessage.photo() = " + inputMessage.photo());
         if (inputMessage.photo() != null && inputMessage.caption() != null) {
             responseText = ANSWER_REPORT_ACCEPTED;
             updateCustomerContext(FREE, 0);
@@ -161,7 +162,6 @@ public class ReportSelectorService {
 
         } else if (inputMessage.text() != null) {
             responseText = ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED;
-
             updateCustomerContext(WAIT_REPORT);
         }
 
