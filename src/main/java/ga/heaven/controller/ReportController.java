@@ -42,7 +42,7 @@ public class ReportController {
             }
     )
     @GetMapping
-    public ResponseEntity<List<Report>> findAllReport() {
+    public ResponseEntity<List<Report>> findAllReportFindAllReport() {
         return ResponseEntity.ok(reportService.findAllReports());
     }
     
@@ -59,8 +59,8 @@ public class ReportController {
                     )
             )
     })
-    @GetMapping("/{reportId}")
-    public ResponseEntity<Report> findReportById(@PathVariable long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<Report> findReportById(@PathVariable Long id) {
         Report report = reportService.findReportsById(id);
         if (report == null) {
             return ResponseEntity.notFound().build();
@@ -81,10 +81,13 @@ public class ReportController {
                     )
             )
     })
-    @DeleteMapping("/{reportId}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Report> deleteReport(@PathVariable Long id) {
-        reportService.deleteReport(id);
-        return ResponseEntity.ok().build();
+        Report report = reportService.deleteReport(id);
+        if (report == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(report);
     }
     
     

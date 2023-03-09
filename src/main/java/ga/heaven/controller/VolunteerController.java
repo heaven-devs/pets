@@ -48,17 +48,17 @@ public class VolunteerController {
     @Operation(
             summary = " Search for a volunteer by its ID in the database.",
             responses = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Volunteer JSON",
-                    content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = Report[].class)
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Volunteer JSON",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = Report[].class)
+                            )
                     )
-            )
-    })
-    @GetMapping("/{volunteerId}")
-        public ResponseEntity<Volunteer> findVolunteerById(@PathVariable  long id) {
+            })
+    @GetMapping("/{id}")
+    public ResponseEntity<Volunteer> findVolunteerById(@PathVariable long id) {
         Volunteer volunteer = volunteerService.findVolunteerById(id);
         if (volunteer == null) {
             return ResponseEntity.notFound().build();
@@ -99,7 +99,7 @@ public class VolunteerController {
     @PutMapping
     public ResponseEntity<Volunteer> updateVolunteer(@RequestBody Volunteer volunteer){
         Volunteer update = volunteerService.updateVolunteer(volunteer);
-        if(update==null){
+        if (update == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(update);
@@ -108,19 +108,22 @@ public class VolunteerController {
     @Operation(
             summary = "Deleting  for a volunteer by its ID in the database.(Table - Volunteer)",
             responses = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Volunteer JSON",
-                    content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = Report[].class)
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Volunteer JSON",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = Report[].class)
+                            )
                     )
-            )
-    })
-    @DeleteMapping("/{volunteerId}")
-    public ResponseEntity<Volunteer> deleteVolunteer(@PathVariable long id){
-        volunteerService.deleteVolunteer(id);
-        return ResponseEntity.ok().build();
+            })
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Volunteer> deleteVolunteer(@PathVariable long id) {
+        Volunteer volunteer = volunteerService.deleteVolunteer(id);
+        if (volunteer == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(volunteer);
     }
 
 }

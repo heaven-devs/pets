@@ -19,14 +19,11 @@ public class MsgService {
     private static final Logger LOGGER = LoggerFactory.getLogger(TelegramBotUpdatesListener.class);
     
     private final TelegramBot telegramBot;
-    
-    
+
     public MsgService(TelegramBot telegramBot) {
         this.telegramBot = telegramBot;
-
     }
-    
-    
+
     public ReplyKeyboardMarkup selectShelter() {
         LOGGER.info("Shelters keyboard viewed");
         return new ReplyKeyboardMarkup(
@@ -45,14 +42,6 @@ public class MsgService {
         if (keyboard != null) {
             outputMessage.replyMarkup(keyboard);
         }
-        try {
-            SendResponse sendResponse = telegramBot.execute(outputMessage);
-            if (!sendResponse.isOk()) {
-                LOGGER.warn(sendResponse.message().text());
-            }
-        } catch (Exception e) {
-            LOGGER.info("Exception was thrown in sendMessage method with keyboard ");
-            e.printStackTrace();
-        }
+        SendResponse sendResponse = telegramBot.execute(outputMessage);
     }
 }
