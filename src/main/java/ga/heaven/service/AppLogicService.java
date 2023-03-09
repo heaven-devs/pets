@@ -53,6 +53,7 @@ public class AppLogicService {
     }
 
     public void volunteerRequest(Message inputMessage) {
+    
 
     }
 }
