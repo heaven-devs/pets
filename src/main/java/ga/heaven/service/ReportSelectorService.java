@@ -45,7 +45,7 @@ public class ReportSelectorService {
      */
     public void switchCmd(Message inputMessage) {
         this.inputMessage = inputMessage;
-        this.customer = customerService.findCustomerByChatId(inputMessage.chat().id());
+        customer = customerService.findCustomerByChatId(inputMessage.chat().id());
 
         if (customer != null && inputMessage.text() != null
                 && inputMessage.text().equals(REPORT_SUBMIT_CMD)) {
@@ -99,8 +99,8 @@ public class ReportSelectorService {
 
     /**
      * Метод формирует сообщение пользователю, со списком его питомцев
-     * @param customerPetList
-     * @return
+     * @param customerPetList Список питомцев, на поручении у пользователя
+     * @return список питомцев
      */
     private String generateListOfCustomersPets(List<Pet> customerPetList) {
         StringBuilder sb = new StringBuilder(ANSWER_ENTER_PET_ID + CARRIAGE_RETURN);
@@ -149,6 +149,7 @@ public class ReportSelectorService {
 
         // todo: реализовать запись данных в таблицу report
 
+        System.out.println("inputMessage.photo() = " + inputMessage.photo());
         if (inputMessage.photo() != null && inputMessage.caption() != null) {
             responseText = ANSWER_REPORT_ACCEPTED;
             updateCustomerContext(FREE, 0);
@@ -161,7 +162,6 @@ public class ReportSelectorService {
 
         } else if (inputMessage.text() != null) {
             responseText = ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED;
-
             updateCustomerContext(WAIT_REPORT);
         }
 
