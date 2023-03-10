@@ -28,14 +28,14 @@ public class AppLogicService {
         this.msgService = msgService;
     }
     
-    public void sendDatingRules(Long chatId) {
+    /*public void sendDatingRules(Long chatId) {
         Info info = infoService.findInfoByArea(DATING_RULES_FIELD);
         if (info == null) {
             msgService.sendMsg(chatId, DATING_RULES_NOT_FOUND);
         } else {
             msgService.sendMsg(chatId, info.getInstructions());
         }
-    }
+    }*/
     
     public void initConversation(Long chatId) {
         if (!customerService.isPresent(chatId)) {
@@ -55,5 +55,49 @@ public class AppLogicService {
     public void volunteerRequest(Message inputMessage) {
     
 
+    }
+
+    public void sendDatingRules(Long chatId) {
+        sendMultipurpose(chatId, DATING_RULES_FIELD, DATING_RULES_NOT_FOUND);
+    }
+    public void sendDocuments(Long chatId) {
+        sendMultipurpose(chatId, DOCUMENTS_FIELD, DOCUMENTS_NOT_FOUND);
+    }
+
+    public void sendTransportRules(Long chatId) {
+        sendMultipurpose(chatId, TRANSPORT_FIELD, TRANSPORT_NOT_FOUND);
+    }
+    public void sendComfortPet(Long chatId) {
+        sendMultipurpose(chatId, COMFORT_PET_FIELD, COMFORT_PET_NOT_FOUND);
+    }
+
+    public void sendComfortDog(Long chatId) {
+        sendMultipurpose(chatId, COMFORT_DOG_FIELD, COMFORT_DOG_NOT_FOUND);
+    }
+    public void sendComfortHandicapped(Long chatId) {
+        sendMultipurpose(chatId, COMFORT_HANDICAPPED_FIELD, COMFORT_HANDICAPPED_NOT_FOUND);
+    }
+
+    public void sendCynologistAdvice(Long chatId) {
+        sendMultipurpose(chatId, CYNOLOGIST_ADVICE_FIELD, CYNOLOGIST_ADVICE_NOT_FOUND);
+    }
+
+    public void sendCynologistsList(Long chatId) {
+        sendMultipurpose(chatId, CYNOLOGISTS_LIST_FIELD, CYNOLOGIST_LIST_NOT_FOUND);
+    }
+
+    public void sendReasonsRefusal(Long chatId) {
+        sendMultipurpose(chatId, REASONS_REFUSAL_FIELD, REASONS_REFUSAL_NOT_FOUND);
+    }
+
+
+
+    private void sendMultipurpose(Long chatId, String areaField, String notFoundMsg) {
+        Info info = infoService.findInfoByArea(areaField);
+        if (info == null) {
+            msgService.sendMsg(chatId, notFoundMsg);
+        } else {
+            msgService.sendMsg(chatId, info.getInstructions());
+        }
     }
 }

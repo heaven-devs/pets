@@ -25,6 +25,30 @@ public class PetSelectorService {
             case DATING_RULES_CMD:
                 appLogicService.sendDatingRules(inputMessage.chat().id());
                 break;
+            case DOCUMENTS_CMD:
+                appLogicService.sendDocuments(inputMessage.chat().id());
+                break;
+            case TRANSPORT_CMD:
+                appLogicService.sendTransportRules(inputMessage.chat().id());
+                break;
+            case COMFORT_PET_CMD:
+                appLogicService.sendComfortPet(inputMessage.chat().id());
+                break;
+            case COMFORT_DOG_CMD:
+                appLogicService.sendComfortDog(inputMessage.chat().id());
+                break;
+            case COMFORT_HANDICAPPED_CMD:
+                appLogicService.sendComfortHandicapped(inputMessage.chat().id());
+                break;
+            case CYNOLOGIST_ADVICE_CMD:
+                appLogicService.sendCynologistAdvice(inputMessage.chat().id());
+                break;
+            case CYNOLOGISTS_LIST_CMD:
+                appLogicService.sendCynologistsList(inputMessage.chat().id());
+                break;
+            case REASONS_REFUSAL_CMD:
+                appLogicService.sendReasonsRefusal(inputMessage.chat().id());
+                break;
         }
     }
     
