@@ -3,22 +3,28 @@ package ga.heaven.model;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
-@Entity
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name="shelter")
 public class Shelter { // Таблица: Приют
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id; // уникальный id
-
     private String name; // название приюта питомцев
     private String address; // адрес
     private String locationMap; // ссылка на схему проезда
-
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name="volunteer_shelter",
+            joinColumns=  @JoinColumn(name="shelter_id", referencedColumnName="id"),
+            inverseJoinColumns= @JoinColumn(name="volunteer_id", referencedColumnName="id") )
+    private Set<Volunteer> volunteers = new HashSet<>();
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
