@@ -55,4 +55,13 @@ public class AppLogicService {
     public void volunteerRequest(Message inputMessage) {
 
     }
+
+    public void sendDocuments(Long chatId) {
+        Info info = infoService.findInfoByArea(DOCUMENTS_FIELD);
+        if (info == null) {
+            msgService.sendMsg(chatId, DOCUMENTS_NOT_FOUND);
+        } else {
+            msgService.sendMsg(chatId, info.getInstructions());
+        }
+    }
 }

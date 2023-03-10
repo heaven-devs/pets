@@ -25,6 +25,8 @@ public class PetSelectorService {
             case DATING_RULES_CMD:
                 appLogicService.sendDatingRules(inputMessage.chat().id());
                 break;
+            case DOCUMENTS_CMD:
+                appLogicService.sendDocuments(inputMessage.chat().id());
         }
     }
     

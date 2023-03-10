@@ -237,3 +237,12 @@ create table if not exists volunteer_shelter
 -- changeset alrepin:6
 alter table volunteer
     alter column chat_id drop not null;
+
+-- changeset Alex Turaev:2
+
+INSERT INTO public.info
+(area, instructions)
+SELECT 'documents', 'Required documents: doc1, doc2, doc3'
+WHERE NOT EXISTS(
+        SELECT area FROM public.info WHERE area = 'documents'
+    );
