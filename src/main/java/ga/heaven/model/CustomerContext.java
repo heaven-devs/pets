@@ -14,6 +14,7 @@ import java.util.Objects;
 public class CustomerContext {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private Context dialogContext;
     private long currentPetId;
