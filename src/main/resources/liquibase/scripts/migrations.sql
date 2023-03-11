@@ -237,3 +237,75 @@ create table if not exists volunteer_shelter
 -- changeset alrepin:6
 alter table volunteer
     alter column chat_id drop not null;
+
+-- changeset Alex Turaev:2
+
+INSERT INTO public.info
+(area, instructions)
+SELECT 'documents', 'Required documents: doc1, doc2, doc3'
+WHERE NOT EXISTS(
+        SELECT area FROM public.info WHERE area = 'documents'
+    );
+
+-- changeset Alex Turaev:3
+
+INSERT INTO public.info
+(area, instructions)
+SELECT 'transport', 'Transportation rules: transport animals carefully'
+WHERE NOT EXISTS(
+        SELECT area FROM public.info WHERE area = 'transport'
+    );
+
+-- changeset Alex Turaev:4
+
+INSERT INTO public.info
+(area, instructions)
+SELECT 'comfort_pet', 'The house for pet should be clean'
+WHERE NOT EXISTS(
+        SELECT area FROM public.info WHERE area = 'comfort_pet'
+    );
+
+-- changeset Alex Turaev:5
+
+INSERT INTO public.info
+(area, instructions)
+SELECT 'comfort_dog', 'The house for dog should be clean'
+WHERE NOT EXISTS(
+        SELECT area FROM public.info WHERE area = 'comfort_dog'
+    );
+
+-- changeset Alex Turaev:6
+
+INSERT INTO public.info
+(area, instructions)
+SELECT 'comfort_handicapped', 'The house for handicapped pet should be clean'
+WHERE NOT EXISTS(
+        SELECT area FROM public.info WHERE area = 'comfort_handicapped'
+    );
+
+-- changeset Alex Turaev:7
+
+INSERT INTO public.info
+(area, instructions)
+SELECT 'cynologist_advice', 'Tips from a dog handler: take care of the dog, feed it properly'
+WHERE NOT EXISTS(
+        SELECT area FROM public.info WHERE area = 'cynologist_advice'
+    );
+
+-- changeset Alex Turaev:8
+
+INSERT INTO public.info
+(area, instructions)
+SELECT 'cynologists_list', 'List of dog handlers: Ivan, Petr'
+WHERE NOT EXISTS(
+        SELECT area FROM public.info WHERE area = 'cynologists_list'
+    );
+
+-- changeset Alex Turaev:9
+
+INSERT INTO public.info
+(area, instructions)
+SELECT 'reasons_refusal', 'The list of reasons for refusal: reason1, reason2'
+WHERE NOT EXISTS(
+        SELECT area FROM public.info WHERE area = 'reasons_refusal'
+    );

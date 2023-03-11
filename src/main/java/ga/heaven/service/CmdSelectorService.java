@@ -10,18 +10,18 @@ import static ga.heaven.configuration.Constants.*;
 @Service
 public class CmdSelectorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CmdSelectorService.class);
-    
     private final MsgService msgService;
-    
     private final AppLogicService appLogicService;
-    
     private final PetSelectorService petSelectorService;
+    private final VolunteerSelectorService volunteerSelectorService;
+    
     private final ReportSelectorService reportSelectorService;
     
-    public CmdSelectorService(MsgService msgService, AppLogicService appLogicService, PetSelectorService petSelectorService, ReportSelectorService reportSelectorService) {
+    public CmdSelectorService(MsgService msgService, AppLogicService appLogicService, PetSelectorService petSelectorService, VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService) {
         this.msgService = msgService;
         this.appLogicService = appLogicService;
         this.petSelectorService = petSelectorService;
+        this.volunteerSelectorService = volunteerSelectorService;
         this.reportSelectorService = reportSelectorService;
     }
     
@@ -32,6 +32,7 @@ public class CmdSelectorService {
 
         if (inputMessage.text() != null) {
             petSelectorService.switchCmd(inputMessage);
+            volunteerSelectorService.switchCmd(inputMessage);
 
             switch (inputMessage.text()) {
                 
@@ -39,10 +40,6 @@ public class CmdSelectorService {
                 
                 case START_CMD:
                     appLogicService.initConversation(inputMessage.chat().id());
-                    break;
-                
-                case VOLUNTEER_REQUEST_CMD:
-                    appLogicService.volunteerRequest(inputMessage);
                     break;
                 
                 default:
