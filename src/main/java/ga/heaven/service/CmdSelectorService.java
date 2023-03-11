@@ -7,6 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static ga.heaven.configuration.Constants.*;
 
 @Service
@@ -30,24 +33,29 @@ public class CmdSelectorService {
     public void processingMsg(Message inputMessage) {
         
         if (inputMessage.text() != null || inputMessage.photo() != null) {
+            LOGGER.debug("Message\n{}\nsent to: reportSelectorService.switchCmd", inputMessage);
             reportSelectorService.switchCmd(inputMessage);
         }
         
         if ((inputMessage.text() != null)
                 && (inputMessage.chat() != null)
-                && (inputMessage.chat().id() != null)) {
-            petSelectorService.switchCmd(inputMessage);
-            volunteerSelectorService.switchCmd(inputMessage);
-            
+                && (inputMessage.chat().id() != null)
+                && (Pattern.compile("^/([^/]*)$").matcher(inputMessage.text()).matches())
+        ) {
+            LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", inputMessage);
             switch (inputMessage.text()) {
                 
                 case START_CMD:
                     appLogicService.initConversation(inputMessage.chat().id());
-                    break;
-                
+                    return;
+    
                 default:
                     break;
             }
+            
+            petSelectorService.switchCmd(inputMessage);
+            volunteerSelectorService.switchCmd(inputMessage);
+            
         }
     }
     
@@ -57,7 +65,10 @@ public class CmdSelectorService {
         if ((cbQuery.data() != null)
                 && (cbQuery.message() != null)
                 && (cbQuery.message().chat() != null)
-                && (cbQuery.message().chat().id() != null)) {
+                && (cbQuery.message().chat().id() != null)
+                && (Pattern.compile("^/([^/]*)$").matcher(cbQuery.data()).matches())
+        ) {
+            LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", cbQuery);
             petSelectorService.switchCmd(cbQuery.message().chat().id(), cbQuery.data());
             volunteerSelectorService.switchCmd(cbQuery.message().chat().id(), cbQuery.data());
             
