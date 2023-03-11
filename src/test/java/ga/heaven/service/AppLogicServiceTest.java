@@ -2,6 +2,8 @@ package ga.heaven.service;
 
 import com.pengrad.telegrambot.BotUtils;
 import com.pengrad.telegrambot.model.Update;
+import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
+import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import com.pengrad.telegrambot.model.request.Keyboard;
 import ga.heaven.listener.TelegramBotUpdatesListenerTest;
 import ga.heaven.model.Customer;
@@ -115,12 +117,17 @@ public class AppLogicServiceTest {
 
     @Test
     public void handleInitConversationForExistingUser() {
-        String expectedCommand = COMMON_INFO_FIELD;
-        String expectedBotResponse = SHELTER_CHOOSE_MSG;
+        InlineKeyboardMarkup expectedKbMarkup = new InlineKeyboardMarkup();
+        InlineKeyboardButton kb1 = new InlineKeyboardButton(SHELTER1_CMD);
+        InlineKeyboardButton kb2 = new InlineKeyboardButton(SHELTER2_CMD);
+        kb1.callbackData(kb1.text());
+        expectedKbMarkup.addRow(kb1);
+        kb2.callbackData(kb2.text());
+        expectedKbMarkup.addRow(kb2);
 
         when(customerService.isPresent(expectedChatId)).thenReturn(true);
 
-        Update update = getUpdateFromResourceFile("text_update.json", expectedCommand);
+        Update update = getUpdateFromResourceFile("text_update.json", COMMON_INFO_FIELD);
         appLogicService.initConversation(update.message().chat().id());
 
         ArgumentCaptor<Long> argumentCaptor1 = ArgumentCaptor.forClass(Long.class);
@@ -134,8 +141,8 @@ public class AppLogicServiceTest {
         Keyboard actualArgument3 = argumentCaptor3.getValue();
 
         Assertions.assertThat(actualArgument1).isEqualTo(expectedChatId);
-        Assertions.assertThat(actualArgument2).isEqualTo(expectedBotResponse);
-        Assertions.assertThat(actualArgument3).isNull();
+        Assertions.assertThat(actualArgument2).isEqualTo(SHELTER_CHOOSE_MSG);
+        Assertions.assertThat(actualArgument3).isEqualTo(expectedKbMarkup);
     }
 
     private Update getUpdateFromResourceFile(String jsonFile, String command) {
@@ -143,9 +150,7 @@ public class AppLogicServiceTest {
         try {
             json = Files.readString(
                     Paths.get(TelegramBotUpdatesListenerTest.class.getResource(jsonFile).toURI()));
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        } catch (URISyntaxException e) {
+        } catch (IOException | URISyntaxException e) {
             logger.error(e.getMessage());
         }
         return BotUtils.fromJson(json.replace("%command%", command), Update.class);
