@@ -309,3 +309,84 @@ SELECT 'reasons_refusal', 'The list of reasons for refusal: reason1, reason2'
 WHERE NOT EXISTS(
         SELECT area FROM public.info WHERE area = 'reasons_refusal'
     );
+
+-- changeset alrepin:7
+INSERT INTO public.shelter
+(id, name)
+SELECT 1, 'Cat''s shelter'
+WHERE NOT EXISTS(
+        SELECT id, name FROM public.shelter WHERE name = 'Cat''s shelter'
+    );
+
+INSERT INTO public.shelter
+(id, name)
+SELECT 2, 'Dog''s shelter'
+WHERE NOT EXISTS(
+        SELECT id, name FROM public.shelter WHERE name = 'Dog''s shelter'
+    );
+
+INSERT INTO public.volunteer
+(id, chat_id, name)
+SELECT 1, 440401693,'Тарасов Сергей'
+WHERE NOT EXISTS(
+        SELECT chat_id, name FROM public.volunteer WHERE name = 'Тарасов Сергей'
+    );
+
+INSERT INTO public.volunteer
+(id, chat_id, name)
+SELECT 2, 54204985,'Репин Алексей'
+WHERE NOT EXISTS(
+        SELECT chat_id, name FROM public.volunteer WHERE name = 'Репин Алексей'
+    );
+
+INSERT INTO public.volunteer
+(id, chat_id, name)
+SELECT 3, 302455489,'Пупкин Василий'
+WHERE NOT EXISTS(
+        SELECT chat_id, name FROM public.volunteer WHERE name = 'Пупкин Василий'
+    );
+
+INSERT INTO public.volunteer_shelter
+(volunteer_id, shelter_id)
+SELECT 1, 1
+WHERE NOT EXISTS(
+        SELECT volunteer_id, shelter_id FROM public.volunteer_shelter WHERE volunteer_id = 1 AND shelter_id = 1
+    );
+
+INSERT INTO public.volunteer_shelter
+(volunteer_id, shelter_id)
+SELECT 2, 2
+WHERE NOT EXISTS(
+        SELECT volunteer_id, shelter_id FROM public.volunteer_shelter WHERE volunteer_id = 2 AND shelter_id = 2
+    );
+
+INSERT INTO public.volunteer_shelter
+(volunteer_id, shelter_id)
+SELECT 3, 1
+WHERE NOT EXISTS(
+        SELECT volunteer_id, shelter_id FROM public.volunteer_shelter WHERE volunteer_id = 3 AND shelter_id = 1
+    );
+
+INSERT INTO public.volunteer_shelter
+(volunteer_id, shelter_id)
+SELECT 3, 2
+WHERE NOT EXISTS(
+        SELECT volunteer_id, shelter_id FROM public.volunteer_shelter WHERE volunteer_id = 3 AND shelter_id = 2
+    );
+
+-- changeset alrepin:8
+UPDATE public.pet
+SET id_shelter = 2::bigint
+WHERE id = 4::bigint;
+
+UPDATE public.pet
+SET id_shelter = 1::bigint
+WHERE id = 2::bigint;
+
+UPDATE public.pet
+SET id_shelter = 1::bigint
+WHERE id = 1::bigint;
+
+UPDATE public.pet
+SET id_shelter = 2::bigint
+WHERE id = 3::bigint;
