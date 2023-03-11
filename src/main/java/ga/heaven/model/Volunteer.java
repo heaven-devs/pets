@@ -13,9 +13,9 @@ import java.util.Set;
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString
+//@ToString
 @Entity
-@Table(name="volunteer")
+@Table(name = "volunteer")
 public class Volunteer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,13 +26,16 @@ public class Volunteer {
     private String secondName;
     private String phone;
     private String address;
-    @JsonIgnore
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name="volunteer_shelter",
-            joinColumns=  @JoinColumn(name="volunteer_id", referencedColumnName="id"),
-            inverseJoinColumns= @JoinColumn(name="shelter_id", referencedColumnName="id") )
+    
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(name = "volunteer_shelter",
+            joinColumns = @JoinColumn(name = "volunteer_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "shelter_id", referencedColumnName = "id"))
+    
+    //@ManyToMany(mappedBy = "volunteers", fetch = FetchType.EAGER)
+    //@JsonIgnore
     private Set<Shelter> shelters = new HashSet<>();
-
+    
     /*@Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -63,5 +66,13 @@ public class Volunteer {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+    
+    @Override
+    public String toString() {
+        return "Volunteer{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
 }
