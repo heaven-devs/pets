@@ -15,9 +15,10 @@ public class CustomerContext {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
     private Context dialogContext;
-    private long petId;
+    private Long petId;
+    private Long shelterId;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn

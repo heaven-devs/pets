@@ -2,7 +2,7 @@ package ga.heaven.service;
 
 import com.pengrad.telegrambot.model.CallbackQuery;
 import com.pengrad.telegrambot.model.Message;
-import com.pengrad.telegrambot.model.Update;
+import ga.heaven.model.CustomerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -19,15 +19,20 @@ public class CmdSelectorService {
     private final AppLogicService appLogicService;
     private final PetSelectorService petSelectorService;
     private final VolunteerSelectorService volunteerSelectorService;
-    
     private final ReportSelectorService reportSelectorService;
+    private final ShelterService shelterService;
+    private final CustomerContextService customerContextService;
+    private final CustomerService customerService;
     
-    public CmdSelectorService(MsgService msgService, AppLogicService appLogicService, PetSelectorService petSelectorService, VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService) {
+    public CmdSelectorService(MsgService msgService, AppLogicService appLogicService, PetSelectorService petSelectorService, VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService, ShelterService shelterService, CustomerContextService customerContextService, CustomerService customerService) {
         this.msgService = msgService;
         this.appLogicService = appLogicService;
         this.petSelectorService = petSelectorService;
         this.volunteerSelectorService = volunteerSelectorService;
         this.reportSelectorService = reportSelectorService;
+        this.shelterService = shelterService;
+        this.customerContextService = customerContextService;
+        this.customerService = customerService;
     }
     
     public void processingMsg(Message inputMessage) {
@@ -70,9 +75,17 @@ public class CmdSelectorService {
                 && (cbQuery.message().chat() != null)
                 && (cbQuery.message().chat().id() != null)
         ) {
-            if (Pattern.compile("^/(.*)/(.*)[0-9]*").matcher(cbQuery.data()).matches()) {
+            final Matcher matcher = Pattern.compile("^/(.*)/(.*)[0-9]*").matcher(cbQuery.data());
+            if (matcher.matches()) {
                 LOGGER.debug("Dynamic endpoint message\n{}\nsent to: switchDynCmd methods", cbQuery);
-                
+                msgService.sendMsg(cbQuery.message().chat().id(),
+                        shelterService.findById(Long.valueOf(matcher.group(2))).getName()
+                                + " selected."
+                );
+                msgService.deleteMsg(cbQuery.message().chat().id(), cbQuery.message().messageId());
+                CustomerContext context = customerContextService.findCustomerContextByCustomer(customerService.findCustomerByChatId(cbQuery.message().chat().id()));
+                context.setShelterId(Long.valueOf(matcher.group(2)));
+                customerContextService.update(context);
             } else if (Pattern.compile("^/([^/]*)$").matcher(cbQuery.data()).matches()) {
                 LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", cbQuery);
                 petSelectorService.switchCmd(cbQuery.message().chat().id(), cbQuery.data());
