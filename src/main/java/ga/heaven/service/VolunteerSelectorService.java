@@ -21,13 +21,16 @@ public class VolunteerSelectorService {
     }
     
     public void switchCmd(Message inputMessage) {
+        this.switchCmd(inputMessage.chat().id(), inputMessage.text());
+    }
+    
+    public void switchCmd(Long chatId, String Command) {
         
-        switch (inputMessage.text()) {
+        switch (Command) {
             case VOLUNTEER_REQUEST_CMD:
-                appLogicService.volunteerRequest(inputMessage);
+                appLogicService.volunteerRequest(chatId);
                 break;
         }
     }
-    
     
 }
