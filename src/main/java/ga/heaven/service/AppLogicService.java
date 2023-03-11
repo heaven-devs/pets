@@ -84,9 +84,6 @@ public class AppLogicService {
                 .collect(Collectors.toList()).toString());
                 
     }
-    
-
-    }
 
     public void sendDatingRules(Long chatId) {
         sendMultipurpose(chatId, DATING_RULES_FIELD, DATING_RULES_NOT_FOUND);
