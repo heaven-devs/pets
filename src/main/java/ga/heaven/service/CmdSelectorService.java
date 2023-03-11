@@ -40,22 +40,25 @@ public class CmdSelectorService {
         if ((inputMessage.text() != null)
                 && (inputMessage.chat() != null)
                 && (inputMessage.chat().id() != null)
-                && (Pattern.compile("^/([^/]*)$").matcher(inputMessage.text()).matches())
         ) {
-            LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", inputMessage);
-            switch (inputMessage.text()) {
+            if (Pattern.compile("^/(.*)/(.*)[0-9]*").matcher(inputMessage.text()).matches()) {
+                LOGGER.debug("Dynamic endpoint message\n{}\nsent to: switchDynCmd methods", inputMessage);
                 
-                case START_CMD:
-                    appLogicService.initConversation(inputMessage.chat().id());
-                    return;
-    
-                default:
-                    break;
+            } else if (Pattern.compile("^/([^/]*)$").matcher(inputMessage.text()).matches()) {
+                LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", inputMessage);
+                switch (inputMessage.text()) {
+                    
+                    case START_CMD:
+                        appLogicService.initConversation(inputMessage.chat().id());
+                        return;
+                    
+                    default:
+                        break;
+                }
+                
+                petSelectorService.switchCmd(inputMessage);
+                volunteerSelectorService.switchCmd(inputMessage);
             }
-            
-            petSelectorService.switchCmd(inputMessage);
-            volunteerSelectorService.switchCmd(inputMessage);
-            
         }
     }
     
@@ -66,12 +69,15 @@ public class CmdSelectorService {
                 && (cbQuery.message() != null)
                 && (cbQuery.message().chat() != null)
                 && (cbQuery.message().chat().id() != null)
-                && (Pattern.compile("^/([^/]*)$").matcher(cbQuery.data()).matches())
         ) {
-            LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", cbQuery);
-            petSelectorService.switchCmd(cbQuery.message().chat().id(), cbQuery.data());
-            volunteerSelectorService.switchCmd(cbQuery.message().chat().id(), cbQuery.data());
-            
+            if (Pattern.compile("^/(.*)/(.*)[0-9]*").matcher(cbQuery.data()).matches()) {
+                LOGGER.debug("Dynamic endpoint message\n{}\nsent to: switchDynCmd methods", cbQuery);
+                
+            } else if (Pattern.compile("^/([^/]*)$").matcher(cbQuery.data()).matches()) {
+                LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", cbQuery);
+                petSelectorService.switchCmd(cbQuery.message().chat().id(), cbQuery.data());
+                volunteerSelectorService.switchCmd(cbQuery.message().chat().id(), cbQuery.data());
+            }
         }
     }
 }
