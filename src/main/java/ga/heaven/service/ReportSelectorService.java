@@ -173,6 +173,9 @@ public class ReportSelectorService {
      */
     private void savePhotoToDB() {
         // todo: получить фото от бота, разложить на байты, записать в базу. https://www.baeldung.com/java-download-file
+
+
+
     }
 
 }
