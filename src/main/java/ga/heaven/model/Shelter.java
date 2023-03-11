@@ -1,5 +1,6 @@
 package ga.heaven.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
@@ -8,11 +9,11 @@ import java.util.Set;
 
 @Getter
 @Setter
-@ToString
+//@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name="shelter")
+@Table(name = "shelter")
 public class Shelter { // Таблица: Приют
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,24 +21,26 @@ public class Shelter { // Таблица: Приют
     private String name; // название приюта питомцев
     private String address; // адрес
     private String locationMap; // ссылка на схему проезда
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name="volunteer_shelter",
-            joinColumns=  @JoinColumn(name="shelter_id", referencedColumnName="id"),
-            inverseJoinColumns= @JoinColumn(name="volunteer_id", referencedColumnName="id") )
+    //@JsonIgnore
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(name = "volunteer_shelter",
+            joinColumns = @JoinColumn(name = "shelter_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "volunteer_id", referencedColumnName = "id"))
     private Set<Volunteer> volunteers = new HashSet<>();
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
+        
         Shelter shelter = (Shelter) o;
-
+        
         if (id != shelter.id) return false;
         if (name != null ? !name.equals(shelter.name) : shelter.name != null) return false;
         if (address != null ? !address.equals(shelter.address) : shelter.address != null) return false;
         return locationMap != null ? locationMap.equals(shelter.locationMap) : shelter.locationMap == null;
     }
-
+    
     @Override
     public int hashCode() {
         int result = (int) (id ^ (id >>> 32));
@@ -46,5 +49,12 @@ public class Shelter { // Таблица: Приют
         result = 31 * result + (locationMap != null ? locationMap.hashCode() : 0);
         return result;
     }
-
+    
+    @Override
+    public String toString() {
+        return "Shelter{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }

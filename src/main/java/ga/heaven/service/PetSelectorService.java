@@ -20,10 +20,14 @@ public class PetSelectorService {
     }
     
     public void switchCmd(Message inputMessage) {
+        this.switchCmd(inputMessage.chat().id(), inputMessage.text());
+    }
+    
+    public void switchCmd(Long chatId, String Command) {
         
-        switch (inputMessage.text()) {
+        switch (Command) {
             case DATING_RULES_CMD:
-                appLogicService.sendDatingRules(inputMessage.chat().id());
+                appLogicService.sendDatingRules(chatId);
                 break;
             case DOCUMENTS_CMD:
                 appLogicService.sendDocuments(inputMessage.chat().id());
@@ -51,6 +55,5 @@ public class PetSelectorService {
                 break;
         }
     }
-    
     
 }

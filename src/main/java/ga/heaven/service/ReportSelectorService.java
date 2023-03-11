@@ -115,6 +115,7 @@ public class ReportSelectorService {
      * @return текст ответа пользователю
      */
     private String processingUserMessages() {
+        responseText = "";
         Context context = customerContextService.findById(customer.getId()).getDialogContext();
         switch (context) {
             case WAIT_PET_ID: responseText = processingMsgWaitPetId(); break;

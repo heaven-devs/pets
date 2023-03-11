@@ -1,6 +1,8 @@
 package ga.heaven.service;
 
+import com.pengrad.telegrambot.model.CallbackQuery;
 import com.pengrad.telegrambot.model.Message;
+import com.pengrad.telegrambot.model.Update;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -26,17 +28,18 @@ public class CmdSelectorService {
     }
     
     public void processingMsg(Message inputMessage) {
+        
         if (inputMessage.text() != null || inputMessage.photo() != null) {
             reportSelectorService.switchCmd(inputMessage);
         }
-
-        if (inputMessage.text() != null) {
+        
+        if ((inputMessage.text() != null)
+                && (inputMessage.chat() != null)
+                && (inputMessage.chat().id() != null)) {
             petSelectorService.switchCmd(inputMessage);
             volunteerSelectorService.switchCmd(inputMessage);
-
+            
             switch (inputMessage.text()) {
-                
-                // peripheral commands
                 
                 case START_CMD:
                     appLogicService.initConversation(inputMessage.chat().id());
@@ -45,6 +48,19 @@ public class CmdSelectorService {
                 default:
                     break;
             }
+        }
+    }
+    
+    public void processingCallBackQuery(CallbackQuery cbQuery) {
+        msgService.sendCallbackQueryResponse(cbQuery.id());
+        
+        if ((cbQuery.data() != null)
+                && (cbQuery.message() != null)
+                && (cbQuery.message().chat() != null)
+                && (cbQuery.message().chat().id() != null)) {
+            petSelectorService.switchCmd(cbQuery.message().chat().id(), cbQuery.data());
+            volunteerSelectorService.switchCmd(cbQuery.message().chat().id(), cbQuery.data());
+            
         }
     }
 }
