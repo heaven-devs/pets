@@ -1,6 +1,8 @@
 package ga.heaven.model;
 
 import lombok.*;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import javax.persistence.Entity;
 import javax.persistence.*;
@@ -26,13 +28,23 @@ public class Breed {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Breed)) return false;
         Breed that = (Breed) o;
-        return adultPetFromAge == that.adultPetFromAge && Objects.equals(breed, that.breed) && Objects.equals(recommendationsChild, that.recommendationsChild) && Objects.equals(recommendationsAdult, that.recommendationsAdult);
+        EqualsBuilder eb = new EqualsBuilder();
+        eb.append(breed, that.breed);
+        eb.append(recommendationsChild, that.recommendationsChild);
+        eb.append(recommendationsAdult, that.recommendationsAdult);
+        eb.append(adultPetFromAge, that.adultPetFromAge);
+        return eb.isEquals();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(breed, recommendationsChild, recommendationsAdult, adultPetFromAge);
+        HashCodeBuilder hcb = new HashCodeBuilder();
+        hcb.append(breed)
+                .append(recommendationsChild)
+                .append(recommendationsAdult)
+                .append(adultPetFromAge);
+        return hcb.toHashCode();
     }
 }

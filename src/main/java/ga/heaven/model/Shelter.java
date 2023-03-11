@@ -1,6 +1,8 @@
 package ga.heaven.model;
 
 import lombok.*;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import javax.persistence.*;
 
@@ -22,23 +24,22 @@ public class Shelter { // Таблица: Приют
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Shelter shelter = (Shelter) o;
-
-        if (id != shelter.id) return false;
-        if (name != null ? !name.equals(shelter.name) : shelter.name != null) return false;
-        if (address != null ? !address.equals(shelter.address) : shelter.address != null) return false;
-        return locationMap != null ? locationMap.equals(shelter.locationMap) : shelter.locationMap == null;
+        if (!(o instanceof Shelter)) return false;
+        Shelter that = (Shelter) o;
+        EqualsBuilder eb = new EqualsBuilder();
+        eb.append(name, that.name);
+        eb.append(address, that.address);
+        eb.append(locationMap, that.locationMap);
+        return eb.isEquals();
     }
 
     @Override
     public int hashCode() {
-        int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (address != null ? address.hashCode() : 0);
-        result = 31 * result + (locationMap != null ? locationMap.hashCode() : 0);
-        return result;
+        HashCodeBuilder hcb = new HashCodeBuilder();
+        hcb.append(name);
+        hcb.append(address);
+        hcb.append(locationMap);
+        return hcb.toHashCode();
     }
 
 }
