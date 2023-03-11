@@ -26,8 +26,6 @@ public class CustomerService {
         return this.customerRepository.findCustomerByChatId(chatId).isPresent();
     }
     
-    
-    
     public Customer createCustomer(Customer customer) {
         return customerRepository.save(customer);
     }
@@ -38,11 +36,6 @@ public class CustomerService {
         return customerRepository.save(customerRecord);
     }
 
-    /*
-    private Customer getCustomerById(Long id) {
-        return customerRepository.findCustomerById(id).orElse(null);
-    }
-    */
     public Customer updateCustomer(Customer customer) {
         if (findCustomerById(customer.getId()) == null) {
             return null;
