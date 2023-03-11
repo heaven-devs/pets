@@ -65,13 +65,6 @@ public class AppLogicService {
         msgService.sendMsg(chatId, SHELTER_CHOOSE_MSG, kbMarkup);
     }
 
-    private void createNewCustomer(Long chatId) {
-        Customer customer = customerService.createCustomer(chatId);
-        CustomerContext customerContext = customerContextService.create(customer);
-        customer.setCustomerContext(customerContext);
-        customerService.updateCustomer(customer);
-    }
-
     public void volunteerRequest(Long chatId) {
         //msgService.sendMsg(inputMessage.chat().id(), "ok");
 //        volunteerRepository.findById(3L).ifPresent(volunteer -> msgService.sendMsg(inputMessage.chat().id(), volunteer.getShelters().toString()));
@@ -80,12 +73,12 @@ public class AppLogicService {
         msgService.sendMsg(chatId, s.getVolunteers().stream()
                 .map(v -> v.getName())
                 .collect(Collectors.toList()).toString());
-
     }
 
     public void sendDatingRules(Long chatId) {
         sendMultipurpose(chatId, DATING_RULES_FIELD, DATING_RULES_NOT_FOUND);
     }
+
     public void sendDocuments(Long chatId) {
         sendMultipurpose(chatId, DOCUMENTS_FIELD, DOCUMENTS_NOT_FOUND);
     }
@@ -93,6 +86,7 @@ public class AppLogicService {
     public void sendTransportRules(Long chatId) {
         sendMultipurpose(chatId, TRANSPORT_FIELD, TRANSPORT_NOT_FOUND);
     }
+
     public void sendComfortPet(Long chatId) {
         sendMultipurpose(chatId, COMFORT_PET_FIELD, COMFORT_PET_NOT_FOUND);
     }
@@ -100,6 +94,7 @@ public class AppLogicService {
     public void sendComfortDog(Long chatId) {
         sendMultipurpose(chatId, COMFORT_DOG_FIELD, COMFORT_DOG_NOT_FOUND);
     }
+
     public void sendComfortHandicapped(Long chatId) {
         sendMultipurpose(chatId, COMFORT_HANDICAPPED_FIELD, COMFORT_HANDICAPPED_NOT_FOUND);
     }
@@ -115,8 +110,6 @@ public class AppLogicService {
     public void sendReasonsRefusal(Long chatId) {
         sendMultipurpose(chatId, REASONS_REFUSAL_FIELD, REASONS_REFUSAL_NOT_FOUND);
     }
-
-
 
     private void sendMultipurpose(Long chatId, String areaField, String notFoundMsg) {
         Info info = infoService.findInfoByArea(areaField);
