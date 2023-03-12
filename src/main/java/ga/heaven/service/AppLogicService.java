@@ -2,9 +2,7 @@ package ga.heaven.service;
 
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
-import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import ga.heaven.model.*;
-import com.pengrad.telegrambot.model.Message;
 import ga.heaven.repository.ShelterRepository;
 import ga.heaven.repository.VolunteerRepository;
 import org.slf4j.Logger;
@@ -24,13 +22,15 @@ public class AppLogicService {
     private final MsgService msgService;
     private final VolunteerRepository volunteerRepository;
     private final ShelterRepository shelterRepository;
+    private final ShelterService shelterService;
 
-    public AppLogicService(InfoService infoService, CustomerService customerService, MsgService msgService, VolunteerRepository volunteerRepository, ShelterRepository shelterRepository) {
+    public AppLogicService(InfoService infoService, CustomerService customerService, MsgService msgService, VolunteerRepository volunteerRepository, ShelterRepository shelterRepository, ShelterService shelterService) {
         this.infoService = infoService;
         this.customerService = customerService;
         this.msgService = msgService;
         this.volunteerRepository = volunteerRepository;
         this.shelterRepository = shelterRepository;
+        this.shelterService = shelterService;
     }
     
     /*public void sendDatingRules(Long chatId) {
@@ -44,7 +44,7 @@ public class AppLogicService {
     
     public void initConversation(Long chatId) {
         if (!customerService.isPresent(chatId)) {
-            msgService.sendMsg(chatId,infoService.findInfoByArea(COMMON_INFO_FIELD).getInstructions());
+            msgService.sendMsg(chatId, infoService.findInfoByArea(COMMON_INFO_FIELD).getInstructions());
             customerService.createCustomer(chatId);
         }
 
@@ -52,16 +52,10 @@ public class AppLogicService {
                 SHELTER1_CMD, SHELTER2_CMD)
                 .resizeKeyboard(true)
                 .selective(true); */
-
         InlineKeyboardMarkup kbMarkup = new InlineKeyboardMarkup();
-
-        InlineKeyboardButton kb1 = new InlineKeyboardButton(SHELTER1_CMD);
-        InlineKeyboardButton kb2 = new InlineKeyboardButton(SHELTER2_CMD);
-
-        kb1.callbackData(kb1.text());
-        kbMarkup.addRow(kb1);
-        kb2.callbackData(kb2.text());
-        kbMarkup.addRow(kb2);
+        shelterService.findAll().forEach(shelter -> {
+            kbMarkup.addRow(new InlineKeyboardButton(shelter.getName()).callbackData("/shelter/"+shelter.getId()));
+        });
         msgService.sendMsg(chatId, SHELTER_CHOOSE_MSG, kbMarkup);
     }
 
@@ -73,6 +67,7 @@ public class AppLogicService {
         msgService.sendMsg(chatId, s.getVolunteers().stream()
                 .map(v -> v.getName())
                 .collect(Collectors.toList()).toString());
+
     }
 
     public void sendDatingRules(Long chatId) {
@@ -110,6 +105,7 @@ public class AppLogicService {
     public void sendReasonsRefusal(Long chatId) {
         sendMultipurpose(chatId, REASONS_REFUSAL_FIELD, REASONS_REFUSAL_NOT_FOUND);
     }
+
 
     private void sendMultipurpose(Long chatId, String areaField, String notFoundMsg) {
         Info info = infoService.findInfoByArea(areaField);
