@@ -2,6 +2,7 @@ package ga.heaven.service;
 
 import com.pengrad.telegrambot.model.CallbackQuery;
 import com.pengrad.telegrambot.model.Message;
+import ga.heaven.model.Customer;
 import ga.heaven.model.CustomerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,17 +22,15 @@ public class CmdSelectorService {
     private final VolunteerSelectorService volunteerSelectorService;
     private final ReportSelectorService reportSelectorService;
     private final ShelterService shelterService;
-    private final CustomerContextService customerContextService;
     private final CustomerService customerService;
     
-    public CmdSelectorService(MsgService msgService, AppLogicService appLogicService, PetSelectorService petSelectorService, VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService, ShelterService shelterService, CustomerContextService customerContextService, CustomerService customerService) {
+    public CmdSelectorService(MsgService msgService, AppLogicService appLogicService, PetSelectorService petSelectorService, VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService, ShelterService shelterService, CustomerService customerService) {
         this.msgService = msgService;
         this.appLogicService = appLogicService;
         this.petSelectorService = petSelectorService;
         this.volunteerSelectorService = volunteerSelectorService;
         this.reportSelectorService = reportSelectorService;
         this.shelterService = shelterService;
-        this.customerContextService = customerContextService;
         this.customerService = customerService;
     }
     
@@ -83,9 +82,9 @@ public class CmdSelectorService {
                                 + " selected."
                 );
                 msgService.deleteMsg(cbQuery.message().chat().id(), cbQuery.message().messageId());
-                CustomerContext context = customerContextService.findCustomerContextByCustomer(customerService.findCustomerByChatId(cbQuery.message().chat().id()));
-                context.setShelterId(Long.valueOf(matcher.group(2)));
-                customerContextService.update(context);
+                Customer customer = customerService.findCustomerByChatId(cbQuery.message().chat().id());
+                customer.getCustomerContext().setShelterId(Long.valueOf(matcher.group(2)));
+                customerService.updateCustomer(customer);
             } else if (Pattern.compile("^/([^/]*)$").matcher(cbQuery.data()).matches()) {
                 LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", cbQuery);
                 petSelectorService.switchCmd(cbQuery.message().chat().id(), cbQuery.data());

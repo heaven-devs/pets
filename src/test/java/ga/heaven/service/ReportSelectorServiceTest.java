@@ -56,7 +56,7 @@ public class ReportSelectorServiceTest {
     @BeforeEach
     private void initialTest() {
         expectedCustomer = new Customer(1L, 777_777_777L, "surname", "name", "secondName", "phone", "address",
-                new CustomerContext(1L, FREE, 1L));
+                new CustomerContext(1L, FREE, 1L, 1L));
         expectedNonePetsOfCustomer = new ArrayList<>();
         expectedOnePetOfCustomer = new ArrayList<>(expectedNonePetsOfCustomer);
         expectedOnePetOfCustomer.add(new Pet(1L, expectedCustomer));
@@ -229,9 +229,7 @@ public class ReportSelectorServiceTest {
         try {
             json = Files.readString(
                     Paths.get(TelegramBotUpdatesListenerTest.class.getResource(resourceFile).toURI()));
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        } catch (URISyntaxException e) {
+        } catch (IOException | URISyntaxException e) {
             logger.error(e.getMessage());
         }
         return json;

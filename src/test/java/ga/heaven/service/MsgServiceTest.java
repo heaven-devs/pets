@@ -47,7 +47,7 @@ public class MsgServiceTest {
         expectedCustomer.setId(1L);
         expectedCustomer.setChatId(expectedChatId);
         expectedCustomer.setName("Ivan");
-        expectedCustomer.setCustomerContext(new CustomerContext(1L, CustomerContext.Context.FREE, 2L));
+        expectedCustomer.setCustomerContext(new CustomerContext(1L, CustomerContext.Context.FREE, 2L, 1L));
     }
 
     @Test
@@ -95,9 +95,7 @@ public class MsgServiceTest {
         try {
             json = Files.readString(
                     Paths.get(TelegramBotUpdatesListenerTest.class.getResource(jsonFile).toURI()));
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        } catch (URISyntaxException e) {
+        } catch (IOException | URISyntaxException e) {
             logger.error(e.getMessage());
         }
         return BotUtils.fromJson(json.replace("%command%", command), Update.class);

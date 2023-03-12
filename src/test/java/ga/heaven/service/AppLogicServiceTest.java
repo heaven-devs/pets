@@ -41,6 +41,8 @@ public class AppLogicServiceTest {
     @Mock
     private CustomerService customerService;
     @Mock
+    private ShelterService shelterService;
+    @Mock
     private MsgService msgService;
 
     private Info expectedInfo;
@@ -57,7 +59,7 @@ public class AppLogicServiceTest {
         expectedCustomer.setId(1L);
         expectedCustomer.setChatId(expectedChatId);
         expectedCustomer.setName("Ivan");
-        expectedCustomer.setCustomerContext(new CustomerContext(1L, FREE, 2L));
+        expectedCustomer.setCustomerContext(new CustomerContext(1L, FREE, 2L, 1L));
     }
 
     @Test
@@ -118,12 +120,6 @@ public class AppLogicServiceTest {
     @Test
     public void handleInitConversationForExistingUser() {
         InlineKeyboardMarkup expectedKbMarkup = new InlineKeyboardMarkup();
-        InlineKeyboardButton kb1 = new InlineKeyboardButton(SHELTER1_CMD);
-        InlineKeyboardButton kb2 = new InlineKeyboardButton(SHELTER2_CMD);
-        kb1.callbackData(kb1.text());
-        expectedKbMarkup.addRow(kb1);
-        kb2.callbackData(kb2.text());
-        expectedKbMarkup.addRow(kb2);
 
         when(customerService.isPresent(expectedChatId)).thenReturn(true);
 
