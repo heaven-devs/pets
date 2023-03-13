@@ -20,10 +20,10 @@ public class Breed {
     private long id;
 
     private String breed; // порода питомца (key field)
-    private String recommendationsChild; // рекомендации по уходу за щенком
-    private String recommendationsAdult; // рекомендации по уходу за взрослой собакой
+    private String recommendationsChild; // рекомендации по уходу за детенышем
+    private String recommendationsAdult; // рекомендации по уходу за взрослой особью
     
-    private int adultPetFromAge; // ≥ возраст взрослой собаки (признак взрослой собаки, если больше этого значения)
+    private int adultPetFromAge; // ≥ возраст взрослой особи (признак взрослой особи, если больше этого значения)
 
     @Override
     public boolean equals(Object o) {
