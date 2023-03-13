@@ -16,6 +16,8 @@ import static ga.heaven.configuration.Constants.*;
 @Service
 public class CmdSelectorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CmdSelectorService.class);
+    private static final String DYNAMIC_ENDPOTINT_REGEXP = "^/(.*)/(.*)[0-9]*";
+    private static final String STATIC_ENDPOINT_REGEXP = "^/([^/]*)$";
     private final MsgService msgService;
     private final AppLogicService appLogicService;
     private final PetSelectorService petSelectorService;
@@ -45,10 +47,10 @@ public class CmdSelectorService {
                 && (inputMessage.chat() != null)
                 && (inputMessage.chat().id() != null)
         ) {
-            if (Pattern.compile("^/(.*)/(.*)[0-9]*").matcher(inputMessage.text()).matches()) {
+            if (Pattern.compile(DYNAMIC_ENDPOTINT_REGEXP).matcher(inputMessage.text()).matches()) {
                 LOGGER.debug("Dynamic endpoint message\n{}\nsent to: switchDynCmd methods", inputMessage);
                 
-            } else if (Pattern.compile("^/([^/]*)$").matcher(inputMessage.text()).matches()) {
+            } else if (Pattern.compile(STATIC_ENDPOINT_REGEXP).matcher(inputMessage.text()).matches()) {
                 LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", inputMessage);
                 switch (inputMessage.text()) {
                     
@@ -74,7 +76,7 @@ public class CmdSelectorService {
                 && (cbQuery.message().chat() != null)
                 && (cbQuery.message().chat().id() != null)
         ) {
-            final Matcher matcher = Pattern.compile("^/(.*)/(.*)[0-9]*").matcher(cbQuery.data());
+            final Matcher matcher = Pattern.compile(DYNAMIC_ENDPOTINT_REGEXP).matcher(cbQuery.data());
             if (matcher.matches()) {
                 LOGGER.debug("Dynamic endpoint message\n{}\nsent to: switchDynCmd methods", cbQuery);
                 msgService.sendMsg(cbQuery.message().chat().id(),
@@ -85,7 +87,7 @@ public class CmdSelectorService {
                 Customer customer = customerService.findCustomerByChatId(cbQuery.message().chat().id());
                 customer.getCustomerContext().setShelterId(Long.valueOf(matcher.group(2)));
                 customerService.updateCustomer(customer);
-            } else if (Pattern.compile("^/([^/]*)$").matcher(cbQuery.data()).matches()) {
+            } else if (Pattern.compile(STATIC_ENDPOINT_REGEXP).matcher(cbQuery.data()).matches()) {
                 LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", cbQuery);
                 petSelectorService.switchCmd(cbQuery.message().chat().id(), cbQuery.data());
                 volunteerSelectorService.switchCmd(cbQuery.message().chat().id(), cbQuery.data());
