@@ -396,6 +396,5 @@ alter table customer_context
     add shelter_id bigint default null;
 
 -- changeset telion:3
-ALTER TABLE public.customer ADD CONSTRAINT FK_Customers FOREIGN KEY(customer_context_id) REFERENCES customer(id);
 ALTER TABLE public.customer_context DROP COLUMN customer_id;
 ALTER TABLE public.customer_context RENAME COLUMN pet_id TO current_pet_id;
