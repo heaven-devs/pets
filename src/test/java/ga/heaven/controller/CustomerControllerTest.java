@@ -60,6 +60,8 @@ class CustomerControllerTest {
     @MockBean
     private VolunteerService volunteerService;
 
+    private Gson gson = new Gson();
+
     private List<Customer> getInitialTestCustomers() {
         Customer customer1 = getTestCustomer(1L, "customerName1", "+71111111111");
         Customer customer2 = getTestCustomer(2L, "customerName2", "+72222222222");
@@ -90,7 +92,6 @@ class CustomerControllerTest {
                 .andReturn().getResponse();
         Type listOfMyClassObject = new TypeToken<ArrayList<Customer>>() {}.getType();
 
-        Gson gson = new Gson();
         List<Customer> actual = gson.fromJson(response.getContentAsString(), listOfMyClassObject);
         assertThat(actual).containsExactlyInAnyOrderElementsOf(customers);
         assertThat(actual).isEqualTo(customers);
@@ -110,7 +111,6 @@ class CustomerControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
 
-        Gson gson = new Gson();
         Customer actual = gson.fromJson(response.getContentAsString(), Customer.class);
         assertThat(actual).isEqualTo(customer);
     }
@@ -133,7 +133,6 @@ class CustomerControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(expectedCustomer.getId()))
                 .andReturn().getResponse();
-        Gson gson = new Gson();
         Customer actual = gson.fromJson(response.getContentAsString(), expectedCustomer.getClass());
         assertThat(actual).isEqualTo(expectedCustomer);
     }
@@ -170,7 +169,6 @@ class CustomerControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(expectedCustomer.getId()))
                 .andReturn().getResponse();
-        Gson gson = new Gson();
         Customer actual = gson.fromJson(response.getContentAsString(), expectedCustomer.getClass());
         assertThat(actual).isEqualTo(expectedCustomer);
     }
@@ -193,7 +191,6 @@ class CustomerControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        Gson gson = new Gson();
         Customer actual = gson.fromJson(response.getContentAsString(), expectedCustomer.getClass());
         assertThat(actual).isNull();
     }
@@ -217,8 +214,6 @@ class CustomerControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
-
-        Gson gson = new Gson();
         Customer actual = gson.fromJson(response.getContentAsString(), Customer.class);
         assertThat(actual).isEqualTo(customer);
     }
