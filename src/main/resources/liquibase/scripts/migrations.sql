@@ -390,3 +390,11 @@ WHERE id = 1::bigint;
 UPDATE public.pet
 SET id_shelter = 2::bigint
 WHERE id = 3::bigint;
+
+-- changeset alrepin:9
+alter table customer_context
+    add shelter_id bigint default null;
+
+-- changeset telion:3
+ALTER TABLE public.customer_context DROP COLUMN customer_id;
+ALTER TABLE public.customer_context RENAME COLUMN pet_id TO current_pet_id;
