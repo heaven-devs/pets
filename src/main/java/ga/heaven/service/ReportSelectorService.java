@@ -177,12 +177,12 @@ public class ReportSelectorService {
         if (inputMessage.photo() != null && inputMessage.caption() != null) {
             responseText = ANSWER_REPORT_ACCEPTED;
             updateCustomerContext(FREE, 0);
-            savePhotoToDB();
+            //savePhotoToDB(inputMessage.photo());
 
         } else if (inputMessage.photo() != null) {
             responseText = ANSWER_REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED;
             updateCustomerContext(WAIT_REPORT);
-            savePhotoToDB();
+            //savePhotoToDB(inputMessage.photo());
 
         } else if (inputMessage.text() != null) {
             responseText = ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED;
@@ -207,7 +207,7 @@ public class ReportSelectorService {
         if(pet == null){
             throw new PetNotFoundException(petId);
         }
-        Path filePath =Path.of(String.valueOf(pet),petId + ". " + getExtension(file.getOriginalFilename()));
+        Path filePath = Path.of(String.valueOf(pet),petId + ". " + getExtension(file.getOriginalFilename()));
         Files.createDirectories(filePath.getParent());
         Files.deleteIfExists(filePath);
 
