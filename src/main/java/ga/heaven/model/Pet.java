@@ -7,7 +7,6 @@ import org.hibernate.Hibernate;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
 
 @NoArgsConstructor
@@ -49,9 +48,6 @@ public class Pet {
     @JoinColumn(name = "id_shelter")
     private Shelter shelter; // ссылка на приют питомца
 
-    @JsonIgnore
-    List<Report> reports;
-
     public Pet(Long id, Customer customer) {
         this.id = id;
         this.customer = customer;
@@ -68,5 +64,8 @@ public class Pet {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    public void setPet(Long petId) {
     }
 }
