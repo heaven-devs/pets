@@ -3,18 +3,22 @@ package ga.heaven.controller;
 import ga.heaven.model.Report;
 import ga.heaven.service.ReportService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 @RestController
@@ -62,7 +66,7 @@ public class ReportController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<Report> findReportById(@PathVariable Long id) {
-        Report report = reportService.findReportsById(id);
+        Report report = reportService.findReportById(id);
         if (report == null) {
             return ResponseEntity.notFound().build();
         }
@@ -131,6 +135,17 @@ public class ReportController {
         Report create = reportService.createReport(report);
         return ResponseEntity.ok(create);
     }
-    
+
+    @GetMapping(value = "/{id}/photo")
+    public void showPhoto(@PathVariable Long id, HttpServletResponse response) throws IOException {
+        Report report = reportService.findReportById(id);
+
+        response.setContentType("image/" + report.getMediaType());
+        OutputStream os = response.getOutputStream();
+        os.write(report.getPhoto());
+        os.flush();
+        os.close();
+    }
+
     
 }

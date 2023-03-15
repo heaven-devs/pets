@@ -1,41 +1,31 @@
 package ga.heaven.service;
 
+import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.model.File;
 import com.pengrad.telegrambot.model.Message;
-import ga.heaven.exception.FileIsTooBigException;
-import ga.heaven.exception.PetNotFoundException;
+import com.pengrad.telegrambot.model.PhotoSize;
+import com.pengrad.telegrambot.request.GetFile;
+import com.pengrad.telegrambot.response.GetFileResponse;
 import ga.heaven.model.Customer;
 import ga.heaven.model.CustomerContext;
 import ga.heaven.model.CustomerContext.Context;
 import ga.heaven.model.Pet;
+import ga.heaven.model.Report;
 import ga.heaven.repository.PetRepository;
-import org.apache.tomcat.util.http.fileupload.FileUploadException;
-import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
-import org.hibernate.annotations.NotFound;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.crossstore.ChangeSetPersister;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
-import org.webjars.NotFoundException;
+import org.springframework.util.StringUtils;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static ga.heaven.configuration.Constants.*;
 import static ga.heaven.configuration.ReportConstants.*;
 import static ga.heaven.model.CustomerContext.Context.*;
-import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
 @Service
 public class ReportSelectorService {
@@ -45,8 +35,8 @@ public class ReportSelectorService {
     private final ReportService reportService;
     private final CustomerService customerService;
     private final PetService petService;
+    private final TelegramBot telegramBot;
 
-    private final int fileSizeLimit = 300;
 
     private Message inputMessage;
     private Customer customer;
@@ -54,11 +44,12 @@ public class ReportSelectorService {
     private final PetRepository petRepository;
 
     public ReportSelectorService(MsgService msgService, ReportService reportService, CustomerService customerService, PetService petService,
-                                 PetRepository petRepository) {
+                                 TelegramBot telegramBot, PetRepository petRepository) {
         this.msgService = msgService;
         this.reportService = reportService;
         this.customerService = customerService;
         this.petService = petService;
+        this.telegramBot = telegramBot;
         this.petRepository = petRepository;
     }
 
@@ -80,22 +71,44 @@ public class ReportSelectorService {
 
     /**
      * метод запускается, если пользователь отправил команду "/submit_report" и отправляет ответ пользователю
-     * в зависимости от того сколько питомцев взял пользователь
+     * в зависимости от того сколько питомцев у пользователя, и по каким из них не сдан сегодня отчет.
      */
     private String processingSubmitReport() {
-        // todo: сделать проверку, сдавал ли пользователь сегодня отчет?
-
         List<Pet> customerPetList = petService.findPetsByCustomerOrderById(customer);
-        responseText = ANSWER_DONT_HAVE_PETS;
+        System.out.println("customerPetList = " + customerPetList);
+        if (customerPetList.isEmpty()) {
+            updateCustomerContext(FREE);
+            return ANSWER_DONT_HAVE_PETS;
+        }
 
-        if (customerPetList.size() == 1) {
-            responseText = ANSWER_ONE_PET;
-            updateCustomerContext(WAIT_REPORT, customerPetList.get(0).getId());
-        } else if (customerPetList.size() > 1) {
-            responseText = generateListOfCustomersPets(customerPetList);
+        List<Pet> customerPetListWithoutTodayReport = getPetsWithoutTodayReport();
+        if (customerPetListWithoutTodayReport.isEmpty()) {
+            responseText = ANSWER_NO_NEED_TO_REPORT;
+            updateCustomerContext(FREE);
+        } else if (customerPetListWithoutTodayReport.size() == 1) {
+            responseText = ANSWER_ONE_PET + "\"" + customerPetListWithoutTodayReport.get(0).getName() + "\"";
+            updateCustomerContext(WAIT_REPORT, customerPetListWithoutTodayReport.get(0).getId());
+        } else {
+            responseText = generateListOfCustomersPets(customerPetListWithoutTodayReport);
             updateCustomerContext(WAIT_PET_ID, 0);
         }
         return responseText;
+    }
+
+    /**
+     * Метод ищет питомцев пользователя, для которых сегодня не был сдан отчет.
+     * @return список питомцев
+     */
+    private List<Pet> getPetsWithoutTodayReport() {
+        List<Pet> currentCustomerPetList = petService.findPetsByCustomer(customer);
+        List<Pet> petWithoutReportList = new ArrayList<>();
+        for (Pet pet : currentCustomerPetList) {
+            Report report = reportService.findTodayCompletedReportsByPetId(pet.getId());
+            if (null == report) {
+                petWithoutReportList.add(pet);
+            }
+        }
+        return petWithoutReportList;
     }
 
     /**
@@ -159,7 +172,14 @@ public class ReportSelectorService {
                 .collect(Collectors.toList());
 
         if (validIdList.contains(inputMessage.text())) {
-            responseText = ANSWER_SEND_REPORT_FOR_PET_WITH_ID + inputMessage.text();
+            Report report = reportService.findTodayNotCompletedReportsByPetId(Long.parseLong(inputMessage.text()));
+            if (report == null) {
+                responseText = ANSWER_SEND_REPORT_FOR_PET_WITH_ID + inputMessage.text();
+            } else if (report.getPetReport() == null) {
+                responseText = ANSWER_PHOTO_REPORT_ACCEPTED;
+            } else if (report.getPhoto() == null) {
+                responseText = ANSWER_TEST_REPORT_ACCEPTED;
+            }
             updateCustomerContext(WAIT_REPORT, Long.parseLong(inputMessage.text()));
         }
         return responseText;
@@ -171,22 +191,31 @@ public class ReportSelectorService {
      */
     private String processingMsgWaitReport() {
 
-        // todo: реализовать запись данных в таблицу report
+        Long petId = customer.getCustomerContext().getCurrentPetId();
+        Pet pet = petService.read(petId);
+        Report todayReport = reportService.findTodayNotCompletedReportsByPetId(petId);
+        Report report = (null == todayReport) ? new Report() : todayReport;
+        report.setPet(pet);
+        report.setDate(LocalDateTime.now());
+        responseText = ANSWER_WAIT_REPORT;
 
-        System.out.println("inputMessage.photo() = " + inputMessage.photo());
-        if (inputMessage.photo() != null && inputMessage.caption() != null) {
+        if (inputMessage.photo() != null) {
+            responseText = ANSWER_REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED;
+            savePhotoToDB(report);
+        }
+
+        if ((todayReport == null || todayReport.getPetReport() == null)
+                && (inputMessage.text() != null || (inputMessage.text() == null && inputMessage.caption() != null))) {
+            String textReport = (inputMessage.text() != null) ? inputMessage.text() : inputMessage.caption();
+            responseText = ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED;
+            report.setPetReport(textReport);
+            reportService.updateReport(report);
+        }
+
+        if ((inputMessage.photo() != null || (todayReport != null && todayReport.getPhoto() != null))
+                && (inputMessage.caption() != null || inputMessage.text() != null || (todayReport != null && todayReport.getPetReport() != null))) {
             responseText = ANSWER_REPORT_ACCEPTED;
             updateCustomerContext(FREE, 0);
-            //savePhotoToDB(inputMessage.photo());
-
-        } else if (inputMessage.photo() != null) {
-            responseText = ANSWER_REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED;
-            updateCustomerContext(WAIT_REPORT);
-            //savePhotoToDB(inputMessage.photo());
-
-        } else if (inputMessage.text() != null) {
-            responseText = ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED;
-            updateCustomerContext(WAIT_REPORT);
         }
 
         return responseText;
@@ -195,68 +224,30 @@ public class ReportSelectorService {
     /**
      * Метод получает фото и записывает его в БД
      */
-    private void savePhotoToDB(Long petId, MultipartFile file) throws IOException {
-        // todo: получить фото от бота, разложить на байты, записать в базу. https://www.baeldung.com/java-download-file
+    private void savePhotoToDB(Report report) {
+        // todo: реализовать сохранение нескольких отправленных фото в отчет (добавить таблицу с фото)
 
-
-        if(file.getSize() > 1024 * fileSizeLimit){
-            throw new FileIsTooBigException(fileSizeLimit);
+        PhotoSize[] photoSizes = inputMessage.photo();
+        for (PhotoSize photoSize : photoSizes) {
+            if (photoSize.width() != 320) {
+                continue;
+            }
+            LOGGER.error("id: " + photoSize.fileId() + ", size: " + photoSize.fileSize() + ", add: " + photoSize.width());
+            GetFile getFile = new GetFile(photoSize.fileId());
+            GetFileResponse getFileResponse = telegramBot.execute(getFile);
+            if (getFileResponse.isOk()) {
+                File file = getFileResponse.file();
+                String extension = StringUtils.getFilenameExtension(file.filePath()); // todo: расширение в базу (media_type)
+                report.setMediaType(extension);
+                try {
+                    byte[] image = telegramBot.getFileContent(file); // todo: байты в базу (photo)
+                    report.setPhoto(image);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
-        Pet pet = petService.read(petId);
+        reportService.updateReport(report);
 
-        if(pet == null){
-            throw new PetNotFoundException(petId);
-        }
-        Path filePath = Path.of(String.valueOf(pet),petId + ". " + getExtension(file.getOriginalFilename()));
-        Files.createDirectories(filePath.getParent());
-        Files.deleteIfExists(filePath);
-
-        try(InputStream is = file.getInputStream();
-            OutputStream os = Files.newOutputStream(filePath, CREATE_NEW);
-            BufferedInputStream bis = new BufferedInputStream(is, 1024);
-            BufferedOutputStream bos = new BufferedOutputStream(os, 1024);
-        ){
-            bis.transferTo(bos);
-        }
-
-        Pet photo = findPhoto(petId);
-        photo.setPet(petId);
-        photo.setFilePath(filePath.toString());
-        photo.setFileSize(file.getSize());
-        photo.setMediaType(file.getContentType());
-        photo.setPhoto(generateImagePreview(filePath));
-
-        petRepository.save(photo);
     }
-
-    private byte[] generateImagePreview(Path filePath) throws IOException {
-        try(InputStream is = Files.newInputStream(filePath);
-            BufferedInputStream bis = new BufferedInputStream(is, 1024);
-            ByteArrayOutputStream bos = new ByteArrayOutputStream()
-        ){
-            BufferedImage image = ImageIO.read(bis);
-
-            int height = image.getHeight() / (image.getWidth() / 100);
-            BufferedImage preview = new BufferedImage(100, height, image.getType());
-            Graphics2D graphics = preview.createGraphics();
-            graphics.drawImage(image, 0, 0, 100, height, null);
-            graphics.dispose();
-
-            ImageIO.write(preview, getExtension(filePath.getFileName().toString()), bos);
-            return bos.toByteArray();
-        }
-    }
-    public Pet findPhoto(Long petId) {
-
-        return petRepository.findById(petId).orElse(new Pet());
-    }
-    private String getExtension(String fileName) {
-
-        return fileName.substring(fileName.lastIndexOf(".") + 1);
-    }
-
-
-
-
-
 }
