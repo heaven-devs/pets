@@ -46,6 +46,8 @@ public class ReportControllerTest {
     @InjectMocks
     private ReportController reportController;
 
+    private Gson gson = new Gson();
+
     @Test
     public void testFindAllReportFindAllReport() throws Exception{
         List <Report> reports = reportsForTest();
@@ -76,7 +78,6 @@ public class ReportControllerTest {
         response = mockMvc.perform(get("/report/" + report1.getId()))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        Gson gson = new Gson();
         actual = gson.fromJson(response.getContentAsString(), report1.getClass());
         assertThat(actual).isNull();
     }
@@ -104,7 +105,6 @@ public class ReportControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        Gson gson = new Gson();
         actual = gson.fromJson(response.getContentAsString(), report1.getClass());
         assertThat(actual).isNull();
     }

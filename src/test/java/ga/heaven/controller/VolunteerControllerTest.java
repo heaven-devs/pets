@@ -44,6 +44,8 @@ public class VolunteerControllerTest {
     @InjectMocks
     private VolunteerController volunteerController;
 
+    private Gson gson = new Gson();
+
     @Test
     public void testFindAllVolunteers() throws Exception {
         List <Volunteer> volunteers = volunteersForTest();
@@ -74,7 +76,6 @@ public class VolunteerControllerTest {
         response = mockMvc.perform(get("/volunteer/" + expected.getId()))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        Gson gson = new Gson();
         actual = gson.fromJson(response.getContentAsString(), expected.getClass());
         assertThat(actual).isNull();
     }
@@ -185,7 +186,6 @@ public class VolunteerControllerTest {
                 .andExpect(jsonPath("$.phone").value(newPhone))
                 .andExpect(jsonPath("$.address").value(newAddress))
                 .andReturn().getResponse();
-        Gson gson = new Gson();
         Volunteer actual = gson.fromJson(response.getContentAsString(), volunteer.getClass());
         Assertions.assertThat(actual).isEqualTo(volunteer);
 
@@ -197,7 +197,6 @@ public class VolunteerControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        gson = new Gson();
         actual = gson.fromJson(response.getContentAsString(), volunteer.getClass());
         assertThat(actual).isNull();
     }
@@ -226,7 +225,6 @@ public class VolunteerControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse();
-        Gson gson = new Gson();
         actual = gson.fromJson(response.getContentAsString(), expected.getClass());
         assertThat(actual).isNull();
     }

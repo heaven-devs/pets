@@ -5,6 +5,7 @@ import com.pengrad.telegrambot.model.request.Keyboard;
 import com.pengrad.telegrambot.model.request.ParseMode;
 import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import com.pengrad.telegrambot.request.AnswerCallbackQuery;
+import com.pengrad.telegrambot.request.DeleteMessage;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.BaseResponse;
 import com.pengrad.telegrambot.response.SendResponse;
@@ -33,6 +34,14 @@ public class MsgService {
                 .resizeKeyboard(true)
                 .selective(true);
     }*/
+    
+    public void deleteMsg(Long chatId, Integer msgId) {
+        DeleteMessage deleteMessage = new DeleteMessage(chatId, msgId);
+        BaseResponse deleteResponse = telegramBot.execute(deleteMessage);
+        if (!deleteResponse.isOk()) {
+            LOGGER.error(deleteResponse.description());
+        }
+    }
     
     public BaseResponse sendCallbackQueryResponse(String id) {
         return telegramBot.execute(new AnswerCallbackQuery(id));
