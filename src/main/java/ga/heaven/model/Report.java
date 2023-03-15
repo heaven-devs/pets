@@ -14,7 +14,9 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Report { // Таблица: Отчет (Report) (о питомце)
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // уникальный id
     private String petReport; // отчет текстовый: рацион, самочувствие, поведение питомца
 

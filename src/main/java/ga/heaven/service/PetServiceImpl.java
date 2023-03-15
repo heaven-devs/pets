@@ -70,10 +70,12 @@ public class PetServiceImpl implements PetService {
         return null;*/
     }
 
+    public List<Pet> findPetsByCustomer(Customer customer) {
+        return petRepository.findPetsByCustomer(customer);
+    }
+
     public List<Pet> findPetsByCustomerOrderById(Customer customer) {
         return petRepository.findPetsByCustomerOrderById(customer);
     }
-
-
 
 }
