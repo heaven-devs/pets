@@ -19,6 +19,8 @@ public class CustomerContext {
     private Context dialogContext;
     private Long currentPetId;
     private Long shelterId;
+    
+    private String lastOutMsg;
 
     public enum Context {
         FREE,

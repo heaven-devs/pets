@@ -59,7 +59,7 @@ public class AppLogicServiceTest {
         expectedCustomer.setId(1L);
         expectedCustomer.setChatId(expectedChatId);
         expectedCustomer.setName("Ivan");
-        expectedCustomer.setCustomerContext(new CustomerContext(1L, FREE, 2L, 1L));
+        expectedCustomer.setCustomerContext(new CustomerContext(1L, FREE, 2L, 1L, null));
     }
 
     @Test
