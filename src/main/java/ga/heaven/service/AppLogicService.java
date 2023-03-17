@@ -114,9 +114,9 @@ public class AppLogicService {
     private void sendMultipurpose(Long chatId, String areaField, String notFoundMsg) {
         Info info = infoService.findInfoByArea(areaField);
         if (info == null) {
-            msgService.sendMsg(chatId, notFoundMsg);
+            msgService.interactiveMsg(chatId,null, notFoundMsg);
         } else {
-            msgService.sendMsg(chatId, info.getInstructions());
+            msgService.interactiveMsg(chatId, null,info.getInstructions());
         }
     }
 }

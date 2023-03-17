@@ -62,7 +62,7 @@ public class CmdSelectorService {
                     
                     case START_CMD:
                         appLogicService.initConversation(inputMessage.chat().id());
-                        msgService.deleteMsg(inputMessage.chat().id(),inputMessage.messageId());
+                        msgService.deleteMsg(inputMessage.chat().id(), inputMessage.messageId());
                         return;
                     
                     default:
@@ -92,7 +92,7 @@ public class CmdSelectorService {
                     CustomerContext context = customer.getCustomerContext();
                     context.setShelterId(selectedShelter.getId());
                     customerService.updateCustomer(customer);
-    
+                    
                     kbMarkup = new InlineKeyboardMarkup();
                     
                     navigationService.findByParentId(1L).forEach(button -> {
@@ -107,32 +107,47 @@ public class CmdSelectorService {
                 }
             } else if (Pattern.compile(STATIC_ENDPOINT_REGEXP).matcher(cbQuery.data()).matches()) {
                 LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", cbQuery);
-    
+                
                 switch (cbQuery.data()) {
                     case "/shelters":
                         kbMarkup = new InlineKeyboardMarkup();
                         shelterService.findAll().forEach(shelter -> {
-                            kbMarkup.addRow(new InlineKeyboardButton(shelter.getName()).callbackData("/shelter/"+shelter.getId()));
+                            kbMarkup.addRow(new InlineKeyboardButton(shelter.getName()).callbackData("/shelter/" + shelter.getId()));
                         });
                         msgService.interactiveMsg(cbQuery.message().chat().id(),
                                 kbMarkup,
                                 null);
                         return;
-    
+                    case "/how-adopt":
+                        kbMarkup = new InlineKeyboardMarkup();
+                        Customer customer = customerService.findCustomerByChatId(cbQuery.message().chat().id());
+                        CustomerContext context = customer.getCustomerContext();
+                        
+                        navigationService.findByParentId(4L).forEach(button -> {
+                            if((button.getShelterId() == null) ||  (button.getShelterId().getId() == context.getShelterId())) {
+                                kbMarkup.addRow(new InlineKeyboardButton(button.getText()).callbackData(button.getEndpoint()));
+                            }
+                        });
+                        
+                        msgService.interactiveMsg(cbQuery.message().chat().id(),
+                                kbMarkup,
+                                null);
+                        return;
                     case "/shelter":
                         kbMarkup = new InlineKeyboardMarkup();
-    
+                        
                         navigationService.findByParentId(3L).forEach(button -> {
+//                            button.getShelterId()
                             kbMarkup.addRow(new InlineKeyboardButton(button.getText()).callbackData(button.getEndpoint()));
                         });
                         msgService.interactiveMsg(cbQuery.message().chat().id(),
                                 kbMarkup,
                                 null);
                         return;
-                        
+                    
                     case "/main":
                         kbMarkup = new InlineKeyboardMarkup();
-    
+                        
                         navigationService.findByParentId(1L).forEach(button -> {
                             kbMarkup.addRow(new InlineKeyboardButton(button.getText()).callbackData(button.getEndpoint()));
                         });
