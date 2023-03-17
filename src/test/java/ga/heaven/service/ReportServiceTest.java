@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+
 
 @ExtendWith(MockitoExtension.class)
 public class ReportServiceTest {
@@ -92,14 +94,14 @@ public class ReportServiceTest {
         when(reportRepository.findById(1L)).thenReturn(Optional.of(testReport()));
         when(reportRepository.findById(5L)).thenReturn(Optional.of(testReportWrong()));
 
-        Report actual = reportService.findReportsById(1L);
+        Report actual = reportService.findReportById(1L);
 
         Assertions.assertThat(actual.getId()).isEqualTo(testReport().getId());
         Assertions.assertThat(actual.getPetReport()).isEqualTo(testReport().getPetReport());
         Assertions.assertThat(actual.getPhoto()).isEqualTo(testReport().getPhoto());
         Assertions.assertThat(actual.getDate()).isEqualTo(testReport().getDate());
 
-        Assertions.assertThat(reportService.findReportsById(5L).getId()).isNotEqualTo(testReport().getId());
+        Assertions.assertThat(reportService.findReportById(5L).getId()).isNotEqualTo(testReport().getId());
     }
 
     @Test
@@ -114,8 +116,21 @@ public class ReportServiceTest {
         expected = report;
         actual = reportService.deleteReport(1L);
         Assertions.assertThat(actual).isEqualTo(expected);
+    }
 
+    @Test
+    public void  createReport(){
+        when(reportRepository.save(testReport())).thenReturn(testReport());
+        assertThat(reportService.createReport(testReport())).isEqualTo(testReport());
+    }
 
+    @Test
+    public void updateReport(){
+        Report expected = createTestReport(1L, "test1", LocalDate.of(2023, 3, 5).atStartOfDay(), "12.jpeg", 1000L, null, null, null);
+        when(reportRepository.findById(expected.getId())).thenReturn(Optional.ofNullable(expected));
+        when(reportRepository.save(expected)).thenReturn(expected);
+        Report actual = reportService.updateReport(expected);
+        assertThat(actual).isEqualTo(expected);
     }
 
 }
