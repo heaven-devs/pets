@@ -7,11 +7,9 @@ import com.pengrad.telegrambot.model.PhotoSize;
 import com.pengrad.telegrambot.request.GetFile;
 import com.pengrad.telegrambot.response.GetFileResponse;
 import ga.heaven.model.Customer;
-import ga.heaven.model.CustomerContext;
 import ga.heaven.model.CustomerContext.Context;
 import ga.heaven.model.Pet;
 import ga.heaven.model.Report;
-import ga.heaven.repository.PetRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -31,26 +29,25 @@ import static ga.heaven.model.CustomerContext.Context.*;
 public class ReportSelectorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportSelectorService.class);
 
+    private final AppLogicService appLogicService;
     private final MsgService msgService;
     private final ReportService reportService;
     private final CustomerService customerService;
     private final PetService petService;
     private final TelegramBot telegramBot;
 
-
     private Message inputMessage;
     private Customer customer;
     private String responseText;
-    private final PetRepository petRepository;
 
-    public ReportSelectorService(MsgService msgService, ReportService reportService, CustomerService customerService, PetService petService,
-                                 TelegramBot telegramBot, PetRepository petRepository) {
+    public ReportSelectorService(AppLogicService appLogicService, MsgService msgService, ReportService reportService, CustomerService customerService, PetService petService,
+                                 TelegramBot telegramBot) {
+        this.appLogicService = appLogicService;
         this.msgService = msgService;
         this.reportService = reportService;
         this.customerService = customerService;
         this.petService = petService;
         this.telegramBot = telegramBot;
-        this.petRepository = petRepository;
     }
 
     /**
@@ -77,20 +74,21 @@ public class ReportSelectorService {
         List<Pet> customerPetList = petService.findPetsByCustomerOrderById(customer);
         System.out.println("customerPetList = " + customerPetList);
         if (customerPetList.isEmpty()) {
-            updateCustomerContext(FREE);
+            appLogicService.updateCustomerContext(customer, FREE);
             return ANSWER_DONT_HAVE_PETS;
         }
 
         List<Pet> customerPetListWithoutTodayReport = getPetsWithoutTodayReport();
         if (customerPetListWithoutTodayReport.isEmpty()) {
             responseText = ANSWER_NO_NEED_TO_REPORT;
-            updateCustomerContext(FREE);
+            appLogicService.updateCustomerContext(customer, FREE);
         } else if (customerPetListWithoutTodayReport.size() == 1) {
-            responseText = ANSWER_ONE_PET + "\"" + customerPetListWithoutTodayReport.get(0).getName() + "\"";
-            updateCustomerContext(WAIT_REPORT, customerPetListWithoutTodayReport.get(0).getId());
+            Pet pet = customerPetListWithoutTodayReport.get(0);
+            responseText = ANSWER_ONE_PET + "\"" + pet.getName() + "\"";
+            appLogicService.updateCustomerContext(customer, WAIT_REPORT, pet.getId());
         } else {
             responseText = generateListOfCustomersPets(customerPetListWithoutTodayReport);
-            updateCustomerContext(WAIT_PET_ID, 0);
+            appLogicService.updateCustomerContext(customer, WAIT_PET_ID, 0);
         }
         return responseText;
     }
@@ -109,28 +107,6 @@ public class ReportSelectorService {
             }
         }
         return petWithoutReportList;
-    }
-
-    /**
-     * Метод обновляет значения полей "context" и "petId"
-     * @param context новое значение поля "context"
-     * @param petId новое значение поля "petId"
-     */
-    private void updateCustomerContext(Context context, long petId) {
-        CustomerContext customerContext = customer.getCustomerContext();
-        customerContext.setCurrentPetId(petId);
-        customerService.updateCustomer(customer);
-        updateCustomerContext(context);
-    }
-
-    /**
-     * Метод обновляет значения полей "context"
-     * @param context новое значение поля "context"
-     */
-    private void updateCustomerContext(Context context) {
-        CustomerContext customerContext = customer.getCustomerContext();
-        customerContext.setDialogContext(context);
-        customerService.updateCustomer(customer);
     }
 
     /**
@@ -180,7 +156,7 @@ public class ReportSelectorService {
             } else if (report.getPhoto() == null) {
                 responseText = ANSWER_TEST_REPORT_ACCEPTED;
             }
-            updateCustomerContext(WAIT_REPORT, Long.parseLong(inputMessage.text()));
+            appLogicService.updateCustomerContext(customer, WAIT_REPORT, Long.parseLong(inputMessage.text()));
         }
         return responseText;
     }
@@ -215,7 +191,7 @@ public class ReportSelectorService {
         if ((inputMessage.photo() != null || (todayReport != null && todayReport.getPhoto() != null))
                 && (inputMessage.caption() != null || inputMessage.text() != null || (todayReport != null && todayReport.getPetReport() != null))) {
             responseText = ANSWER_REPORT_ACCEPTED;
-            updateCustomerContext(FREE, 0);
+            appLogicService.updateCustomerContext(customer, FREE, 0);
         }
 
         return responseText;

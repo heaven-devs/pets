@@ -3,7 +3,6 @@ package ga.heaven.service;
 import com.pengrad.telegrambot.model.CallbackQuery;
 import com.pengrad.telegrambot.model.Message;
 import ga.heaven.model.Customer;
-import ga.heaven.model.CustomerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -25,8 +24,9 @@ public class CmdSelectorService {
     private final ReportSelectorService reportSelectorService;
     private final ShelterService shelterService;
     private final CustomerService customerService;
+    private final ShelterSelectorService shelterSelectorService;
     
-    public CmdSelectorService(MsgService msgService, AppLogicService appLogicService, PetSelectorService petSelectorService, VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService, ShelterService shelterService, CustomerService customerService) {
+    public CmdSelectorService(MsgService msgService, AppLogicService appLogicService, PetSelectorService petSelectorService, VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService, ShelterService shelterService, CustomerService customerService, ShelterSelectorService shelterSelectorService) {
         this.msgService = msgService;
         this.appLogicService = appLogicService;
         this.petSelectorService = petSelectorService;
@@ -34,6 +34,7 @@ public class CmdSelectorService {
         this.reportSelectorService = reportSelectorService;
         this.shelterService = shelterService;
         this.customerService = customerService;
+        this.shelterSelectorService = shelterSelectorService;
     }
     
     public void processingMsg(Message inputMessage) {
@@ -49,21 +50,26 @@ public class CmdSelectorService {
         ) {
             if (Pattern.compile(DYNAMIC_ENDPOTINT_REGEXP).matcher(inputMessage.text()).matches()) {
                 LOGGER.debug("Dynamic endpoint message\n{}\nsent to: switchDynCmd methods", inputMessage);
-                
+
             } else if (Pattern.compile(STATIC_ENDPOINT_REGEXP).matcher(inputMessage.text()).matches()) {
                 LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", inputMessage);
                 switch (inputMessage.text()) {
-                    
+
                     case START_CMD:
                         appLogicService.initConversation(inputMessage.chat().id());
                         return;
-                    
+
                     default:
                         break;
                 }
-                
+
+                shelterSelectorService.switchCmd(inputMessage);
                 petSelectorService.switchCmd(inputMessage);
                 volunteerSelectorService.switchCmd(inputMessage);
+            } else {
+                LOGGER.debug("Constant not command message\n{}\nsent to: switchText methods", inputMessage);
+                shelterSelectorService.switchText(inputMessage);
+
             }
         }
     }

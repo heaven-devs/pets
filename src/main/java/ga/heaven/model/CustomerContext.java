@@ -23,7 +23,10 @@ public class CustomerContext {
     public enum Context {
         FREE,
         WAIT_PET_ID,
-        WAIT_REPORT
+        WAIT_REPORT,
+        WAIT_CUSTOMER_NAME,
+        WAIT_CUSTOMER_PHONE,
+        WAIT_CUSTOMER_ADDRESS
     }
 
     @Override
