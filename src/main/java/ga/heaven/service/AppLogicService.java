@@ -45,19 +45,23 @@ public class AppLogicService {
     
     public void initConversation(Long chatId) {
         if (!customerService.isPresent(chatId)) {
-            msgService.sendMsg(chatId, infoService.findInfoByArea(COMMON_INFO_FIELD).getInstructions());
+            msgService.sendMsg(chatId, infoService.findInfoByArea(COMMON_INFO_FIELD).getInstructions() );
             customerService.createCustomer(chatId);
         }
 
+        
+        
         /* ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup(
                 SHELTER1_CMD, SHELTER2_CMD)
                 .resizeKeyboard(true)
                 .selective(true); */
+        
         InlineKeyboardMarkup kbMarkup = new InlineKeyboardMarkup();
         shelterService.findAll().forEach(shelter -> {
             kbMarkup.addRow(new InlineKeyboardButton(shelter.getName()).callbackData("/shelter/"+shelter.getId()));
         });
-        msgService.sendMsg(chatId, SHELTER_CHOOSE_MSG, kbMarkup);
+        msgService.sendMsg(chatId, SHELTER_CHOOSE_MSG + " \n", kbMarkup);
+        
     }
 
     public void volunteerRequest(Long chatId) {
@@ -111,9 +115,9 @@ public class AppLogicService {
     public void sendMultipurpose(Long chatId, String areaField, String notFoundMsg) {
         Info info = infoService.findInfoByArea(areaField);
         if (info == null) {
-            msgService.sendMsg(chatId, notFoundMsg);
+            msgService.interactiveMsg(chatId,null, notFoundMsg);
         } else {
-            msgService.sendMsg(chatId, info.getInstructions());
+            msgService.interactiveMsg(chatId, null,info.getInstructions());
         }
     }
 

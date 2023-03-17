@@ -5,9 +5,8 @@ public interface Constants {
     /**
      * Commands
      */
+    String BASE_URL = "https://api.telegram.org/bot";
     String START_CMD = "/start";
-    String SHELTER1_CMD = "/dogs";
-    String SHELTER2_CMD = "/cats";
     String DATING_RULES_CMD = "/dating_rules";
     String VOLUNTEER_REQUEST_CMD = "/call_volunteer";
     String REPORT_SUBMIT_CMD = "/submit_report";

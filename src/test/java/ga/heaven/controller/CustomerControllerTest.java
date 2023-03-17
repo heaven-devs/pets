@@ -139,7 +139,7 @@ class CustomerControllerTest {
 
     @Test
     void updateCustomerPositive() throws Exception {
-        CustomerContext expectedCustomerContext = new CustomerContext(1L, FREE, null, null);
+        CustomerContext expectedCustomerContext = new CustomerContext(1L, FREE, null, null,null);
         Customer expectedCustomer = new Customer(1L, 333_333_333L, "Petrov", "Ivan", "Frolovich", "+71111111111", "address", expectedCustomerContext);
 
         when(customerRepository.findCustomerById(expectedCustomer.getId())).thenReturn(Optional.of(expectedCustomer));
