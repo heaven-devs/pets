@@ -111,7 +111,7 @@ public class AppLogicService {
     }
 
 
-    private void sendMultipurpose(Long chatId, String areaField, String notFoundMsg) {
+    protected void sendMultipurpose(Long chatId, String areaField, String notFoundMsg) {
         Info info = infoService.findInfoByArea(areaField);
         if (info == null) {
             msgService.interactiveMsg(chatId,null, notFoundMsg);
