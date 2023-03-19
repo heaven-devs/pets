@@ -21,8 +21,10 @@ public class Navigation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long parentId;
+    private Long levelView;
+    private Long levelReference;
     private String endpoint;
+    private String rules;
     private String text;
     @JsonIgnore
     @ManyToOne
