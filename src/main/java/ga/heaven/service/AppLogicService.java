@@ -23,14 +23,16 @@ public class AppLogicService {
     private final VolunteerRepository volunteerRepository;
     private final ShelterRepository shelterRepository;
     private final ShelterService shelterService;
+    private final NavigationService navigationService;
 
-    public AppLogicService(InfoService infoService, CustomerService customerService, MsgService msgService, VolunteerRepository volunteerRepository, ShelterRepository shelterRepository, ShelterService shelterService) {
+    public AppLogicService(InfoService infoService, CustomerService customerService, MsgService msgService, VolunteerRepository volunteerRepository, ShelterRepository shelterRepository, ShelterService shelterService, NavigationService navigationService) {
         this.infoService = infoService;
         this.customerService = customerService;
         this.msgService = msgService;
         this.volunteerRepository = volunteerRepository;
         this.shelterRepository = shelterRepository;
         this.shelterService = shelterService;
+        this.navigationService = navigationService;
     }
     
     /*public void sendDatingRules(Long chatId) {
@@ -116,10 +118,13 @@ public class AppLogicService {
 
     private void sendMultipurpose(Long chatId, String areaField, String notFoundMsg) {
         Info info = infoService.findInfoByArea(areaField);
+        MessageTemplate tmp = navigationService.prepareMessageTemplate(chatId, 4L);
         if (info == null) {
-            msgService.interactiveMsg(chatId,null, notFoundMsg);
+            tmp.setTextBody(notFoundMsg);
         } else {
-            msgService.interactiveMsg(chatId, null,info.getInstructions());
+            tmp.setTextBody(info.getInstructions());
         }
+        
+        msgService.interactiveMsg(chatId, null,tmp.getText());
     }
 }

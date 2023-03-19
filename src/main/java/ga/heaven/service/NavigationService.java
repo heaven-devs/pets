@@ -1,11 +1,9 @@
 package ga.heaven.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
-import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import ga.heaven.model.Customer;
 import ga.heaven.model.CustomerContext;
+import ga.heaven.model.MessageTemplate;
 import ga.heaven.model.Navigation;
 import ga.heaven.repository.NavigationRepository;
 import ga.heaven.repository.ShelterRepository;
@@ -21,10 +19,12 @@ import java.util.Map;
 public class NavigationService {
     private final NavigationRepository navigationRepository;
     private final CustomerService customerService;
-
-    public NavigationService(ShelterRepository shelterRepository, NavigationRepository navigationRepository, CustomerService customerService) {
+    
+    private final ShelterService shelterService;
+    public NavigationService(ShelterRepository shelterRepository, NavigationRepository navigationRepository, CustomerService customerService, ShelterService shelterService) {
         this.navigationRepository = navigationRepository;
         this.customerService = customerService;
+        this.shelterService = shelterService;
     }
 
     public List<Navigation> findAll() {
@@ -41,21 +41,15 @@ public class NavigationService {
     }
     
     
-    public Long getMenuLevel(String endpoint) {
-        return navigationRepository.getFirstByEndpointIs(endpoint).getLevelReference();
-    }
-    
-    public InlineKeyboardMarkup getButtons(Long chatId, Long level) {
+    public MessageTemplate prepareMessageTemplate(Long chatId, Long level) {
         Customer customer = customerService.findCustomerByChatId(chatId);
         CustomerContext context = customer.getCustomerContext();
+        MessageTemplate msgTmp = new MessageTemplate();
+        msgTmp.setTextMenuCaption(this.findById(level).getText());
+        msgTmp.setTextStatus(shelterService.findById(context.getShelterId()).getName());
         
-        
-        InlineKeyboardMarkup kbMarkup;
-        kbMarkup = new InlineKeyboardMarkup();
         this.findByLevelView(level).forEach(button -> {
-//            if ((button.getShelterId() == null) || (button.getShelterId().getId() == context.getShelterId())) {
             JsonLogic jsonLogic = new JsonLogic();
-            //boolean enabled = true;
             Boolean enabled;
             try {
                 String rulesJson = button.getRules();
@@ -65,17 +59,15 @@ public class NavigationService {
                 Map<String, String> data = new HashMap<>();
                 data.put("shelterId", context.getShelterId().toString());
                 data.put("dialogContext", context.getDialogContext().toString());
-                
                 enabled = (Boolean) jsonLogic.apply(rulesJson,data);
-                //enabled = (boolean) jsonLogic.apply(button.getRules(),context);
             } catch (JsonLogicException e) {
                 throw new RuntimeException(e);
             }
             if (enabled) {
-                kbMarkup.addRow(new InlineKeyboardButton(button.getText()).callbackData(button.getEndpoint()));
+                msgTmp.getKeyboard().addRow(new InlineKeyboardButton(button.getText()).callbackData(button.getEndpoint()));
             }
         });
-        return kbMarkup;
+        return msgTmp;
     }
     
 }

@@ -1,6 +1,11 @@
 package ga.heaven.configuration;
 
 public interface Constants {
+    /**
+     * Dynamic endpoints
+     */
+    String SHELTER_EPT = "shelter";
+    Long ENDPOINT_LIST = 0L;
     
     /**
      * Commands

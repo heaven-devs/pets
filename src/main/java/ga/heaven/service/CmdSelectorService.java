@@ -5,6 +5,7 @@ import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import ga.heaven.model.Customer;
 import ga.heaven.model.CustomerContext;
+import ga.heaven.model.MessageTemplate;
 import ga.heaven.model.Shelter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static ga.heaven.configuration.Constants.START_CMD;
+import static ga.heaven.configuration.Constants.*;
 
 @Service
 public class CmdSelectorService {
@@ -43,6 +44,7 @@ public class CmdSelectorService {
     
     public void processingMsg(Message inputMessage) {
         InlineKeyboardMarkup kbMarkup;
+        MessageTemplate messageTemplate;
         String caption;
         if (inputMessage.text() != null || inputMessage.photo() != null) {
             LOGGER.debug("Message\n{}\nsent to: reportSelectorService.switchCmd", inputMessage);
@@ -56,44 +58,33 @@ public class CmdSelectorService {
             final Matcher matcher = Pattern.compile(DYNAMIC_ENDPOINT_REGEXP).matcher(inputMessage.text());
             if (matcher.matches()) {
                 LOGGER.debug("Dynamic endpoint message\n{}\nsent to: switchDynCmd methods", inputMessage);
-                if (Long.parseLong(matcher.group(2)) == 0) {
-                    switch (matcher.group(1)) {
-                        case "shelter":
-                            kbMarkup = new InlineKeyboardMarkup();
+                final String ENDPOINT_NAME = matcher.group(1);
+                final Long ENDPOINT_VALUE = Long.parseLong(matcher.group(2));
+                switch (ENDPOINT_NAME) {
+                    case SHELTER_EPT:
+                        if (ENDPOINT_VALUE.equals(ENDPOINT_LIST)) {
+                            messageTemplate = navigationService.prepareMessageTemplate(inputMessage.chat().id(), 2L);
                             shelterService.findAll().forEach(shelter -> {
-                                kbMarkup.addRow(new InlineKeyboardButton(shelter.getName()).callbackData("/shelter/" + shelter.getId()));
+                                messageTemplate.getKeyboard().addRow(new InlineKeyboardButton(shelter.getName()).callbackData("/shelter/" + shelter.getId()));
                             });
-                            
-                            caption = navigationService.findById(2L).getText() + ":";
-                            
-                            msgService.interactiveMsg(inputMessage.chat().id(),
-                                    kbMarkup,
-                                    caption);
-                            return;
-                    }
-                } else {
-                    switch (matcher.group(1)) {
-                        case "shelter":
+    
+                            msgService.interactiveMsg(inputMessage.chat().id()
+                                    ,messageTemplate.getKeyboard()
+                                    ,messageTemplate.getText());
+                        } else {
                             Shelter selectedShelter = shelterService.findById(Long.valueOf(matcher.group(2)));
                             Customer customer = customerService.findCustomerByChatId(inputMessage.chat().id());
                             CustomerContext context = customer.getCustomerContext();
                             context.setShelterId(selectedShelter.getId());
                             customerService.updateCustomer(customer);
-                            
-                            kbMarkup = new InlineKeyboardMarkup();
-                            
-                            navigationService.findByLevelView(1L).forEach(button -> {
-                                kbMarkup.addRow(new InlineKeyboardButton(button.getText()).callbackData(button.getEndpoint()));
-                            });
-                            caption = navigationService.findById(1L).getText() + ":";
-                            
-                            msgService.interactiveMsg(inputMessage.chat().id(),
-                                    kbMarkup,
-                                    caption);
-                            return;
-                    }
+    
+                            messageTemplate = navigationService.prepareMessageTemplate(inputMessage.chat().id(), 1L);
+                            msgService.interactiveMsg(inputMessage.chat().id()
+                                    ,messageTemplate.getKeyboard()
+                                    ,messageTemplate.getText());
+                        }
+                        return;
                 }
-                
                 
             } else if (Pattern.compile(STATIC_ENDPOINT_REGEXP).matcher(inputMessage.text()).matches()) {
                 LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", inputMessage);
@@ -103,163 +94,37 @@ public class CmdSelectorService {
                         appLogicService.initConversation(inputMessage.chat().id());
                         msgService.deleteMsg(inputMessage.chat().id(), inputMessage.messageId());
                         return;
+                        
                     case "/how-adopt":
-                        /*kbMarkup = new InlineKeyboardMarkup();
-                        Customer customer = customerService.findCustomerByChatId(inputMessage.chat().id());
-                        CustomerContext context = customer.getCustomerContext();*/
-                        caption = navigationService.findById(4L).getText() + ":";
-                        /*navigationService.findByLevelView(4L).forEach(button -> {
-                            if ((button.getShelterId() == null) || (button.getShelterId().getId() == context.getShelterId())) {
-                                kbMarkup.addRow(new InlineKeyboardButton(button.getText()).callbackData(button.getEndpoint()));
-                            }
-                        });*/
-                        
-                        msgService.interactiveMsg(inputMessage.chat().id(),
-                                navigationService.getButtons(inputMessage.chat().id(), 4L),
-                                caption);
+                        messageTemplate = navigationService.prepareMessageTemplate(inputMessage.chat().id(), 4L);
+                        msgService.interactiveMsg(inputMessage.chat().id()
+                                ,messageTemplate.getKeyboard()
+                                ,messageTemplate.getText());
                         return;
+                        
                     case "/shelter":
-                        kbMarkup = new InlineKeyboardMarkup();
-                        
-                        caption = navigationService.findById(3L).getText() + ":";
-                        
-                        navigationService.findByLevelView(3L).forEach(button -> {
-//                            button.getShelterId()
-                            kbMarkup.addRow(new InlineKeyboardButton(button.getText()).callbackData(button.getEndpoint()));
-                        });
-                        msgService.interactiveMsg(inputMessage.chat().id(),
-                                kbMarkup,
-                                caption);
+                        messageTemplate = navigationService.prepareMessageTemplate(inputMessage.chat().id(), 3L);
+                        msgService.interactiveMsg(inputMessage.chat().id()
+                                ,messageTemplate.getKeyboard()
+                                ,messageTemplate.getText());
                         return;
                     
                     case "/main":
-                        kbMarkup = new InlineKeyboardMarkup();
-                        caption = navigationService.findById(1L).getText() + ":";
-                        navigationService.findByLevelView(1L).forEach(button -> {
-                            kbMarkup.addRow(new InlineKeyboardButton(button.getText()).callbackData(button.getEndpoint()));
-                        });
-                        msgService.interactiveMsg(inputMessage.chat().id(),
-                                kbMarkup,
-                                caption);
+                        messageTemplate = navigationService.prepareMessageTemplate(inputMessage.chat().id(), 1L);
+                        msgService.interactiveMsg(inputMessage.chat().id()
+                                ,messageTemplate.getKeyboard()
+                                ,messageTemplate.getText());
                         return;
+                    
                     default:
                         break;
                 }
-                
                 petSelectorService.switchCmd(inputMessage);
                 volunteerSelectorService.switchCmd(inputMessage);
             }
         }
     }
     
-    /*public void processingCallBackQuery(CallbackQuery cbQuery) {
-        //msgService.sendCallbackQueryResponse(cbQuery.id());
-        InlineKeyboardMarkup kbMarkup;
-        String caption;
-        if ((cbQuery.data() != null)
-                && (cbQuery.message() != null)
-                && (cbQuery.message().chat() != null)
-                && (cbQuery.message().chat().id() != null)
-        ) {
-            final Matcher matcher = Pattern.compile(DYNAMIC_ENDPOINT_REGEXP).matcher(cbQuery.data());
-            if (matcher.matches()) {
-                LOGGER.debug("Dynamic endpoint message\n{}\nsent to: switchDynCmd methods", cbQuery);
-                if (Long.parseLong(matcher.group(2)) == 0) {
-                    switch (matcher.group(1)) {
-                        case "shelter":
-                            kbMarkup = new InlineKeyboardMarkup();
-                            shelterService.findAll().forEach(shelter -> {
-                                kbMarkup.addRow(new InlineKeyboardButton(shelter.getName()).callbackData("/shelter/" + shelter.getId()));
-                            });
-                            
-                            caption = navigationService.findById(2L).getText() + ":";
-                            
-                            msgService.interactiveMsg(cbQuery.message().chat().id(),
-                                    kbMarkup,
-                                    caption);
-                            return;
-                    }
-                } else {
-                    
-                    
-                    
-                    
-                    switch (matcher.group(1)) {
-                        case "shelter":
-                            Shelter selectedShelter = shelterService.findById(Long.valueOf(matcher.group(2)));
-                            Customer customer = customerService.findCustomerByChatId(cbQuery.message().chat().id());
-                            CustomerContext context = customer.getCustomerContext();
-                            context.setShelterId(selectedShelter.getId());
-                            customerService.updateCustomer(customer);
-                            
-                            kbMarkup = new InlineKeyboardMarkup();
-                            
-                            navigationService.findByParentId(1L).forEach(button -> {
-                                kbMarkup.addRow(new InlineKeyboardButton(button.getText()).callbackData(button.getEndpoint()));
-                            });
-                            caption = navigationService.findById(1L).getText() + ":";
-                            
-                            msgService.interactiveMsg(cbQuery.message().chat().id(),
-                                    kbMarkup,
-                                    caption);
-                            return;
-                    }
-                }
-*//*                if ((matcher.group(1).equals("shelter")) && (Long.parseLong(matcher.group(2)) > 0)) {
-                
-                }*//*
-            } else if (Pattern.compile(STATIC_ENDPOINT_REGEXP).matcher(cbQuery.data()).matches()) {
-                LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", cbQuery);
-                
-                switch (cbQuery.data()) {
-                    
-                    case "/how-adopt":
-                        kbMarkup = new InlineKeyboardMarkup();
-                        Customer customer = customerService.findCustomerByChatId(cbQuery.message().chat().id());
-                        CustomerContext context = customer.getCustomerContext();
-                        caption = navigationService.findById(4L).getText() + ":";
-                        navigationService.findByParentId(4L).forEach(button -> {
-                            if ((button.getShelterId() == null) || (button.getShelterId().getId() == context.getShelterId())) {
-                                kbMarkup.addRow(new InlineKeyboardButton(button.getText()).callbackData(button.getEndpoint()));
-                            }
-                        });
-                        
-                        msgService.interactiveMsg(cbQuery.message().chat().id(),
-                                kbMarkup,
-                                caption);
-                        return;
-                    case "/shelter":
-                        kbMarkup = new InlineKeyboardMarkup();
-                        
-                        caption = navigationService.findById(3L).getText() + ":";
-                        
-                        navigationService.findByParentId(3L).forEach(button -> {
-//                            button.getShelterId()
-                            kbMarkup.addRow(new InlineKeyboardButton(button.getText()).callbackData(button.getEndpoint()));
-                        });
-                        msgService.interactiveMsg(cbQuery.message().chat().id(),
-                                kbMarkup,
-                                caption);
-                        return;
-                    
-                    case "/main":
-                        kbMarkup = new InlineKeyboardMarkup();
-                        caption = navigationService.findById(1L).getText() + ":";
-                        navigationService.findByParentId(1L).forEach(button -> {
-                            kbMarkup.addRow(new InlineKeyboardButton(button.getText()).callbackData(button.getEndpoint()));
-                        });
-                        msgService.interactiveMsg(cbQuery.message().chat().id(),
-                                kbMarkup,
-                                caption);
-                        return;
-                }
-                
-                
-                petSelectorService.switchCmd(cbQuery.message().chat().id(), cbQuery.data());
-                volunteerSelectorService.switchCmd(cbQuery.message().chat().id(), cbQuery.data());
-            }
-        }
-    }*/
 }
     
     

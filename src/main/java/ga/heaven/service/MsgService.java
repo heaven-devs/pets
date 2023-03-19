@@ -11,7 +11,6 @@ import com.pengrad.telegrambot.model.request.*;
 import com.pengrad.telegrambot.request.*;
 import com.pengrad.telegrambot.response.BaseResponse;
 import com.pengrad.telegrambot.response.SendResponse;
-import ga.heaven.configuration.TelegramBotConfiguration;
 import ga.heaven.model.Customer;
 import ga.heaven.model.CustomerContext;
 import org.slf4j.Logger;
@@ -26,16 +25,10 @@ public class MsgService {
     
     private final CustomerService customerService;
     
-    private final ShelterService shelterService;
     
-    private final TelegramBotConfiguration tgConf;
-    
-    
-    public MsgService(TelegramBot tgBot, CustomerService customerService, ShelterService shelterService, TelegramBotConfiguration tgConf) {
+    public MsgService(TelegramBot tgBot, CustomerService customerService) {
         this.tgBot = tgBot;
         this.customerService = customerService;
-        this.shelterService = shelterService;
-        this.tgConf = tgConf;
     }
 
     public void reqContactMsg(Long chatId, String inputMessage) {
@@ -85,7 +78,7 @@ public class MsgService {
         }
     }
     
-    public String humanViewContext(Long chatId) {
+/*    public String humanViewContext(Long chatId) {
         Customer customer = customerService.findCustomerByChatId(chatId);
         CustomerContext context = customer.getCustomerContext();
         String result;
@@ -93,7 +86,7 @@ public class MsgService {
         result += "\n ";
         return result;
     }
-    
+    */
     
     public Message msgExtractor(Update updateObj) {
         ObjectNode updateJSON;
@@ -168,7 +161,8 @@ public class MsgService {
                 msgJSON.set("reply_markup", mapper.readTree(BotUtils.toJson(newKeyboard)));
             }
             if (newText != null) {
-                msgJSON.put("text", humanViewContext(chatId) + "\n \n" + newText);
+                msgJSON.put("text", newText);
+                //msgJSON.put("text", humanViewContext(chatId) + "\n \n" + newText);
             }
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
