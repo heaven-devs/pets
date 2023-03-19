@@ -56,7 +56,7 @@ public class ReportSelectorServiceTest {
     @BeforeEach
     private void initialTest() {
         expectedCustomer = new Customer(1L, 777_777_777L, "surname", "name", "secondName", "phone", "address",
-                new CustomerContext(1L, FREE, 1L, 1L, null));
+                new CustomerContext(1L, FREE, 1L, 1L, null,null));
         expectedNonePetsOfCustomer = new ArrayList<>();
         expectedOnePetOfCustomer = new ArrayList<>(expectedNonePetsOfCustomer);
         expectedOnePetOfCustomer.add(new Pet(1L, expectedCustomer));

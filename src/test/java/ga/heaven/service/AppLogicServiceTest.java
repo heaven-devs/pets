@@ -64,7 +64,7 @@ public class AppLogicServiceTest {
         expectedCustomer.setId(1L);
         expectedCustomer.setChatId(expectedChatId);
         expectedCustomer.setName("Ivan");
-        expectedCustomer.setCustomerContext(new CustomerContext(1L, FREE, 2L, 1L, null));
+        expectedCustomer.setCustomerContext(new CustomerContext(1L, FREE, 2L, 1L, null,null));
 
         argCaptor1 = ArgumentCaptor.forClass(Long.class);
         argCaptor2 = ArgumentCaptor.forClass(InlineKeyboardMarkup.class);
