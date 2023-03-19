@@ -30,7 +30,7 @@ public class MsgService {
         this.tgBot = tgBot;
         this.customerService = customerService;
     }
-
+    
     public void reqContactMsg(Long chatId, String inputMessage) {
         SendMessage sendMessage = new SendMessage(chatId, inputMessage);
         KeyboardButton keyboardButton = new KeyboardButton("Send contact");
@@ -78,20 +78,7 @@ public class MsgService {
         }
     }
     
-/*    public String humanViewContext(Long chatId) {
-        Customer customer = customerService.findCustomerByChatId(chatId);
-        CustomerContext context = customer.getCustomerContext();
-        String result;
-        result = "<b>" + shelterService.findById(context.getShelterId()).getName() + "</b>";
-        result += "\n ";
-        return result;
-    }
-    */
-    
     public Message msgExtractor(Update updateObj) {
-        ObjectNode updateJSON;
-        String updateStringJSON;
-    
         Message msgObj = new Message();
         ObjectNode msgJSON = null;
         String msgStringJSON;
@@ -106,13 +93,19 @@ public class MsgService {
             msgObj = updateObj.message();
             msgStringJSON = BotUtils.toJson(msgObj);
         }
-    
+        
         if (updateObj.callbackQuery() != null) {
-            if (updateObj.callbackQuery().id()!=null) {
+            if (updateObj.callbackQuery().id() != null) {
                 sendCallbackQueryResponse(updateObj.callbackQuery().id());
             }
             
+            
             customer = customerService.findCustomerByChatId(updateObj.callbackQuery().message().chat().id());
+            
+            if (customer == null) {
+                return null;
+            }
+            
             msgObj = updateObj.callbackQuery().message();
             msgStringJSON = BotUtils.toJson(msgObj);
             
@@ -135,13 +128,13 @@ public class MsgService {
             
             msgObj = BotUtils.fromJson(msgJSON.toPrettyString(), Message.class);
         }
-    
+        
         if (msgJSON != null) {
             context = customer.getCustomerContext();
             context.setLastInMsg(msgJSON.toPrettyString());
             customerService.updateCustomer(customer);
         }
-    
+        
         return msgObj;
         
     }

@@ -2,7 +2,6 @@ package ga.heaven.service;
 
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
-import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import ga.heaven.model.Customer;
 import ga.heaven.model.CustomerContext;
 import ga.heaven.model.MessageTemplate;
@@ -43,9 +42,7 @@ public class CmdSelectorService {
     }
     
     public void processingMsg(Message inputMessage) {
-        InlineKeyboardMarkup kbMarkup;
         MessageTemplate messageTemplate;
-        String caption;
         if (inputMessage.text() != null || inputMessage.photo() != null) {
             LOGGER.debug("Message\n{}\nsent to: reportSelectorService.switchCmd", inputMessage);
             reportSelectorService.switchCmd(inputMessage);

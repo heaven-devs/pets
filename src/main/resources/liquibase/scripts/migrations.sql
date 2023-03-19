@@ -488,4 +488,6 @@ insert into public.navigation (id, endpoint, level_view, text, shelter_id, level
 insert into public.navigation (id, endpoint, level_view, text, shelter_id, level_reference, rules) values (4, '/how-adopt', 1, 'Get a pet', null, 4, null);
 insert into public.navigation (id, endpoint, level_view, text, shelter_id, level_reference, rules) values (5, '/submit_report', 1, 'Evaluate period', null, 5, null);
 
-
+-- changeset alrepin:11
+alter table navigation
+    drop column if exists shelter_id;

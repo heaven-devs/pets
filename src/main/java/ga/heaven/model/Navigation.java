@@ -1,10 +1,12 @@
 package ga.heaven.model;
 
-import com.fasterxml.jackson.annotation.*;
 import lombok.*;
 import org.hibernate.Hibernate;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import java.util.Objects;
 
 @Entity
@@ -13,10 +15,6 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-/*@Entity
-@Value
-@AllArgsConstructor
-@NoArgsConstructor*/
 public class Navigation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,10 +24,6 @@ public class Navigation {
     private String endpoint;
     private String rules;
     private String text;
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "shelter_id")
-    Shelter shelterId;
     
     @Override
     public boolean equals(Object o) {

@@ -25,7 +25,7 @@ public class AppLogicService {
     private final ShelterRepository shelterRepository;
     private final ShelterService shelterService;
     private final NavigationService navigationService;
-
+    
     public AppLogicService(InfoService infoService, CustomerService customerService, MsgService msgService, VolunteerRepository volunteerRepository, ShelterRepository shelterRepository, ShelterService shelterService, NavigationService navigationService) {
         this.infoService = infoService;
         this.customerService = customerService;
@@ -36,39 +36,20 @@ public class AppLogicService {
         this.navigationService = navigationService;
     }
     
-    /*public void sendDatingRules(Long chatId) {
-        Info info = infoService.findInfoByArea(DATING_RULES_FIELD);
-        if (info == null) {
-            msgService.sendMsg(chatId, DATING_RULES_NOT_FOUND);
-        } else {
-            msgService.sendMsg(chatId, info.getInstructions());
-        }
-    }*/
-    
-    
-    
-    
     public void initConversation(Long chatId) {
         if (!customerService.isPresent(chatId)) {
-            msgService.sendMsg(chatId, infoService.findInfoByArea(COMMON_INFO_FIELD).getInstructions() );
+            msgService.sendMsg(chatId, infoService.findInfoByArea(COMMON_INFO_FIELD).getInstructions());
             customerService.createCustomer(chatId);
         }
-
-        
-        
-        /* ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup(
-                SHELTER1_CMD, SHELTER2_CMD)
-                .resizeKeyboard(true)
-                .selective(true); */
         
         InlineKeyboardMarkup kbMarkup = new InlineKeyboardMarkup();
         shelterService.findAll().forEach(shelter -> {
-            kbMarkup.addRow(new InlineKeyboardButton(shelter.getName()).callbackData("/shelter/"+shelter.getId()));
+            kbMarkup.addRow(new InlineKeyboardButton(shelter.getName()).callbackData("/shelter/" + shelter.getId()));
         });
         msgService.sendMsg(chatId, SHELTER_CHOOSE_MSG + " \n", kbMarkup);
         
     }
-
+    
     public void volunteerRequest(Long chatId) {
         //msgService.sendMsg(inputMessage.chat().id(), "ok");
 //        volunteerRepository.findById(3L).ifPresent(volunteer -> msgService.sendMsg(inputMessage.chat().id(), volunteer.getShelters().toString()));
@@ -77,45 +58,45 @@ public class AppLogicService {
         msgService.sendMsg(chatId, s.getVolunteers().stream()
                 .map(v -> v.getName())
                 .collect(Collectors.toList()).toString());
-
+        
     }
-
+    
     public void sendDatingRules(Long chatId) {
         sendMultipurpose(chatId, DATING_RULES_FIELD, DATING_RULES_NOT_FOUND);
     }
-
+    
     public void sendDocuments(Long chatId) {
         sendMultipurpose(chatId, DOCUMENTS_FIELD, DOCUMENTS_NOT_FOUND);
     }
-
+    
     public void sendTransportRules(Long chatId) {
         sendMultipurpose(chatId, TRANSPORT_FIELD, TRANSPORT_NOT_FOUND);
     }
-
+    
     public void sendComfortPet(Long chatId) {
         sendMultipurpose(chatId, COMFORT_PET_FIELD, COMFORT_PET_NOT_FOUND);
     }
-
+    
     public void sendComfortDog(Long chatId) {
         sendMultipurpose(chatId, COMFORT_DOG_FIELD, COMFORT_DOG_NOT_FOUND);
     }
-
+    
     public void sendComfortHandicapped(Long chatId) {
         sendMultipurpose(chatId, COMFORT_HANDICAPPED_FIELD, COMFORT_HANDICAPPED_NOT_FOUND);
     }
-
+    
     public void sendCynologistAdvice(Long chatId) {
         sendMultipurpose(chatId, CYNOLOGIST_ADVICE_FIELD, CYNOLOGIST_ADVICE_NOT_FOUND);
     }
-
+    
     public void sendCynologistsList(Long chatId) {
         sendMultipurpose(chatId, CYNOLOGISTS_LIST_FIELD, CYNOLOGIST_LIST_NOT_FOUND);
     }
-
+    
     public void sendReasonsRefusal(Long chatId) {
         sendMultipurpose(chatId, REASONS_REFUSAL_FIELD, REASONS_REFUSAL_NOT_FOUND);
     }
-
+    
     protected void sendMultipurpose(Long chatId, String areaField, String notFoundMsg) {
         Info info = infoService.findInfoByArea(areaField);
         MessageTemplate tmp = navigationService.prepareMessageTemplate(chatId, 4L);
@@ -125,14 +106,15 @@ public class AppLogicService {
             tmp.setTextBody(info.getInstructions());
         }
         
-        msgService.interactiveMsg(chatId, null,tmp.getText());
+        msgService.interactiveMsg(chatId, null, tmp.getText());
     }
-
+    
     /**
      * Метод обновляет значения полей "context" и "petId"
+     *
      * @param customer текущий пользователь
-     * @param context новое значение поля "context"
-     * @param petId новое значение поля "petId"
+     * @param context  новое значение поля "context"
+     * @param petId    новое значение поля "petId"
      */
     void updateCustomerContext(Customer customer, Context context, long petId) {
         CustomerContext customerContext = customer.getCustomerContext();
@@ -140,16 +122,17 @@ public class AppLogicService {
         customerService.updateCustomer(customer);
         updateCustomerContext(customer, context);
     }
-
+    
     /**
      * Метод обновляет значения полей "context"
+     *
      * @param customer текущий пользователь
-     * @param context новое значение поля "context"
+     * @param context  новое значение поля "context"
      */
     void updateCustomerContext(Customer customer, Context context) {
         CustomerContext customerContext = customer.getCustomerContext();
         customerContext.setDialogContext(context);
         customerService.updateCustomer(customer);
     }
-
+    
 }
