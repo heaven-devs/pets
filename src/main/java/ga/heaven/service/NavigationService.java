@@ -13,7 +13,9 @@ import io.github.jamsesso.jsonlogic.JsonLogic;
 import io.github.jamsesso.jsonlogic.JsonLogicException;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class NavigationService {
@@ -58,11 +60,15 @@ public class NavigationService {
             try {
                 String rulesJson = button.getRules();
                 rulesJson = rulesJson==null ? "true" : rulesJson;
-                ObjectMapper mapper = new ObjectMapper();
-                String data = mapper.writeValueAsString(context);
+                /*ObjectMapper mapper = new ObjectMapper();
+                String data = mapper.writeValueAsString(context);*/
+                Map<String, String> data = new HashMap<>();
+                data.put("shelterId", context.getShelterId().toString());
+                data.put("dialogContext", context.getDialogContext().toString());
+                
                 enabled = (Boolean) jsonLogic.apply(rulesJson,data);
                 //enabled = (boolean) jsonLogic.apply(button.getRules(),context);
-            } catch (JsonLogicException | JsonProcessingException e) {
+            } catch (JsonLogicException e) {
                 throw new RuntimeException(e);
             }
             if (enabled) {
