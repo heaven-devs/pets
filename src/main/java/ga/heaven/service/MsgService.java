@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.pengrad.telegrambot.BotUtils;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Message;
+import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.request.*;
 import com.pengrad.telegrambot.request.*;
 import com.pengrad.telegrambot.response.BaseResponse;
@@ -28,6 +29,7 @@ public class MsgService {
     private final ShelterService shelterService;
     
     private final TelegramBotConfiguration tgConf;
+    
     
     public MsgService(TelegramBot tgBot, CustomerService customerService, ShelterService shelterService, TelegramBotConfiguration tgConf) {
         this.tgBot = tgBot;
@@ -77,11 +79,80 @@ public class MsgService {
             editMsg(chatId, msgId, keyboard);
             return;
         }
-        BaseResponse baseResponse = tgBot.execute(editMessage);
+        BaseResponse baseResponse = tgBot.execute(editMessage.parseMode(ParseMode.HTML));
         if (!baseResponse.isOk()) {
             LOGGER.error(baseResponse.description());
         }
     }
+    
+    public String humanViewContext(Long chatId) {
+        Customer customer = customerService.findCustomerByChatId(chatId);
+        CustomerContext context = customer.getCustomerContext();
+        String result;
+        result = "<b>" + shelterService.findById(context.getShelterId()).getName() + "</b>";
+        result += "\n ";
+        return result;
+    }
+    
+    
+    public Message msgExtractor(Update updateObj) {
+        ObjectNode updateJSON;
+        String updateStringJSON;
+    
+        Message msgObj = new Message();
+        ObjectNode msgJSON = null;
+        String msgStringJSON;
+        
+        ObjectMapper mapper;
+        
+        Customer customer = new Customer();
+        CustomerContext context;
+        
+        if (updateObj.message() != null) {
+            customer = customerService.findCustomerByChatId(updateObj.message().chat().id());
+            msgObj = updateObj.message();
+            msgStringJSON = BotUtils.toJson(msgObj);
+        }
+    
+        if (updateObj.callbackQuery() != null) {
+            if (updateObj.callbackQuery().id()!=null) {
+                sendCallbackQueryResponse(updateObj.callbackQuery().id());
+            }
+            
+            customer = customerService.findCustomerByChatId(updateObj.callbackQuery().message().chat().id());
+            msgObj = updateObj.callbackQuery().message();
+            msgStringJSON = BotUtils.toJson(msgObj);
+            
+            try {
+                mapper = new ObjectMapper();
+                msgJSON = (ObjectNode) mapper.readTree(msgStringJSON);
+                /*if (updateObj.callbackQuery().from() != null) {
+                    mapper = new ObjectMapper();
+                    msgJSON.set("from", mapper.readTree(BotUtils.toJson(updateObj.callbackQuery().from())));
+                }*/
+                
+                if (updateObj.callbackQuery().data() != null) {
+                    msgJSON.put("text", updateObj.callbackQuery().data());
+                }
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            msgJSON.remove("entities");
+            msgJSON.remove("reply_markup");
+            
+            msgObj = BotUtils.fromJson(msgJSON.toPrettyString(), Message.class);
+        }
+    
+        if (msgJSON != null) {
+            context = customer.getCustomerContext();
+            context.setLastInMsg(msgJSON.toPrettyString());
+            customerService.updateCustomer(customer);
+        }
+    
+        return msgObj;
+        
+    }
+    
     
     public void interactiveMsg(Long chatId, InlineKeyboardMarkup newKeyboard, String newText) {
         ObjectMapper mapper = new ObjectMapper();
@@ -97,12 +168,13 @@ public class MsgService {
                 msgJSON.set("reply_markup", mapper.readTree(BotUtils.toJson(newKeyboard)));
             }
             if (newText != null) {
-                msgJSON.put("text", newText);
+                msgJSON.put("text", humanViewContext(chatId) + "\n \n" + newText);
             }
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
         msgObj = BotUtils.fromJson(msgJSON.toPrettyString(), Message.class);
+        //msgObj.replyMarkup().inlineKeyboard()
         editMsg(chatId, msgObj.messageId(), msgObj.text(), msgObj.replyMarkup());
         context.setLastOutMsg(msgJSON.toPrettyString());
         customerService.updateCustomer(customer);

@@ -42,6 +42,9 @@ public class AppLogicService {
         }
     }*/
     
+    
+    
+    
     public void initConversation(Long chatId) {
         if (!customerService.isPresent(chatId)) {
             msgService.sendMsg(chatId, infoService.findInfoByArea(COMMON_INFO_FIELD).getInstructions() );

@@ -21,6 +21,7 @@ public class CustomerContext {
     private Long shelterId;
     
     private String lastOutMsg;
+    private String lastInMsg;
 
     public enum Context {
         FREE,
