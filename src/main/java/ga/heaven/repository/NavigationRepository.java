@@ -8,6 +8,7 @@ import java.util.List;
 
 @Repository
 public interface NavigationRepository extends JpaRepository<Navigation, Long> {
-    List<Navigation> findNavigationsByLevelViewEquals(Long id);
+    List<Navigation> findNavigationsByLevelViewEqualsOrderById(Long id);
+    
     Navigation getFirstByEndpointIs(String endpoint);
 }

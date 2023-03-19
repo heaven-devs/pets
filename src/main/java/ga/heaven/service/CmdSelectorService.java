@@ -62,7 +62,7 @@ public class CmdSelectorService {
                         if (ENDPOINT_VALUE.equals(ENDPOINT_LIST)) {
                             messageTemplate = navigationService.prepareMessageTemplate(inputMessage.chat().id(), 2L);
                             shelterService.findAll().forEach(shelter -> {
-                                messageTemplate.getKeyboard().addRow(new InlineKeyboardButton(shelter.getName()).callbackData("/shelter/" + shelter.getId()));
+                                messageTemplate.getKeyboard().addRow(new InlineKeyboardButton(shelter.getName()).callbackData("/"+SHELTER_EPT+"/" + shelter.getId()));
                             });
     
                             msgService.interactiveMsg(inputMessage.chat().id()

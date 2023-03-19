@@ -32,7 +32,7 @@ public class NavigationService {
     }
     
     public List<Navigation> findByLevelView(Long id) {
-        return navigationRepository.findNavigationsByLevelViewEquals(id);
+        return navigationRepository.findNavigationsByLevelViewEqualsOrderById(id);
     }
     
     
