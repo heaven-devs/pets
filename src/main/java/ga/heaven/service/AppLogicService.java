@@ -3,6 +3,7 @@ package ga.heaven.service;
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import ga.heaven.model.*;
+import ga.heaven.model.CustomerContext.*;
 import ga.heaven.repository.ShelterRepository;
 import ga.heaven.repository.VolunteerRepository;
 import org.slf4j.Logger;
@@ -110,7 +111,6 @@ public class AppLogicService {
         sendMultipurpose(chatId, REASONS_REFUSAL_FIELD, REASONS_REFUSAL_NOT_FOUND);
     }
 
-
     protected void sendMultipurpose(Long chatId, String areaField, String notFoundMsg) {
         Info info = infoService.findInfoByArea(areaField);
         if (info == null) {
@@ -119,4 +119,29 @@ public class AppLogicService {
             msgService.interactiveMsg(chatId, null,info.getInstructions());
         }
     }
+
+    /**
+     * Метод обновляет значения полей "context" и "petId"
+     * @param customer текущий пользователь
+     * @param context новое значение поля "context"
+     * @param petId новое значение поля "petId"
+     */
+    void updateCustomerContext(Customer customer, Context context, long petId) {
+        CustomerContext customerContext = customer.getCustomerContext();
+        customerContext.setCurrentPetId(petId);
+        customerService.updateCustomer(customer);
+        updateCustomerContext(customer, context);
+    }
+
+    /**
+     * Метод обновляет значения полей "context"
+     * @param customer текущий пользователь
+     * @param context новое значение поля "context"
+     */
+    void updateCustomerContext(Customer customer, Context context) {
+        CustomerContext customerContext = customer.getCustomerContext();
+        customerContext.setDialogContext(context);
+        customerService.updateCustomer(customer);
+    }
+
 }

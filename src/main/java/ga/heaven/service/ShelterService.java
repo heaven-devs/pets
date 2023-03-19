@@ -19,6 +19,9 @@ public class ShelterService {
     }
 
     public Shelter findById(Long id) {
+        if (id == null) {
+            return null;
+        }
         return shelterRepository.findById(id).orElse(null);
     }
 

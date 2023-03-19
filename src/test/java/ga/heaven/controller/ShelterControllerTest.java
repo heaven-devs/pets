@@ -59,14 +59,14 @@ public class ShelterControllerTest {
 
     private List<Shelter> expectedShelterList;
     private Shelter expectedShelter;
-    private String urlPath = "/shelter";
-    private Gson gson = new Gson();
+    private final String urlPath = "/shelter";
+    private final Gson gson = new Gson();
 
     @BeforeEach
     private void getInitialTestShelters() {
         expectedShelterList = List.of(
-                new Shelter(1, "Shelter 1", "address", "location",null),
-                new Shelter(2, "Shelter 2", "address", "location",null)
+                new Shelter(1, "Shelter 1", "address", "location", "description", "rules",null),
+                new Shelter(2, "Shelter 2", "address", "location", "description", "rules",null)
         );
         expectedShelter = expectedShelterList.get(0);
     }
