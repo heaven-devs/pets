@@ -136,15 +136,17 @@ public class ReportController {
         return ResponseEntity.ok(create);
     }
 
+    // todo: возможно ненужен
     @GetMapping(value = "/{id}/photo")
     public void showPhoto(@PathVariable Long id, HttpServletResponse response) throws IOException {
         Report report = reportService.findReportById(id);
 
-        response.setContentType("image/" + report.getMediaType());
-        OutputStream os = response.getOutputStream();
-        os.write(report.getPhoto());
-        os.flush();
-        os.close();
+        // todo: переделать?
+//        response.setContentType("image/" + report.getMediaType());
+//        OutputStream os = response.getOutputStream();
+//        os.write(report.getPhoto());
+//        os.flush();
+//        os.close();
     }
 
     

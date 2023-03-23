@@ -12,7 +12,7 @@ public class ReportConstants {
     public static final String ANSWER_WAIT_REPORT = "Ожидаю отчет";
     public static final String ANSWER_PHOTO_REPORT_ACCEPTED = "Фото отчет сдан, отправьте текстовый отчет";
     public static final String ANSWER_TEST_REPORT_ACCEPTED = "Текстовый отчет сдан, отправьте фото отчет";
-    public static final String ANSWER_REPORT_ACCEPTED = "<b>Отчет принят, спасибо</b>";
+    public static final String ANSWER_REPORT_ACCEPTED = "<b>Отчет принят, вы отправили все материалы? (/да /нет)</b>";
     public static final String ANSWER_REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED =
             "<b><span style='color: red'>Отчет не принят</span></b>" + CARRIAGE_RETURN +
             "Пришлите следующую информацию:" + CARRIAGE_RETURN +

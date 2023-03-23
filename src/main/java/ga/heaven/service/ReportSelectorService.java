@@ -9,16 +9,17 @@ import com.pengrad.telegrambot.response.GetFileResponse;
 import ga.heaven.model.Customer;
 import ga.heaven.model.CustomerContext.Context;
 import ga.heaven.model.Pet;
+import ga.heaven.model.Photo;
 import ga.heaven.model.Report;
+import ga.heaven.repository.PhotoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.io.*;
+import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static ga.heaven.configuration.Constants.*;
@@ -35,19 +36,21 @@ public class ReportSelectorService {
     private final CustomerService customerService;
     private final PetService petService;
     private final TelegramBot telegramBot;
+    private final PhotoRepository photoRepository;
 
     private Message inputMessage;
     private Customer customer;
     private String responseText;
 
     public ReportSelectorService(AppLogicService appLogicService, MsgService msgService, ReportService reportService, CustomerService customerService, PetService petService,
-                                 TelegramBot telegramBot) {
+                                 TelegramBot telegramBot, PhotoRepository photoRepository) {
         this.appLogicService = appLogicService;
         this.msgService = msgService;
         this.reportService = reportService;
         this.customerService = customerService;
         this.petService = petService;
         this.telegramBot = telegramBot;
+        this.photoRepository = photoRepository;
     }
 
     /**
@@ -153,8 +156,9 @@ public class ReportSelectorService {
                 responseText = ANSWER_SEND_REPORT_FOR_PET_WITH_ID + inputMessage.text();
             } else if (report.getPetReport() == null) {
                 responseText = ANSWER_PHOTO_REPORT_ACCEPTED;
-            } else if (report.getPhoto() == null) {
-                responseText = ANSWER_TEST_REPORT_ACCEPTED;
+                // todo: переделать
+//            } else if (report.getPhoto() == null) {
+//                responseText = ANSWER_TEST_REPORT_ACCEPTED;
             }
             appLogicService.updateCustomerContext(customer, WAIT_REPORT, Long.parseLong(inputMessage.text()));
         }
@@ -188,10 +192,11 @@ public class ReportSelectorService {
             reportService.updateReport(report);
         }
 
-        if ((inputMessage.photo() != null || (todayReport != null && todayReport.getPhoto() != null))
+        // todo: переделать
+        if ((inputMessage.photo() != null || (todayReport != null /*&& todayReport.getPhoto() != null*/))
                 && (inputMessage.caption() != null || inputMessage.text() != null || (todayReport != null && todayReport.getPetReport() != null))) {
             responseText = ANSWER_REPORT_ACCEPTED;
-            appLogicService.updateCustomerContext(customer, FREE, 0);
+//            appLogicService.updateCustomerContext(customer, FREE, 0);
         }
 
         return responseText;
@@ -201,29 +206,29 @@ public class ReportSelectorService {
      * Метод получает фото и записывает его в БД
      */
     private void savePhotoToDB(Report report) {
+        reportService.updateReport(report);
         // todo: реализовать сохранение нескольких отправленных фото в отчет (добавить таблицу с фото)
 
         PhotoSize[] photoSizes = inputMessage.photo();
-        for (PhotoSize photoSize : photoSizes) {
-            if (photoSize.width() != 320) {
-                continue;
-            }
-            LOGGER.error("id: " + photoSize.fileId() + ", size: " + photoSize.fileSize() + ", add: " + photoSize.width());
-            GetFile getFile = new GetFile(photoSize.fileId());
-            GetFileResponse getFileResponse = telegramBot.execute(getFile);
-            if (getFileResponse.isOk()) {
-                File file = getFileResponse.file();
-                String extension = StringUtils.getFilenameExtension(file.filePath()); // todo: расширение в базу (media_type)
-                report.setMediaType(extension);
-                try {
-                    byte[] image = telegramBot.getFileContent(file); // todo: байты в базу (photo)
-                    report.setPhoto(image);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+        PhotoSize photoSize = Arrays.stream(photoSizes)
+                .max(Comparator.comparing(e -> e.fileSize()))
+                .orElseThrow(RuntimeException::new);
+
+        Photo photo = new Photo();
+        photo.setReport(report);
+        GetFile getFile = new GetFile(photoSize.fileId());
+        GetFileResponse getFileResponse = telegramBot.execute(getFile);
+        if (getFileResponse.isOk()) {
+            File file = getFileResponse.file();
+            String extension = StringUtils.getFilenameExtension(file.filePath()); // todo: расширение в базу (media_type)
+            photo.setMediaType(extension);
+            try {
+                byte[] image = telegramBot.getFileContent(file); // todo: байты в базу (photo)
+                photo.setPhoto(image);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
-        reportService.updateReport(report);
-
+        photoRepository.save(photo);
     }
 }
