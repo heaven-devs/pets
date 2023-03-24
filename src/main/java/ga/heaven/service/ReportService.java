@@ -85,7 +85,7 @@ public class ReportService {
         return reportRepository.findReportByPetIdAndPetReportNotNullAndDateBetween(petId, startTime, finishTime);
     }
 
-    public Report findTodayNotCompletedReportsByPetId(Long petId) {
+    public Report findTodayReportsByPetId(Long petId) {
         LocalDate localDate = LocalDate.now();
         LocalDateTime startTime = localDate.atStartOfDay();
         LocalDateTime finishTime = LocalTime.MAX.atDate(localDate);
