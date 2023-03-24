@@ -180,6 +180,7 @@ public class MsgService {
     }
     
     public void sendMsg(Long chatId, String inputMessage) {
+        LOGGER.error("3: " + inputMessage);
         sendMsg(chatId, inputMessage, null);
     }
     

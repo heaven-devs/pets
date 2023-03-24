@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static ga.heaven.configuration.Constants.*;
@@ -199,6 +200,50 @@ public class ReportSelectorService {
         return responseText;
     }
 
+    public String processingWaitReport(Message inputMessage, long petId) {
+        this.inputMessage = inputMessage;
+        Pet pet = petService.read(petId);
+        Report todayReport = reportService.findTodayReportsByPetId(petId);
+        todayReport = (null == todayReport) ? new Report() : todayReport;
+        todayReport.setPet(pet);
+        todayReport.setDate(LocalDateTime.now());
+        responseText = ANSWER_WAIT_REPORT;
+
+        if (isCommand()) {
+//            Report report = reportService.findTodayReportsByPetId(petId);
+  //          appLogicService.updateCustomerContext(customer, WAIT_REPORT, Long.parseLong(inputMessage.text()))
+        } else {
+            LOGGER.error("введена не команда");
+            return inputMessage.text() != null ? inputMessage.text() :
+                    (inputMessage.photo() != null ? inputMessage.photo().toString() : "");
+        }
+
+
+
+
+//        if (isHavePhotoInReport()) {
+//            savePhotoToDB(todayReport);
+//            responseText = ANSWER_REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED;
+//        }
+//
+//        if (isHaveTextInReport(todayReport)) {
+//            responseText = ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED;
+//            todayReport.setPetReport(getReportText());
+//            reportService.updateReport(todayReport);
+//        }
+//
+//        if (isHavePhotoAndTextInReport(todayReport)) {
+//            responseText = ANSWER_REPORT_ACCEPTED;
+//            appLogicService.updateCustomerContext(customer, FREE);
+//        }
+
+        return responseText;
+    }
+
+    private boolean isCommand() {
+        return Pattern.compile(DYNAMIC_ENDPOINT_REGEXP).matcher(inputMessage.text()).matches();
+    }
+
     /**
      * Имеются ли в базе текст отчета, а в сообщении от пользователя фото,
      * или наоборот в базе фото, а в сообщении от пользователя текст отчета? Т.е. есть и фото и текст отчета.
@@ -220,8 +265,8 @@ public class ReportSelectorService {
 
     /**
      * Имеется ли в текущем сообщении от пользователя фото
-     * @param todayReport
-     * @return
+     * @param todayReport текущий отчет
+     * @return имеется или нет
      */
     private boolean isHaveTextInReport(Report todayReport) {
         return (todayReport == null || todayReport.getPetReport() == null)
@@ -265,7 +310,7 @@ public class ReportSelectorService {
 
         PhotoSize[] photoSizes = inputMessage.photo();
         PhotoSize photoSize = Arrays.stream(photoSizes)
-                .max(Comparator.comparing(e -> e.fileSize()))
+                .max(Comparator.comparing(PhotoSize::fileSize))
                 .orElseThrow(RuntimeException::new);
 
         Photo photo = new Photo();
@@ -284,5 +329,17 @@ public class ReportSelectorService {
             }
         }
         photoRepository.save(photo);
+    }
+
+    public void processingNonCommandMessagesForReport(Message inputMessage) {
+        this.inputMessage = inputMessage;
+        customer = customerService.findCustomerByChatId(inputMessage.chat().id());
+
+        if (customer != null && inputMessage.text() != null
+                && inputMessage.text().equals(REPORT_SUBMIT_CMD)) {
+            msgService.sendMsg(inputMessage.chat().id(), processingSubmitReport());
+        } else if (customer != null && inputMessage.text() == null || !inputMessage.text().startsWith("/") ) {
+            msgService.sendMsg(inputMessage.chat().id(), processingUserMessages());
+        }
     }
 }

@@ -18,8 +18,6 @@ import static ga.heaven.configuration.Constants.*;
 @Service
 public class CmdSelectorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CmdSelectorService.class);
-    private static final String DYNAMIC_ENDPOINT_REGEXP = "^/(.*)/(.*)[0-9]*";
-    private static final String STATIC_ENDPOINT_REGEXP = "^/([^/]*)$";
     private final MsgService msgService;
     private final AppLogicService appLogicService;
     private final PetSelectorService petSelectorService;
@@ -42,21 +40,21 @@ public class CmdSelectorService {
     }
     
     public void processingMsg(Message inputMessage) {
+        processingNonCommandMessages(inputMessage);
         MessageTemplate messageTemplate;
-        if (inputMessage.text() != null || inputMessage.photo() != null) {
-            LOGGER.debug("Message\n{}\nsent to: reportSelectorService.switchCmd", inputMessage);
-            reportSelectorService.switchCmd(inputMessage);
-        }
-        
+
         if ((inputMessage.text() != null)
                 && (inputMessage.chat() != null)
                 && (inputMessage.chat().id() != null)
         ) {
             final Matcher matcher = Pattern.compile(DYNAMIC_ENDPOINT_REGEXP).matcher(inputMessage.text());
             if (matcher.matches()) {
-                LOGGER.debug("Dynamic endpoint message\n{}\nsent to: switchDynCmd methods", inputMessage);
+                LOGGER.error("matcher 1: " + matcher.matches());
+                LOGGER.error(inputMessage.text());
+//                LOGGER.debug("Dynamic endpoint message\n{}\nsent to: switchDynCmd methods", inputMessage);
                 final String ENDPOINT_NAME = matcher.group(1);
                 final Long ENDPOINT_VALUE = Long.parseLong(matcher.group(2));
+                LOGGER.error("endpoint: " + ENDPOINT_NAME + " value: " + ENDPOINT_VALUE);
                 switch (ENDPOINT_NAME) {
                     case SHELTER_EPT:
                         if (ENDPOINT_VALUE.equals(ENDPOINT_LIST)) {
@@ -81,10 +79,20 @@ public class CmdSelectorService {
                                     ,messageTemplate.getText());
                         }
                         return;
+                    case REPORT_EPT:
+                        LOGGER.error("EPT");
+                        LOGGER.error("input: " + inputMessage);
+
+                        String responseText = reportSelectorService.processingWaitReport(inputMessage, ENDPOINT_VALUE);
+                        msgService.sendMsg(inputMessage.chat().id(), responseText);
+
+                        return;
                 }
                 
             } else if (Pattern.compile(STATIC_ENDPOINT_REGEXP).matcher(inputMessage.text()).matches()) {
-                LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", inputMessage);
+                LOGGER.error("matcher 2: " + Pattern.compile(STATIC_ENDPOINT_REGEXP).matcher(inputMessage.text()).matches());
+                LOGGER.error(inputMessage.text());
+//                LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", inputMessage);
                 switch (inputMessage.text()) {
                     
                     case START_CMD:
@@ -112,7 +120,14 @@ public class CmdSelectorService {
                                 ,messageTemplate.getKeyboard()
                                 ,messageTemplate.getText());
                         return;
-                    
+
+                    case "/submit_report":
+                        messageTemplate = navigationService.prepareMessagePetChoice(inputMessage.chat().id(), 5L);
+                        msgService.interactiveMsg(inputMessage.chat().id(),
+                                messageTemplate.getKeyboard(),
+                                messageTemplate.getText());
+                        return;
+
                     default:
                         break;
                 }
@@ -121,7 +136,14 @@ public class CmdSelectorService {
             }
         }
     }
-    
+
+    private void processingNonCommandMessages(Message inputMessage) {
+        if (inputMessage.text() != null || inputMessage.photo() != null) {
+//            LOGGER.debug("Message\n{}\nsent to: reportSelectorService.switchCmd", inputMessage);
+            reportSelectorService.processingNonCommandMessagesForReport(inputMessage);
+        }
+    }
+
 }
     
     

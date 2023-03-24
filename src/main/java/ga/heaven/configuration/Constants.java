@@ -1,10 +1,18 @@
 package ga.heaven.configuration;
 
 public interface Constants {
+
+    /**
+     * RegExp
+     */
+    String DYNAMIC_ENDPOINT_REGEXP = "^/(.*)/(.*)[0-9]*";
+    String STATIC_ENDPOINT_REGEXP = "^/([^/]*)$";
+
     /**
      * Dynamic endpoints
      */
     String SHELTER_EPT = "shelter";
+    String REPORT_EPT = "submit_report";
     Long ENDPOINT_LIST = 0L;
     
     /**
