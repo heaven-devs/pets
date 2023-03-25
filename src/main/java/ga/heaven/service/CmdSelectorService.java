@@ -66,8 +66,8 @@ public class CmdSelectorService {
                                     , messageTemplate.getKeyboard()
                                     , messageTemplate.getText());
                         } else {
-                            Shelter selectedShelter = shelterService.findById(in.endpoint().getValueAsLong());
-                            Customer customer = customerService.findCustomerByChatId(in.chatId());
+                            Shelter selectedShelter = in.currentShelter(in.endpoint().getValueAsLong());
+                            Customer customer = in.getCustomer();
                             CustomerContext context = customer.getCustomerContext();
                             context.setShelterId(selectedShelter.getId());
                             customerService.updateCustomer(customer);

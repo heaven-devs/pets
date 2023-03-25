@@ -145,9 +145,9 @@ public class TgIn {
                 .findFirst()
                 .orElse(null);
     }
-    public String shelterCaption(Long shelterId) {
+    public Shelter currentShelter(Long shelterId) {
         return this.shelterList.stream().filter(s -> shelterId.equals(s.getId()))
-                .map(Shelter::getName)
+                //.map(Shelter::getName)
                 .findFirst()
                 .orElse(null);
     }
