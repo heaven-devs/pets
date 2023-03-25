@@ -1,5 +1,6 @@
 package ga.heaven.service;
 
+import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
 import ga.heaven.model.*;
 import ga.heaven.repository.NavigationRepository;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class NavigationService {
@@ -23,7 +25,7 @@ public class NavigationService {
     private final CustomerService customerService;
     private final PetService petService;
     private final ReportService reportService;
-    
+
     private final ShelterService shelterService;
     public NavigationService(ShelterRepository shelterRepository, NavigationRepository navigationRepository, CustomerService customerService, PetService petService, ReportService reportService, ShelterService shelterService) {
         this.navigationRepository = navigationRepository;
@@ -36,11 +38,11 @@ public class NavigationService {
     public List<Navigation> findAll() {
         return navigationRepository.findAll();
     }
-    
+
     public List<Navigation> findByLevelView(Long id) {
         return navigationRepository.findNavigationsByLevelViewEqualsOrderById(id);
     }
-    
+
     public Navigation findById(Long id) {
         return navigationRepository.findById(id).orElse(null);
     }
@@ -51,19 +53,18 @@ public class NavigationService {
         MessageTemplate msgTmp = new MessageTemplate();
         msgTmp.setTextMenuCaption(this.findById(level).getText());
         msgTmp.setTextStatus(shelterService.findById(context.getShelterId()).getName());
-        
+        LOGGER.error("findLevel " + level + ": " + findByLevelView(level).stream().map(Navigation::getText).collect(Collectors.toList()).toString());
+
         this.findByLevelView(level).forEach(button -> {
             JsonLogic jsonLogic = new JsonLogic();
             Boolean enabled;
             try {
                 String rulesJson = button.getRules();
-                rulesJson = rulesJson==null ? "true" : rulesJson;
-                /*ObjectMapper mapper = new ObjectMapper();
-                String data = mapper.writeValueAsString(context);*/
+                rulesJson = rulesJson == null ? "true" : rulesJson;
                 Map<String, String> data = new HashMap<>();
                 data.put("shelterId", context.getShelterId().toString());
                 data.put("dialogContext", context.getDialogContext().toString());
-                enabled = (Boolean) jsonLogic.apply(rulesJson,data);
+                enabled = (Boolean) jsonLogic.apply(rulesJson, data);
             } catch (JsonLogicException e) {
                 throw new RuntimeException(e);
             }
@@ -87,6 +88,25 @@ public class NavigationService {
         msgTmp.setTextMenuCaption(this.findById(level).getText());
         msgTmp.setTextStatus(shelterService.findById(context.getShelterId()).getName());
 
+        LOGGER.error("findLevel " + level + ": " + findByLevelView(level).stream().map(Navigation::getText).collect(Collectors.toList()).toString());
+        this.findByLevelView(level).forEach(button -> {
+            JsonLogic jsonLogic = new JsonLogic();
+            Boolean enabled;
+            try {
+                String rulesJson = button.getRules();
+                rulesJson = rulesJson == null ? "true" : rulesJson;
+                Map<String, String> data = new HashMap<>();
+                data.put("shelterId", context.getShelterId().toString());
+                data.put("dialogContext", context.getDialogContext().toString());
+                enabled = (Boolean) jsonLogic.apply(rulesJson, data);
+            } catch (JsonLogicException e) {
+                throw new RuntimeException(e);
+            }
+            if (enabled) {
+                msgTmp.getKeyboard().addRow(new InlineKeyboardButton(button.getText()).callbackData(button.getEndpoint()));
+            }
+        });
+
         this.generateNavigationForPetsReports(customer).forEach(button -> msgTmp.getKeyboard().addRow(new InlineKeyboardButton(button.getText()).callbackData(button.getEndpoint())));
         return msgTmp;
     }
@@ -96,7 +116,7 @@ public class NavigationService {
      * @param customer текущий пользователь
      * @return список кнопок с питомцами
      */
-    private List<Navigation> generateNavigationForPetsReports(Customer customer) {
+    List<Navigation> generateNavigationForPetsReports(Customer customer) {
         long level = 5L;
         List<Navigation> buttons = new ArrayList<>();
         getPetsWithoutTodayReport(customer).forEach(pet -> {

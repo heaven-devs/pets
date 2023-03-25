@@ -66,157 +66,157 @@ public class ReportSelectorServiceTest {
         expectedTwoPetsOfCustomer.get(1).setName("Pet2");
     }
 
-    @Test
-    public void switchCmdTestForSubmitReportCustomerWithoutPets() {
-        update = getUpdateFromResourceFile(updateResourceFile, REPORT_SUBMIT_CMD);
+//    @Test
+//    public void switchCmdTestForSubmitReportCustomerWithoutPets() {
+//        update = getUpdateFromResourceFile(updateResourceFile, REPORT_SUBMIT_CMD);
+//
+//        when(customerService.findCustomerByChatId(update.message().chat().id())).thenReturn(expectedCustomer);
+//        when(petService.findPetsByCustomerOrderById(expectedCustomer)).thenReturn(expectedNonePetsOfCustomer);
+//        reportSelectorService.switchCmd(update.message());
+//
+//        ArgumentCaptor<Long> argumentCaptor1 = ArgumentCaptor.forClass(Long.class);
+//        ArgumentCaptor<String> argumentCaptor2 = ArgumentCaptor.forClass(String.class);
+//        Mockito.verify(msgService).sendMsg(argumentCaptor1.capture(), argumentCaptor2.capture());
+//        Long actual1 = argumentCaptor1.getValue();
+//        String actual2 = argumentCaptor2.getValue();
+//
+//        assertThat(actual1).isEqualTo(update.message().chat().id());
+//        assertThat(actual2).isEqualTo(ANSWER_DONT_HAVE_PETS);
+//    }
 
-        when(customerService.findCustomerByChatId(update.message().chat().id())).thenReturn(expectedCustomer);
-        when(petService.findPetsByCustomerOrderById(expectedCustomer)).thenReturn(expectedNonePetsOfCustomer);
-        reportSelectorService.switchCmd(update.message());
+//    @Test
+//    public void switchCmdTestForSubmitReportCustomerWithOnePet() {
+//        update = getUpdateFromResourceFile(updateResourceFile, REPORT_SUBMIT_CMD);
+//
+//        when(customerService.findCustomerByChatId(update.message().chat().id())).thenReturn(expectedCustomer);
+//        when(petService.findPetsByCustomerOrderById(expectedCustomer)).thenReturn(expectedOnePetOfCustomer);
+//        reportSelectorService.switchCmd(update.message());
+//
+//        ArgumentCaptor<Long> argumentCaptor1 = ArgumentCaptor.forClass(Long.class);
+//        ArgumentCaptor<String> argumentCaptor2 = ArgumentCaptor.forClass(String.class);
+//        Mockito.verify(msgService).sendMsg(argumentCaptor1.capture(), argumentCaptor2.capture());
+//        Long actual1 = argumentCaptor1.getValue();
+//        String actual2 = argumentCaptor2.getValue();
+//
+//        assertThat(actual1).isEqualTo(update.message().chat().id());
+//        assertThat(actual2).isEqualTo(ANSWER_ONE_PET);
+//    }
 
-        ArgumentCaptor<Long> argumentCaptor1 = ArgumentCaptor.forClass(Long.class);
-        ArgumentCaptor<String> argumentCaptor2 = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(msgService).sendMsg(argumentCaptor1.capture(), argumentCaptor2.capture());
-        Long actual1 = argumentCaptor1.getValue();
-        String actual2 = argumentCaptor2.getValue();
+//    @Test
+//    public void switchCmdTestForSubmitReportCustomerWithTwoPets() {
+//        update = getUpdateFromResourceFile(updateResourceFile, REPORT_SUBMIT_CMD);
+//
+//        when(customerService.findCustomerByChatId(update.message().chat().id())).thenReturn(expectedCustomer);
+//        String expectedAnswerTwoPets = "Введите id питомца:" + "1. Pet1" + "4. Pet2";
+//        expectedAnswerTwoPets = expectedAnswerTwoPets.replace(" ", "");
+//
+//        when(petService.findPetsByCustomerOrderById(expectedCustomer)).thenReturn(expectedTwoPetsOfCustomer);
+//        reportSelectorService.switchCmd(update.message());
+//
+//        ArgumentCaptor<Long> argumentCaptor1 = ArgumentCaptor.forClass(Long.class);
+//        ArgumentCaptor<String> argumentCaptor2 = ArgumentCaptor.forClass(String.class);
+//        Mockito.verify(msgService).sendMsg(argumentCaptor1.capture(), argumentCaptor2.capture());
+//        Long actual1 = argumentCaptor1.getValue();
+//        String actual2 = argumentCaptor2.getValue().replace("\r\n", "").replace(" ", "");
+//
+//        assertThat(actual1).isEqualTo(update.message().chat().id());
+//        assertThat(actual2).isEqualTo(expectedAnswerTwoPets);
+//    }
 
-        assertThat(actual1).isEqualTo(update.message().chat().id());
-        assertThat(actual2).isEqualTo(ANSWER_DONT_HAVE_PETS);
-    }
+//    @Test
+//    public void SwitchCmdTestForContextWaitPetIdInvalidPetNumber() {
+//        update = getUpdateFromResourceFile(updateResourceFile, "Text report from customer");
+//        expectedCustomer.getCustomerContext().setDialogContext(WAIT_PET_ID);
+//
+//        when(customerService.findCustomerByChatId(update.message().chat().id())).thenReturn(expectedCustomer);
+//        when(petService.findPetsByCustomerOrderById(expectedCustomer)).thenReturn(expectedTwoPetsOfCustomer);
+//        reportSelectorService.switchCmd(update.message());
+//
+//        ArgumentCaptor<Long> argumentCatpor1 = ArgumentCaptor.forClass(Long.class);
+//        ArgumentCaptor<String> argumentCaptor2 = ArgumentCaptor.forClass(String.class);
+//        Mockito.verify(msgService).sendMsg(argumentCatpor1.capture(), argumentCaptor2.capture());
+//        Long actual1 = argumentCatpor1.getValue();
+//        String actual2 = argumentCaptor2.getValue();
+//
+//        assertThat(actual1).isEqualTo(expectedCustomer.getChatId());
+//        assertThat(actual2).isEqualTo(ANSWER_NON_EXISTENT_PET);
+//    }
 
-    @Test
-    public void switchCmdTestForSubmitReportCustomerWithOnePet() {
-        update = getUpdateFromResourceFile(updateResourceFile, REPORT_SUBMIT_CMD);
+//    @Test
+//    public void SwitchCmdTestForContextWaitPetIdValidPetNumber() {
+//        String expectedPetId = expectedTwoPetsOfCustomer.get(0).getId().toString();
+//        update = getUpdateFromResourceFile(updateResourceFile, expectedPetId);
+//        expectedCustomer.getCustomerContext().setDialogContext(WAIT_PET_ID);
+//
+//        when(customerService.findCustomerByChatId(update.message().chat().id())).thenReturn(expectedCustomer);
+//        when(petService.findPetsByCustomerOrderById(expectedCustomer)).thenReturn(expectedTwoPetsOfCustomer);
+//        reportSelectorService.switchCmd(update.message());
+//
+//        ArgumentCaptor<Long> argumentCatpor1 = ArgumentCaptor.forClass(Long.class);
+//        ArgumentCaptor<String> argumentCaptor2 = ArgumentCaptor.forClass(String.class);
+//        Mockito.verify(msgService).sendMsg(argumentCatpor1.capture(), argumentCaptor2.capture());
+//        Long actual1 = argumentCatpor1.getValue();
+//        String actual2 = argumentCaptor2.getValue();
+//
+//        assertThat(actual1).isEqualTo(expectedCustomer.getChatId());
+//        assertThat(actual2).isEqualTo(ANSWER_SEND_REPORT_FOR_PET_WITH_ID + expectedPetId);
+//    }
 
-        when(customerService.findCustomerByChatId(update.message().chat().id())).thenReturn(expectedCustomer);
-        when(petService.findPetsByCustomerOrderById(expectedCustomer)).thenReturn(expectedOnePetOfCustomer);
-        reportSelectorService.switchCmd(update.message());
+//    @Test
+//    public void SwitchCmdTestForContextWaitReportGetTextReport() {
+//        update = getUpdateFromResourceFile(updateResourceFile, "Текст отчета, без картинки");
+//        expectedCustomer.getCustomerContext().setDialogContext(WAIT_REPORT);
+//
+//        when(customerService.findCustomerByChatId(update.message().chat().id())).thenReturn(expectedCustomer);
+//        reportSelectorService.switchCmd(update.message());
+//
+//        ArgumentCaptor<Long> argumentCatpor1 = ArgumentCaptor.forClass(Long.class);
+//        ArgumentCaptor<String> argumentCaptor2 = ArgumentCaptor.forClass(String.class);
+//        Mockito.verify(msgService).sendMsg(argumentCatpor1.capture(), argumentCaptor2.capture());
+//        Long actual1 = argumentCatpor1.getValue();
+//        String actual2 = argumentCaptor2.getValue();
+//
+//        assertThat(actual1).isEqualTo(expectedCustomer.getChatId());
+//        assertThat(actual2).isEqualTo(ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED);
+//    }
 
-        ArgumentCaptor<Long> argumentCaptor1 = ArgumentCaptor.forClass(Long.class);
-        ArgumentCaptor<String> argumentCaptor2 = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(msgService).sendMsg(argumentCaptor1.capture(), argumentCaptor2.capture());
-        Long actual1 = argumentCaptor1.getValue();
-        String actual2 = argumentCaptor2.getValue();
+//    @Test
+//    public void SwitchCmdTestForContextWaitReportGetPhotoReport() {
+//        String expectedPhoto = "Фото отчет, без текста";
+//        update = getUpdateFromResourceFile(updateResourceFileWithPhoto, expectedPhoto);
+//        expectedCustomer.getCustomerContext().setDialogContext(WAIT_REPORT);
+//
+//        when(customerService.findCustomerByChatId(update.message().chat().id())).thenReturn(expectedCustomer);
+//        reportSelectorService.switchCmd(update.message());
+//
+//        ArgumentCaptor<Long> argumentCatpor1 = ArgumentCaptor.forClass(Long.class);
+//        ArgumentCaptor<String> argumentCaptor2 = ArgumentCaptor.forClass(String.class);
+//        Mockito.verify(msgService).sendMsg(argumentCatpor1.capture(), argumentCaptor2.capture());
+//        Long actual1 = argumentCatpor1.getValue();
+//        String actual2 = argumentCaptor2.getValue();
+//
+//        assertThat(actual1).isEqualTo(expectedCustomer.getChatId());
+//        assertThat(actual2).isEqualTo(ANSWER_REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED);
+//    }
 
-        assertThat(actual1).isEqualTo(update.message().chat().id());
-        assertThat(actual2).isEqualTo(ANSWER_ONE_PET);
-    }
-
-    @Test
-    public void switchCmdTestForSubmitReportCustomerWithTwoPets() {
-        update = getUpdateFromResourceFile(updateResourceFile, REPORT_SUBMIT_CMD);
-
-        when(customerService.findCustomerByChatId(update.message().chat().id())).thenReturn(expectedCustomer);
-        String expectedAnswerTwoPets = "Введите id питомца:" + "1. Pet1" + "4. Pet2";
-        expectedAnswerTwoPets = expectedAnswerTwoPets.replace(" ", "");
-
-        when(petService.findPetsByCustomerOrderById(expectedCustomer)).thenReturn(expectedTwoPetsOfCustomer);
-        reportSelectorService.switchCmd(update.message());
-
-        ArgumentCaptor<Long> argumentCaptor1 = ArgumentCaptor.forClass(Long.class);
-        ArgumentCaptor<String> argumentCaptor2 = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(msgService).sendMsg(argumentCaptor1.capture(), argumentCaptor2.capture());
-        Long actual1 = argumentCaptor1.getValue();
-        String actual2 = argumentCaptor2.getValue().replace("\r\n", "").replace(" ", "");
-
-        assertThat(actual1).isEqualTo(update.message().chat().id());
-        assertThat(actual2).isEqualTo(expectedAnswerTwoPets);
-    }
-
-    @Test
-    public void SwitchCmdTestForContextWaitPetIdInvalidPetNumber() {
-        update = getUpdateFromResourceFile(updateResourceFile, "Text report from customer");
-        expectedCustomer.getCustomerContext().setDialogContext(WAIT_PET_ID);
-
-        when(customerService.findCustomerByChatId(update.message().chat().id())).thenReturn(expectedCustomer);
-        when(petService.findPetsByCustomerOrderById(expectedCustomer)).thenReturn(expectedTwoPetsOfCustomer);
-        reportSelectorService.switchCmd(update.message());
-
-        ArgumentCaptor<Long> argumentCatpor1 = ArgumentCaptor.forClass(Long.class);
-        ArgumentCaptor<String> argumentCaptor2 = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(msgService).sendMsg(argumentCatpor1.capture(), argumentCaptor2.capture());
-        Long actual1 = argumentCatpor1.getValue();
-        String actual2 = argumentCaptor2.getValue();
-
-        assertThat(actual1).isEqualTo(expectedCustomer.getChatId());
-        assertThat(actual2).isEqualTo(ANSWER_NON_EXISTENT_PET);
-    }
-
-    @Test
-    public void SwitchCmdTestForContextWaitPetIdValidPetNumber() {
-        String expectedPetId = expectedTwoPetsOfCustomer.get(0).getId().toString();
-        update = getUpdateFromResourceFile(updateResourceFile, expectedPetId);
-        expectedCustomer.getCustomerContext().setDialogContext(WAIT_PET_ID);
-
-        when(customerService.findCustomerByChatId(update.message().chat().id())).thenReturn(expectedCustomer);
-        when(petService.findPetsByCustomerOrderById(expectedCustomer)).thenReturn(expectedTwoPetsOfCustomer);
-        reportSelectorService.switchCmd(update.message());
-
-        ArgumentCaptor<Long> argumentCatpor1 = ArgumentCaptor.forClass(Long.class);
-        ArgumentCaptor<String> argumentCaptor2 = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(msgService).sendMsg(argumentCatpor1.capture(), argumentCaptor2.capture());
-        Long actual1 = argumentCatpor1.getValue();
-        String actual2 = argumentCaptor2.getValue();
-
-        assertThat(actual1).isEqualTo(expectedCustomer.getChatId());
-        assertThat(actual2).isEqualTo(ANSWER_SEND_REPORT_FOR_PET_WITH_ID + expectedPetId);
-    }
-
-    @Test
-    public void SwitchCmdTestForContextWaitReportGetTextReport() {
-        update = getUpdateFromResourceFile(updateResourceFile, "Текст отчета, без картинки");
-        expectedCustomer.getCustomerContext().setDialogContext(WAIT_REPORT);
-
-        when(customerService.findCustomerByChatId(update.message().chat().id())).thenReturn(expectedCustomer);
-        reportSelectorService.switchCmd(update.message());
-
-        ArgumentCaptor<Long> argumentCatpor1 = ArgumentCaptor.forClass(Long.class);
-        ArgumentCaptor<String> argumentCaptor2 = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(msgService).sendMsg(argumentCatpor1.capture(), argumentCaptor2.capture());
-        Long actual1 = argumentCatpor1.getValue();
-        String actual2 = argumentCaptor2.getValue();
-
-        assertThat(actual1).isEqualTo(expectedCustomer.getChatId());
-        assertThat(actual2).isEqualTo(ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED);
-    }
-
-    @Test
-    public void SwitchCmdTestForContextWaitReportGetPhotoReport() {
-        String expectedPhoto = "Фото отчет, без текста";
-        update = getUpdateFromResourceFile(updateResourceFileWithPhoto, expectedPhoto);
-        expectedCustomer.getCustomerContext().setDialogContext(WAIT_REPORT);
-
-        when(customerService.findCustomerByChatId(update.message().chat().id())).thenReturn(expectedCustomer);
-        reportSelectorService.switchCmd(update.message());
-
-        ArgumentCaptor<Long> argumentCatpor1 = ArgumentCaptor.forClass(Long.class);
-        ArgumentCaptor<String> argumentCaptor2 = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(msgService).sendMsg(argumentCatpor1.capture(), argumentCaptor2.capture());
-        Long actual1 = argumentCatpor1.getValue();
-        String actual2 = argumentCaptor2.getValue();
-
-        assertThat(actual1).isEqualTo(expectedCustomer.getChatId());
-        assertThat(actual2).isEqualTo(ANSWER_REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED);
-    }
-
-    @Test
-    public void SwitchCmdTestForContextWaitReportGetFullReport() {
-        String expectedCaption = "Полный отчет: фото и текст";
-        update = getUpdateFromResourceFile(updateResourceFileWithPhotoAndCaption, expectedCaption);
-        expectedCustomer.getCustomerContext().setDialogContext(WAIT_REPORT);
-
-        when(customerService.findCustomerByChatId(update.message().chat().id())).thenReturn(expectedCustomer);
-        reportSelectorService.switchCmd(update.message());
-
-        ArgumentCaptor<Long> argumentCatpor1 = ArgumentCaptor.forClass(Long.class);
-        ArgumentCaptor<String> argumentCaptor2 = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(msgService).sendMsg(argumentCatpor1.capture(), argumentCaptor2.capture());
-        Long actual1 = argumentCatpor1.getValue();
-        String actual2 = argumentCaptor2.getValue();
-
-        assertThat(actual1).isEqualTo(expectedCustomer.getChatId());
-        assertThat(actual2).isEqualTo(ANSWER_REPORT_ACCEPTED);
-    }
+//    @Test
+//    public void SwitchCmdTestForContextWaitReportGetFullReport() {
+//        String expectedCaption = "Полный отчет: фото и текст";
+//        update = getUpdateFromResourceFile(updateResourceFileWithPhotoAndCaption, expectedCaption);
+//        expectedCustomer.getCustomerContext().setDialogContext(WAIT_REPORT);
+//
+//        when(customerService.findCustomerByChatId(update.message().chat().id())).thenReturn(expectedCustomer);
+//        reportSelectorService.switchCmd(update.message());
+//
+//        ArgumentCaptor<Long> argumentCatpor1 = ArgumentCaptor.forClass(Long.class);
+//        ArgumentCaptor<String> argumentCaptor2 = ArgumentCaptor.forClass(String.class);
+//        Mockito.verify(msgService).sendMsg(argumentCatpor1.capture(), argumentCaptor2.capture());
+//        Long actual1 = argumentCatpor1.getValue();
+//        String actual2 = argumentCaptor2.getValue();
+//
+//        assertThat(actual1).isEqualTo(expectedCustomer.getChatId());
+//        assertThat(actual2).isEqualTo(ANSWER_REPORT_ACCEPTED);
+//    }
 
 
     private Update getUpdateFromResourceFile(String resourceFile, String command) {

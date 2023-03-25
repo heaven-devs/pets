@@ -6,11 +6,8 @@ import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.PhotoSize;
 import com.pengrad.telegrambot.request.GetFile;
 import com.pengrad.telegrambot.response.GetFileResponse;
-import ga.heaven.model.Customer;
+import ga.heaven.model.*;
 import ga.heaven.model.CustomerContext.Context;
-import ga.heaven.model.Pet;
-import ga.heaven.model.Photo;
-import ga.heaven.model.Report;
 import ga.heaven.repository.PhotoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +19,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static ga.heaven.configuration.Constants.*;
 import static ga.heaven.configuration.ReportConstants.*;
@@ -39,13 +35,14 @@ public class ReportSelectorService {
     private final PetService petService;
     private final TelegramBot telegramBot;
     private final PhotoRepository photoRepository;
+    private final NavigationService navigationService;
 
     private Message inputMessage;
     private Customer customer;
     private String responseText;
 
     public ReportSelectorService(AppLogicService appLogicService, MsgService msgService, ReportService reportService, CustomerService customerService, PetService petService,
-                                 TelegramBot telegramBot, PhotoRepository photoRepository) {
+                                 TelegramBot telegramBot, PhotoRepository photoRepository, NavigationService navigationService) {
         this.appLogicService = appLogicService;
         this.msgService = msgService;
         this.reportService = reportService;
@@ -53,78 +50,8 @@ public class ReportSelectorService {
         this.petService = petService;
         this.telegramBot = telegramBot;
         this.photoRepository = photoRepository;
-    }
 
-    /**
-     * метод проверяет были ли вызваны команды по работе с отчетом, или было отправлено сообщение с текстом/фото
-     * @param inputMessage сообщение полученное от пользователя
-     */
-    public void switchCmd(Message inputMessage) {
-        this.inputMessage = inputMessage;
-        customer = customerService.findCustomerByChatId(inputMessage.chat().id());
-
-        if (customer != null && inputMessage.text() != null
-                && inputMessage.text().equals(REPORT_SUBMIT_CMD)) {
-            msgService.sendMsg(inputMessage.chat().id(), processingSubmitReport());
-        } else if (customer != null && inputMessage.text() == null || !inputMessage.text().startsWith("/") ) {
-            msgService.sendMsg(inputMessage.chat().id(), processingUserMessages());
-        }
-    }
-
-    /**
-     * метод запускается, если пользователь отправил команду "/submit_report" и отправляет ответ пользователю
-     * в зависимости от того сколько питомцев у пользователя, и по каким из них не сдан сегодня отчет.
-     */
-    private String processingSubmitReport() {
-        List<Pet> customerPetList = petService.findPetsByCustomerOrderById(customer);
-        System.out.println("customerPetList = " + customerPetList);
-        if (customerPetList.isEmpty()) {
-            appLogicService.updateCustomerContext(customer, FREE);
-            return ANSWER_DONT_HAVE_PETS;
-        }
-
-        List<Pet> customerPetListWithoutTodayReport = getPetsWithoutTodayReport();
-        if (customerPetListWithoutTodayReport.isEmpty()) {
-            responseText = ANSWER_NO_NEED_TO_REPORT;
-            appLogicService.updateCustomerContext(customer, FREE);
-        } else if (customerPetListWithoutTodayReport.size() == 1) {
-            Pet pet = customerPetListWithoutTodayReport.get(0);
-            responseText = ANSWER_ONE_PET + "\"" + pet.getName() + "\"";
-            appLogicService.updateCustomerContext(customer, WAIT_REPORT, pet.getId());
-        } else {
-            responseText = generateListOfCustomersPets(customerPetListWithoutTodayReport);
-            appLogicService.updateCustomerContext(customer, WAIT_PET_ID, 0);
-        }
-        return responseText;
-    }
-
-    /**
-     * Метод ищет питомцев пользователя, для которых сегодня не был сдан отчет.
-     * @return список питомцев
-     */
-    private List<Pet> getPetsWithoutTodayReport() {
-        List<Pet> currentCustomerPetList = petService.findPetsByCustomer(customer);
-        List<Pet> petWithoutReportList = new ArrayList<>();
-        for (Pet pet : currentCustomerPetList) {
-            Report report = reportService.findTodayCompletedReportsByPetId(pet.getId());
-            if (null == report) {
-                petWithoutReportList.add(pet);
-            }
-        }
-        return petWithoutReportList;
-    }
-
-    /**
-     * Метод формирует сообщение пользователю, со списком его питомцев
-     * @param customerPetList Список питомцев, на поручении у пользователя
-     * @return список питомцев
-     */
-    private String generateListOfCustomersPets(List<Pet> customerPetList) {
-        StringBuilder sb = new StringBuilder(ANSWER_ENTER_PET_ID + CR);
-        for (Pet pet : customerPetList) {
-            sb.append(pet.getId()).append(". ").append(pet.getName()).append(CR);
-        }
-        return sb.toString();
+        this.navigationService = navigationService;
     }
 
     /**
@@ -135,36 +62,10 @@ public class ReportSelectorService {
         responseText = "";
         Context context = customer.getCustomerContext().getDialogContext();
         switch (context) {
-            case WAIT_PET_ID: responseText = processingMsgWaitPetId(); break;
             case WAIT_REPORT: responseText = processingMsgWaitReport(); break;
             case FREE: addAdditionalPhoto(); break;
         }
 
-        return responseText;
-    }
-
-    /**
-     * Метод формирует сообщение пользователю, когда пользователь выбирает для какого животного хочет сдать отчет
-     * @return текст ответа пользователю
-     */
-    private String processingMsgWaitPetId() {
-        responseText = ANSWER_NON_EXISTENT_PET;
-        List<String> validIdList = petService.findPetsByCustomerOrderById(customer).stream()
-                .map(Pet::getId)
-                .map(Object::toString)
-                .collect(Collectors.toList());
-
-        if (validIdList.contains(inputMessage.text())) {
-            Report report = reportService.findTodayReportsByPetId(Long.parseLong(inputMessage.text()));
-            if (report == null) {
-                responseText = ANSWER_SEND_REPORT_FOR_PET_WITH_ID + inputMessage.text();
-            } else if (report.getPetReport() == null) {
-                responseText = ANSWER_PHOTO_REPORT_ACCEPTED;
-            } else if (photoRepository.findAnyPhotoByReportId(report.getId()) == null) {
-                responseText = ANSWER_TEST_REPORT_ACCEPTED;
-            }
-            appLogicService.updateCustomerContext(customer, WAIT_REPORT, Long.parseLong(inputMessage.text()));
-        }
         return responseText;
     }
 
@@ -201,6 +102,10 @@ public class ReportSelectorService {
     }
 
     public String processingWaitReport(Message inputMessage, long petId) {
+        customer.getCustomerContext().setDialogContext(WAIT_REPORT);
+        customer.getCustomerContext().setCurrentPetId(petId);
+        customerService.updateCustomer(customer);
+
         this.inputMessage = inputMessage;
         Pet pet = petService.read(petId);
         Report todayReport = reportService.findTodayReportsByPetId(petId);
@@ -211,31 +116,12 @@ public class ReportSelectorService {
 
         if (isCommand()) {
 //            Report report = reportService.findTodayReportsByPetId(petId);
-  //          appLogicService.updateCustomerContext(customer, WAIT_REPORT, Long.parseLong(inputMessage.text()))
+            //          appLogicService.updateCustomerContext(customer, WAIT_REPORT, Long.parseLong(inputMessage.text()))
         } else {
             LOGGER.error("введена не команда");
             return inputMessage.text() != null ? inputMessage.text() :
                     (inputMessage.photo() != null ? inputMessage.photo().toString() : "");
         }
-
-
-
-
-//        if (isHavePhotoInReport()) {
-//            savePhotoToDB(todayReport);
-//            responseText = ANSWER_REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED;
-//        }
-//
-//        if (isHaveTextInReport(todayReport)) {
-//            responseText = ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED;
-//            todayReport.setPetReport(getReportText());
-//            reportService.updateReport(todayReport);
-//        }
-//
-//        if (isHavePhotoAndTextInReport(todayReport)) {
-//            responseText = ANSWER_REPORT_ACCEPTED;
-//            appLogicService.updateCustomerContext(customer, FREE);
-//        }
 
         return responseText;
     }
@@ -334,12 +220,17 @@ public class ReportSelectorService {
     public void processingNonCommandMessagesForReport(Message inputMessage) {
         this.inputMessage = inputMessage;
         customer = customerService.findCustomerByChatId(inputMessage.chat().id());
-
-        if (customer != null && inputMessage.text() != null
-                && inputMessage.text().equals(REPORT_SUBMIT_CMD)) {
-            msgService.sendMsg(inputMessage.chat().id(), processingSubmitReport());
-        } else if (customer != null && inputMessage.text() == null || !inputMessage.text().startsWith("/") ) {
-            msgService.sendMsg(inputMessage.chat().id(), processingUserMessages());
+        String response = processingUserMessages();
+        msgService.sendMsg(inputMessage.chat().id(), response);
+        if (response.equals(ANSWER_REPORT_ACCEPTED)) {
+            MessageTemplate messageTemplate = navigationService.prepareMessagePetChoice(inputMessage.chat().id(), 1L);
+            msgService.interactiveMsg(inputMessage.chat().id(),
+                    messageTemplate.getKeyboard(),
+                    messageTemplate.getText());
         }
     }
 }
+
+// todo: если создан отчет и в нем нет фото, он не отображается в меню, хотя должен.
+// todo: если отчеты по всем питомцам сданы, то не выводить меню "сдать отчет", а присылать сообщение,
+//      что отчеты сданы (а лучше добавить кнопку "отредактировать сданный отчет")
