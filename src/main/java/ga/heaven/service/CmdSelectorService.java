@@ -50,12 +50,12 @@ public class CmdSelectorService {
         if ((in.text() != null)
                 && (in.chatId() != null)
         ) {
-            if (in.endpoint().getType() == DYNAMIC) {
+            if (DYNAMIC.equals(in.endpoint().getType())) {
                 
                 LOGGER.debug("Dynamic endpoint message\n{}\nsent to: switchDynCmd methods", in);
                 switch (in.endpoint().getName()) {
                     case SHELTER_EPT:
-                        if (in.endpoint().getValueAsLong().equals(ENDPOINT_LIST)) {
+                        if (ENDPOINT_LIST.equals(in.endpoint().getValueAsLong())) {
                             messageTemplate = navigationService.prepareMessageTemplate(in.chatId(), 2L);
                             in.getShelterList()
                                     .forEach(shelter -> messageTemplate.getKeyboard()
@@ -80,7 +80,7 @@ public class CmdSelectorService {
                         return;
                 }
                 
-            } else if (in.endpoint().getType() == STATIC) {
+            } else if (STATIC.equals(in.endpoint().getType())) {
                 LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", in);
                 switch (in.endpoint().getName()) {
                     case START_CMD:

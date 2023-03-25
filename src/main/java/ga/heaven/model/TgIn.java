@@ -22,8 +22,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static ga.heaven.model.TgIn.Endpoint.Type.DYNAMIC;
-import static ga.heaven.model.TgIn.Endpoint.Type.STATIC;
+import static ga.heaven.model.TgIn.Endpoint.Type.*;
 
 @Getter
 @Setter
