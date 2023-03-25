@@ -3,7 +3,7 @@ package ga.heaven.service;
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import ga.heaven.model.*;
-import ga.heaven.model.CustomerContext.*;
+import ga.heaven.model.CustomerContext.Context;
 import ga.heaven.repository.ShelterRepository;
 import ga.heaven.repository.VolunteerRepository;
 import org.slf4j.Logger;
@@ -36,6 +36,8 @@ public class AppLogicService {
         this.navigationService = navigationService;
     }
     
+    
+
     public void initConversation(Long chatId) {
         if (!customerService.isPresent(chatId)) {
             msgService.sendMsg(chatId, infoService.findInfoByArea(COMMON_INFO_FIELD).getInstructions());

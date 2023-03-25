@@ -2,16 +2,16 @@ package ga.heaven.listener;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
-import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
-import ga.heaven.service.CmdSelectorService;
-import ga.heaven.service.MsgService;
+import ga.heaven.model.TgIn;
+import ga.heaven.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class TelegramBotUpdatesListener implements UpdatesListener {
@@ -22,13 +22,18 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     
     private final CmdSelectorService cmdSelectorService;
     
-    private final MsgService msgService;
     
+    private static TgIn tgInGlobal;
     
-    public TelegramBotUpdatesListener(TelegramBot telegramBot, CmdSelectorService cmdSelectorService, MsgService msgService) {
+    public TelegramBotUpdatesListener(TelegramBot telegramBot, CmdSelectorService cmdSelectorService, NavigationService navigationService, ShelterService shelterService) {
         this.telegramBot = telegramBot;
         this.cmdSelectorService = cmdSelectorService;
-        this.msgService = msgService;
+    
+    
+        tgInGlobal = new TgIn();
+        tgInGlobal
+                .setNavigationList(navigationService.findAll())
+                .setShelterList(shelterService.findAll());
     }
     
     @PostConstruct
@@ -40,11 +45,11 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     public int process(List<Update> updates) {
         updates.forEach(update -> {
             LOGGER.info("Processing update: {}", update);
-            Message msg = msgService.msgExtractor(update);
-            if (msg != null) {
-                cmdSelectorService.processingMsg(msg);
+            TgIn in = tgInGlobal.newInstance().update(update);
+            if (Objects.nonNull(in.chatId())) {
+                cmdSelectorService.processingMsg(in);
             }
-            
+            LOGGER.info("current in: {}", in);
         });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }

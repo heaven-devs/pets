@@ -31,6 +31,15 @@ public class MsgService {
         this.customerService = customerService;
     }
     
+    
+    public void getMe() {
+        GetMe g = new GetMe();
+        LOGGER.error(tgBot.execute(g).user().toString());
+        Message m = new Message();
+    }
+    
+    
+    
     public void reqContactMsg(Long chatId, String inputMessage) {
         SendMessage sendMessage = new SendMessage(chatId, inputMessage);
         KeyboardButton keyboardButton = new KeyboardButton("Send contact");
@@ -78,7 +87,7 @@ public class MsgService {
         }
     }
     
-    public Message msgExtractor(Update updateObj) {
+    /*public Message msgExtractor(Update updateObj) {
         Message msgObj = new Message();
         ObjectNode msgJSON = null;
         String msgStringJSON;
@@ -112,10 +121,10 @@ public class MsgService {
             try {
                 mapper = new ObjectMapper();
                 msgJSON = (ObjectNode) mapper.readTree(msgStringJSON);
-                /*if (updateObj.callbackQuery().from() != null) {
+                *//*if (updateObj.callbackQuery().from() != null) {
                     mapper = new ObjectMapper();
                     msgJSON.set("from", mapper.readTree(BotUtils.toJson(updateObj.callbackQuery().from())));
-                }*/
+                }*//*
                 
                 if (updateObj.callbackQuery().data() != null) {
                     msgJSON.put("text", updateObj.callbackQuery().data());
@@ -137,7 +146,7 @@ public class MsgService {
         
         return msgObj;
         
-    }
+    }*/
     
     
     public void interactiveMsg(Long chatId, InlineKeyboardMarkup newKeyboard, String newText) {
