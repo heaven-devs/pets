@@ -7,15 +7,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 import static ga.heaven.configuration.Constants.*;
-import static ga.heaven.model.TgIn.Endpoint.Type.DYNAMIC;
+import static ga.heaven.model.TgIn.Endpoint.Type.*;
 
 @Service
 public class CmdSelectorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CmdSelectorService.class);
-    private static final String STATIC_ENDPOINT_REGEXP = "^/([^/]*)$";
     private final MsgService msgService;
     private final AppLogicService appLogicService;
     private final PetSelectorService petSelectorService;
@@ -82,10 +80,9 @@ public class CmdSelectorService {
                         return;
                 }
                 
-            } else if (Pattern.compile(STATIC_ENDPOINT_REGEXP).matcher(in.text()).matches()) {
+            } else if (in.endpoint().getType() == STATIC) {
                 LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", in);
-                switch (in.text()) {
-                    
+                switch (in.endpoint().getName()) {
                     case START_CMD:
                         appLogicService.initConversation(in.chatId());
                         Integer id = in.messageId();
