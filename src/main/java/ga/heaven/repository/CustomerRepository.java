@@ -12,5 +12,10 @@ import java.util.Optional;
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Optional<Customer> findCustomerByChatId(Long chatId);
 
+    /**
+     *
+     * @param id value of "id" field
+     * @return found record "Customer"
+     */
     Optional<Customer> findCustomerById(Long id);
 }
