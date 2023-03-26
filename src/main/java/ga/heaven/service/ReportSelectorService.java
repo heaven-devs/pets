@@ -9,9 +9,9 @@ import com.pengrad.telegrambot.response.GetFileResponse;
 import ga.heaven.model.Customer;
 import ga.heaven.model.CustomerContext.Context;
 import ga.heaven.model.Pet;
-import ga.heaven.model.Photo;
+import ga.heaven.model.ReportPhoto;
 import ga.heaven.model.Report;
-import ga.heaven.repository.PhotoRepository;
+import ga.heaven.repository.ReportPhotoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -37,21 +37,21 @@ public class ReportSelectorService {
     private final CustomerService customerService;
     private final PetService petService;
     private final TelegramBot telegramBot;
-    private final PhotoRepository photoRepository;
+    private final ReportPhotoRepository reportPhotoRepository;
 
     private Message inputMessage;
     private Customer customer;
     private String responseText;
 
     public ReportSelectorService(AppLogicService appLogicService, MsgService msgService, ReportService reportService, CustomerService customerService, PetService petService,
-                                 TelegramBot telegramBot, PhotoRepository photoRepository) {
+                                 TelegramBot telegramBot, ReportPhotoRepository reportPhotoRepository) {
         this.appLogicService = appLogicService;
         this.msgService = msgService;
         this.reportService = reportService;
         this.customerService = customerService;
         this.petService = petService;
         this.telegramBot = telegramBot;
-        this.photoRepository = photoRepository;
+        this.reportPhotoRepository = reportPhotoRepository;
     }
 
     /**
@@ -136,7 +136,7 @@ public class ReportSelectorService {
         switch (context) {
             case WAIT_PET_ID: responseText = processingMsgWaitPetId(); break;
             case WAIT_REPORT: responseText = processingMsgWaitReport(); break;
-            case FREE: addAdditionalPhoto(); break;
+            case FREE: responseText = addAdditionalPhoto(); break;
         }
 
         return responseText;
@@ -159,7 +159,7 @@ public class ReportSelectorService {
                 responseText = ANSWER_SEND_REPORT_FOR_PET_WITH_ID + inputMessage.text();
             } else if (report.getPetReport() == null) {
                 responseText = ANSWER_PHOTO_REPORT_ACCEPTED;
-            } else if (photoRepository.findAnyPhotoByReportId(report.getId()) == null) {
+            } else if (reportPhotoRepository.findAnyPhotoByReportId(report.getId()) == null) {
                 responseText = ANSWER_TEST_REPORT_ACCEPTED;
             }
             appLogicService.updateCustomerContext(customer, WAIT_REPORT, Long.parseLong(inputMessage.text()));
@@ -206,7 +206,7 @@ public class ReportSelectorService {
      * @return имеется или нет
      */
     private boolean isHavePhotoAndTextInReport(Report report) {
-        return (inputMessage.photo() != null || (report != null && photoRepository.findAnyPhotoByReportId(report.getId()) != null))
+        return (inputMessage.photo() != null || (report != null && reportPhotoRepository.findAnyPhotoByReportId(report.getId()) != null))
                 && (inputMessage.caption() != null || inputMessage.text() != null || (report != null && report.getPetReport() != null));
     }
 
@@ -220,8 +220,8 @@ public class ReportSelectorService {
 
     /**
      * Имеется ли в текущем сообщении от пользователя фото
-     * @param todayReport
-     * @return
+     * @param todayReport текущий отчет
+     * @return имеется или нет
      */
     private boolean isHaveTextInReport(Report todayReport) {
         return (todayReport == null || todayReport.getPetReport() == null)
@@ -239,22 +239,26 @@ public class ReportSelectorService {
     }
 
     /**
-     * Метод добавляет к отчету дополнительные фото
+     * Метод добавляет к отчету дополнительные фото и возвращает сообщение пользователю об успехе добавления картинки в отчет.
+     * @return Сообщение пользователю
      */
-    private void addAdditionalPhoto() {
+    private String addAdditionalPhoto() {
         Long petId = customer.getCustomerContext().getCurrentPetId();
         Report todayReport = reportService.findTodayReportsByPetId(petId);
         if (inputMessage.photo() == null || todayReport == null) {
-            return;
+            return "";
         }
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime reportTime = todayReport.getDate();
         long diffTime = ChronoUnit.SECONDS.between(reportTime, currentTime);
         if (diffTime < 180) {
             savePhotoToDB(todayReport);
+            responseText = ANSWER_PHOTO_ADD_TO_REPORT;
         } else {
             appLogicService.updateCustomerContext(customer, FREE, 0);
+            responseText = ANSWER_UNRECOGNIZED_PHOTO;
         }
+        return responseText;
     }
 
     /**
@@ -265,24 +269,24 @@ public class ReportSelectorService {
 
         PhotoSize[] photoSizes = inputMessage.photo();
         PhotoSize photoSize = Arrays.stream(photoSizes)
-                .max(Comparator.comparing(e -> e.fileSize()))
+                .max(Comparator.comparing(PhotoSize::fileSize))
                 .orElseThrow(RuntimeException::new);
 
-        Photo photo = new Photo();
-        photo.setReport(report);
+        ReportPhoto reportPhoto = new ReportPhoto();
+        reportPhoto.setReport(report);
         GetFile getFile = new GetFile(photoSize.fileId());
         GetFileResponse getFileResponse = telegramBot.execute(getFile);
         if (getFileResponse.isOk()) {
             File file = getFileResponse.file();
             String extension = StringUtils.getFilenameExtension(file.filePath());
-            photo.setMediaType(extension);
+            reportPhoto.setMediaType(extension);
             try {
                 byte[] image = telegramBot.getFileContent(file);
-                photo.setPhoto(image);
+                reportPhoto.setPhoto(image);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
-        photoRepository.save(photo);
+        reportPhotoRepository.save(reportPhoto);
     }
 }

@@ -22,5 +22,7 @@ public class ReportConstants {
     public static final String ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED =
             "<b>Отчет не принят</b>" + CR +
                     "Пришлите фотографию питомца";
+    public static final String ANSWER_PHOTO_ADD_TO_REPORT = "Фото добавлено к отчету";
+    public static final String ANSWER_UNRECOGNIZED_PHOTO = "Нераспознанная фотография";
 
 }

@@ -30,8 +30,8 @@ public class ReportServiceTest {
 
     private List<Report> listReportsTest() {
         LocalDateTime d = LocalDate.of(2023, 3, 5).atStartOfDay();
-        Report report1 = createTestReport(1L, "test1", d, "12.jpeg", 1000L, null, null, null);
-        Report report2 = createTestReport(2L, "test2", null, null, 1050L, null, null, null);
+        Report report1 = createTestReport(1L, "test1", d, null);
+        Report report2 = createTestReport(2L, "test2", null, null);
 
         List<Report> reports = new ArrayList<>();
         reports.add(report1);
@@ -40,15 +40,11 @@ public class ReportServiceTest {
         return reports;
     }
 
-    private Report createTestReport(long id, String petReport, LocalDateTime date, String filePath, Long fileSize, String mediaType, byte[] photo, Pet petId) {
+    private Report createTestReport(long id, String petReport, LocalDateTime date, Pet petId) {
         Report report = new Report();
         report.setId(id);
         report.setPetReport(petReport);
         report.setDate(date);
-        report.setFilePath(filePath);
-        report.setFileSize(fileSize);
-        report.setMediaType(mediaType);
-        report.setPhoto(photo);
         report.setPet(petId);
         return (report);
     }
@@ -58,10 +54,6 @@ public class ReportServiceTest {
         r1.setId(1L);
         r1.setPetReport("report");
         r1.setDate(LocalDate.of(2023, 6, 7).atStartOfDay());
-        r1.setFilePath(null);
-        r1.setFileSize(750L);
-        r1.setMediaType("12345");
-        r1.setPhoto(null);
         r1.setPet(null);
         return r1;
 
@@ -72,10 +64,6 @@ public class ReportServiceTest {
         r2.setId(5L);
         r2.setPetReport("report2");
         r2.setDate(LocalDate.of(2023, 3, 5).atStartOfDay());
-        r2.setFilePath("file");
-        r2.setFileSize(750L);
-        r2.setMediaType("12345");
-        r2.setPhoto(null);
         r2.setPet(null);
         return r2;
     }
@@ -98,7 +86,6 @@ public class ReportServiceTest {
 
         Assertions.assertThat(actual.getId()).isEqualTo(testReport().getId());
         Assertions.assertThat(actual.getPetReport()).isEqualTo(testReport().getPetReport());
-        Assertions.assertThat(actual.getPhoto()).isEqualTo(testReport().getPhoto());
         Assertions.assertThat(actual.getDate()).isEqualTo(testReport().getDate());
 
         Assertions.assertThat(reportService.findReportById(5L).getId()).isNotEqualTo(testReport().getId());
@@ -110,7 +97,7 @@ public class ReportServiceTest {
         Report expected = null;
         Report actual = reportService.deleteReport(2L);
         Assertions.assertThat(actual).isEqualTo(expected);
-        Report report = createTestReport(1L, "test1", LocalDate.of(2023, 3, 5).atStartOfDay(), "12.jpeg", 1000L, null, null, null);
+        Report report = createTestReport(1L, "test1", LocalDate.of(2023, 3, 5).atStartOfDay(), null);
         when(reportRepository.findById(1L)).thenReturn(Optional.of(report));
 
         expected = report;
@@ -126,7 +113,7 @@ public class ReportServiceTest {
 
     @Test
     public void updateReport(){
-        Report expected = createTestReport(1L, "test1", LocalDate.of(2023, 3, 5).atStartOfDay(), "12.jpeg", 1000L, null, null, null);
+        Report expected = createTestReport(1L, "test1", LocalDate.of(2023, 3, 5).atStartOfDay(), null);
         when(reportRepository.findById(expected.getId())).thenReturn(Optional.ofNullable(expected));
         when(reportRepository.save(expected)).thenReturn(expected);
         Report actual = reportService.updateReport(expected);
