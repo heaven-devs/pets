@@ -24,8 +24,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ga.heaven.configuration.Constants.REPORT_SUBMIT_CMD;
-import static ga.heaven.configuration.ReportConstants.*;
+import static ga.heaven.configuration.Constants.*;
 import static ga.heaven.model.CustomerContext.Context.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;

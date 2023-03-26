@@ -22,7 +22,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static ga.heaven.configuration.Constants.*;
-import static ga.heaven.configuration.ReportConstants.*;
 import static ga.heaven.model.CustomerContext.Context.*;
 
 @Service
@@ -55,16 +54,29 @@ public class ReportSelectorService {
     }
 
     /**
-     * метод проверяет были ли вызваны команды по работе с отчетом, или было отправлено сообщение с текстом/фото
-     * @param inputMessage сообщение полученное от пользователя
+     * Обрабатываю текстовые сообщения пользователя (которые начинаются не с /) и фото
+     *
+     * @param inputMessage сообщение от пользователя
      */
-    public void switchCmd(Message inputMessage) {
+    public void processingNonCommandMessagesForReport(Message inputMessage) {
         this.inputMessage = inputMessage;
         customer = customerService.findCustomerByChatId(inputMessage.chat().id());
+        String response = processingUserMessages();
+        msgService.sendMsg(inputMessage.chat().id(), response);
+
+        // добавляю меню после сообщения о том, что отчет принят
+        if (response.equals(ANSWER_REPORT_ACCEPTED)) {
+            msgService.sendMsg(inputMessage.chat().id(), "1");
+            MessageTemplate messageTemplate = navigationService.prepareMessageTemplate(inputMessage.chat().id(), 1L);
+            msgService.interactiveMsg(inputMessage.chat().id(),
+                    messageTemplate.getKeyboard(),
+                    messageTemplate.getText());
+        }
     }
 
     /**
-     * Метод выбирает нужный для запуска метод в зависимости от контекста диалога с пользователем
+     * Получил текст/фото (не команду) от пользователя, в зависимости от контекста выбираю что делать дальше
+     * контекст FREE может быть, если отчет уже есть, а пользователь добавляет дополнительные фото.
      * @return текст ответа пользователю
      */
     private String processingUserMessages() {
@@ -79,13 +91,15 @@ public class ReportSelectorService {
     }
 
     /**
-     * Метод формирует ответ пользоваетлю и записывает данные в БД, когда пользователь отправляет отчет
+     * Получил текст/фото от пользователя (не команду). Метод формирует ответ пользоваетлю
+     * и записывает данные в БД, когда пользователь отправляет отчет
+     *
      * @return текст ответа пользователю
      */
     private String processingMsgWaitReport() {
         Long petId = customer.getCustomerContext().getCurrentPetId();
         Pet pet = petService.read(petId);
-        Report todayReport = reportService.findTodayReportsByPetId(petId);
+        Report todayReport = reportService.findTodayReportByPetId(petId);
         todayReport = (null == todayReport) ? new Report() : todayReport;
         todayReport.setPet(pet);
         todayReport.setDate(LocalDateTime.now());
@@ -110,33 +124,39 @@ public class ReportSelectorService {
         return responseText;
     }
 
-    public String processingWaitReport(Message inputMessage, long petId) {
+    /**
+     * Обработка нажатия кнопки меню с одним из питомцев.
+     *
+     * @param inputMessage сообщение от пользователя (нажатие кнопки)
+     * @param petId id выбранного питомца
+     * @return ответ бота
+     */
+    public String processingPetChoice(Message inputMessage, long petId) {
+        this.inputMessage = inputMessage;
+
+        customer = customerService.findCustomerByChatId(inputMessage.chat().id());
         customer.getCustomerContext().setDialogContext(WAIT_REPORT);
         customer.getCustomerContext().setCurrentPetId(petId);
         customerService.updateCustomer(customer);
 
-        this.inputMessage = inputMessage;
         Pet pet = petService.read(petId);
-        Report todayReport = reportService.findTodayReportsByPetId(petId);
-        todayReport = (null == todayReport) ? new Report() : todayReport;
-        todayReport.setPet(pet);
-        todayReport.setDate(LocalDateTime.now());
-        responseText = ANSWER_WAIT_REPORT;
 
-        if (isCommand()) {
-//            Report report = reportService.findTodayReportsByPetId(petId);
-            //          appLogicService.updateCustomerContext(customer, WAIT_REPORT, Long.parseLong(inputMessage.text()))
+        Report todayReport = reportService.findTodayReportByPetId(petId);
+        if (todayReport != null) {
+            todayReport.setDate(LocalDateTime.now());
+        }
+
+        if (todayReport == null) {
+            responseText = ANSWER_WAIT_REPORT + "\"" + pet.getName() + "\"";
+        } else if (todayReport.getPetReport() != null && isHavePhotoInCurrentReportFromDB(todayReport)) {
+            responseText = ANSWER_REPORT_ACCEPTED;
+        } else if (todayReport.getPetReport() != null) {
+            responseText = ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED;
         } else {
-            LOGGER.error("введена не команда");
-            return inputMessage.text() != null ? inputMessage.text() :
-                    (inputMessage.photo() != null ? inputMessage.photo().toString() : "");
+            responseText = ANSWER_REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED;
         }
 
         return responseText;
-    }
-
-    private boolean isCommand() {
-        return Pattern.compile(DYNAMIC_ENDPOINT_REGEXP).matcher(inputMessage.text()).matches();
     }
 
     /**
@@ -146,7 +166,7 @@ public class ReportSelectorService {
      * @return имеется или нет
      */
     private boolean isHavePhotoAndTextInReport(Report report) {
-        return (inputMessage.photo() != null || (report != null && reportPhotoRepository.findAnyPhotoByReportId(report.getId()) != null))
+        return (inputMessage.photo() != null || (report != null && isHavePhotoInCurrentReportFromDB(report)))
                 && (inputMessage.caption() != null || inputMessage.text() != null || (report != null && report.getPetReport() != null));
     }
 
@@ -168,6 +188,10 @@ public class ReportSelectorService {
                 && (inputMessage.text() != null || (inputMessage.text() == null && inputMessage.caption() != null));
     }
 
+    private boolean isHavePhotoInCurrentReportFromDB(Report report) {
+        return reportPhotoRepository.findFirstByReportId(report.getId()) != null;
+    }
+
     /**
      * Метод выбирает откуда брать текст отчета .text или .caption
      * @return текст отчета
@@ -184,7 +208,7 @@ public class ReportSelectorService {
      */
     private String addAdditionalPhoto() {
         Long petId = customer.getCustomerContext().getCurrentPetId();
-        Report todayReport = reportService.findTodayReportsByPetId(petId);
+        Report todayReport = reportService.findTodayReportByPetId(petId);
         if (inputMessage.photo() == null || todayReport == null) {
             return "";
         }
@@ -229,21 +253,4 @@ public class ReportSelectorService {
         }
         reportPhotoRepository.save(reportPhoto);
     }
-
-    public void processingNonCommandMessagesForReport(Message inputMessage) {
-        this.inputMessage = inputMessage;
-        customer = customerService.findCustomerByChatId(inputMessage.chat().id());
-        String response = processingUserMessages();
-        msgService.sendMsg(inputMessage.chat().id(), response);
-        if (response.equals(ANSWER_REPORT_ACCEPTED)) {
-            MessageTemplate messageTemplate = navigationService.prepareMessagePetChoice(inputMessage.chat().id(), 1L);
-            msgService.interactiveMsg(inputMessage.chat().id(),
-                    messageTemplate.getKeyboard(),
-                    messageTemplate.getText());
-        }
-    }
 }
-
-// todo: если создан отчет и в нем нет фото, он не отображается в меню, хотя должен.
-// todo: если отчеты по всем питомцам сданы, то не выводить меню "сдать отчет", а присылать сообщение,
-//      что отчеты сданы (а лучше добавить кнопку "отредактировать сданный отчет")

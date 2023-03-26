@@ -506,4 +506,9 @@ alter table report
     drop column if exists file_path,
     drop column if exists file_size,
     drop column if exists media_type,
-    drop column if exists photo
+    drop column if exists photo;
+
+insert into public.navigation (id, endpoint, level_view, text, level_reference, rules)
+    values (16, '/main', 5, 'Main menu', 1, null);
+insert into public.navigation (id, endpoint, level_view, text, level_reference, rules)
+    values (17, '/call-valunteer', 5, 'Need help', 1, null);

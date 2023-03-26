@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ReportPhotoRepository extends JpaRepository<ReportPhoto, Long> {
 
-    ReportPhoto findAnyPhotoByReportId(Long id);
+    ReportPhoto findFirstByReportId(Long id);
 }
