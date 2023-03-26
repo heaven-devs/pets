@@ -30,7 +30,7 @@ public class ReportServiceTest {
 
     private List<Report> listReportsTest() {
         LocalDateTime d = LocalDate.of(2023, 3, 5).atStartOfDay();
-        Report report1 = createTestReport(1L, "test1", d, null);
+        Report report1 = createTestReport(1L, "test1", d,  null);
         Report report2 = createTestReport(2L, "test2", null, null);
 
         List<Report> reports = new ArrayList<>();

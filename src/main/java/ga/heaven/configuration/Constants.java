@@ -1,10 +1,18 @@
 package ga.heaven.configuration;
 
 public interface Constants {
+
+    /**
+     * RegExp
+     */
+    String DYNAMIC_ENDPOINT_REGEXP = "^/(.*)/(.*)[0-9]*";
+    String STATIC_ENDPOINT_REGEXP = "^/([^/]*)$";
+
     /**
      * Dynamic endpoints
      */
     String SHELTER_EPT = "shelter";
+    String REPORT_EPT = "submit_report";
     Long ENDPOINT_LIST = 0L;
     
     /**
@@ -46,6 +54,7 @@ public interface Constants {
     /**
      * Messages
      */
+    String CR = "\r\n";
     String SHELTER_CHOOSE_MSG = "Please select which shelter you are interested in";
     String SHELTER_SEND_NAME_MSG = "Please enter your name (Ivanov Ivan Ivanovich / Ivanov Ivan / Ivan)";
     String SHELTER_SEND_PHONE_MSG = "Please enter your phone number (no more than 12 characters)";
@@ -64,4 +73,17 @@ public interface Constants {
     String CYNOLOGIST_ADVICE_NOT_FOUND = "The dog handler's advice was not found. Please contact the administration.";
     String CYNOLOGIST_LIST_NOT_FOUND = "The list of dog handlers was not found. Please contact the administration.";
     String REASONS_REFUSAL_NOT_FOUND = "The list of reasons for refusal was not found. Please contact the administration.";
+    String ANSWER_WAIT_REPORT = "Waiting for a pet report ";
+    String ANSWER_REPORT_ACCEPTED = "<b>Report accepted</b>";
+    String ANSWER_REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED =
+            "<b>Report not accepted</b>" + CR +
+                    "Submit the following information:" + CR +
+                    "1. Animal diet." + CR +
+                    "2. General well-being and getting used to a new place." + CR +
+                    "3. Change in behavior: abandoning old habits, acquiring new ones.";
+    String ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED =
+            "<b>Report not accepted</b>" + CR +
+                    "Submit a photo of your pet";
+    String ANSWER_PHOTO_ADD_TO_REPORT = "Photo added to the report";
+    String ANSWER_UNRECOGNIZED_PHOTO = "Unrecognized photo";
 }
