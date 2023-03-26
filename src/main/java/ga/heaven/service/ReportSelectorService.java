@@ -8,7 +8,9 @@ import com.pengrad.telegrambot.request.GetFile;
 import com.pengrad.telegrambot.response.GetFileResponse;
 import ga.heaven.model.*;
 import ga.heaven.model.CustomerContext.Context;
-import ga.heaven.repository.PhotoRepository;
+import ga.heaven.model.Pet;
+import ga.heaven.model.Report;
+import ga.heaven.repository.ReportPhotoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -18,7 +20,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.regex.Pattern;
 
 import static ga.heaven.configuration.Constants.*;
 import static ga.heaven.configuration.ReportConstants.*;
@@ -34,24 +35,32 @@ public class ReportSelectorService {
     private final CustomerService customerService;
     private final PetService petService;
     private final TelegramBot telegramBot;
-    private final PhotoRepository photoRepository;
     private final NavigationService navigationService;
+    private final ReportPhotoRepository reportPhotoRepository;
 
     private Message inputMessage;
     private Customer customer;
     private String responseText;
 
     public ReportSelectorService(AppLogicService appLogicService, MsgService msgService, ReportService reportService, CustomerService customerService, PetService petService,
-                                 TelegramBot telegramBot, PhotoRepository photoRepository, NavigationService navigationService) {
+                                 TelegramBot telegramBot, ReportPhotoRepository reportPhotoRepository, NavigationService navigationService) {
         this.appLogicService = appLogicService;
         this.msgService = msgService;
         this.reportService = reportService;
         this.customerService = customerService;
         this.petService = petService;
         this.telegramBot = telegramBot;
-        this.photoRepository = photoRepository;
-
+        this.reportPhotoRepository = reportPhotoRepository;
         this.navigationService = navigationService;
+    }
+
+    /**
+     * метод проверяет были ли вызваны команды по работе с отчетом, или было отправлено сообщение с текстом/фото
+     * @param inputMessage сообщение полученное от пользователя
+     */
+    public void switchCmd(Message inputMessage) {
+        this.inputMessage = inputMessage;
+        customer = customerService.findCustomerByChatId(inputMessage.chat().id());
     }
 
     /**
@@ -63,7 +72,7 @@ public class ReportSelectorService {
         Context context = customer.getCustomerContext().getDialogContext();
         switch (context) {
             case WAIT_REPORT: responseText = processingMsgWaitReport(); break;
-            case FREE: addAdditionalPhoto(); break;
+            case FREE: responseText = addAdditionalPhoto(); break;
         }
 
         return responseText;
@@ -137,7 +146,7 @@ public class ReportSelectorService {
      * @return имеется или нет
      */
     private boolean isHavePhotoAndTextInReport(Report report) {
-        return (inputMessage.photo() != null || (report != null && photoRepository.findAnyPhotoByReportId(report.getId()) != null))
+        return (inputMessage.photo() != null || (report != null && reportPhotoRepository.findAnyPhotoByReportId(report.getId()) != null))
                 && (inputMessage.caption() != null || inputMessage.text() != null || (report != null && report.getPetReport() != null));
     }
 
@@ -170,22 +179,26 @@ public class ReportSelectorService {
     }
 
     /**
-     * Метод добавляет к отчету дополнительные фото
+     * Метод добавляет к отчету дополнительные фото и возвращает сообщение пользователю об успехе добавления картинки в отчет.
+     * @return Сообщение пользователю
      */
-    private void addAdditionalPhoto() {
+    private String addAdditionalPhoto() {
         Long petId = customer.getCustomerContext().getCurrentPetId();
         Report todayReport = reportService.findTodayReportsByPetId(petId);
         if (inputMessage.photo() == null || todayReport == null) {
-            return;
+            return "";
         }
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime reportTime = todayReport.getDate();
         long diffTime = ChronoUnit.SECONDS.between(reportTime, currentTime);
         if (diffTime < 180) {
             savePhotoToDB(todayReport);
+            responseText = ANSWER_PHOTO_ADD_TO_REPORT;
         } else {
             appLogicService.updateCustomerContext(customer, FREE, 0);
+            responseText = ANSWER_UNRECOGNIZED_PHOTO;
         }
+        return responseText;
     }
 
     /**
@@ -199,22 +212,22 @@ public class ReportSelectorService {
                 .max(Comparator.comparing(PhotoSize::fileSize))
                 .orElseThrow(RuntimeException::new);
 
-        Photo photo = new Photo();
-        photo.setReport(report);
+        ReportPhoto reportPhoto = new ReportPhoto();
+        reportPhoto.setReport(report);
         GetFile getFile = new GetFile(photoSize.fileId());
         GetFileResponse getFileResponse = telegramBot.execute(getFile);
         if (getFileResponse.isOk()) {
             File file = getFileResponse.file();
             String extension = StringUtils.getFilenameExtension(file.filePath());
-            photo.setMediaType(extension);
+            reportPhoto.setMediaType(extension);
             try {
                 byte[] image = telegramBot.getFileContent(file);
-                photo.setPhoto(image);
+                reportPhoto.setPhoto(image);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
-        photoRepository.save(photo);
+        reportPhotoRepository.save(reportPhoto);
     }
 
     public void processingNonCommandMessagesForReport(Message inputMessage) {
