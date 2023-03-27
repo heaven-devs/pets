@@ -6,9 +6,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static ga.heaven.configuration.Constants.*;
-import static ga.heaven.model.TgIn.Endpoint.Type.DYNAMIC;
-import static ga.heaven.model.TgIn.Endpoint.Type.STATIC;
+import static ga.heaven.model.TgIn.Endpoint.Type.*;
 
 @Service
 public class CmdSelectorService {
@@ -29,11 +31,14 @@ public class CmdSelectorService {
     
     public void processingMsg(TgIn in) {
         LOGGER.debug("current in: {}", in);
-        
-        if (in.text() != null || in.photo() != null) {
+        if (isNonCommandMessages(in.message())) {
+            reportSelectorService.processingNonCommandMessagesForReport(in.message());
+            return;
+        }
+        /*if (in.text() != null || in.photo() != null) {
             LOGGER.debug("Message\n{}\nsent to: reportSelectorService.switchCmd", in);
             reportSelectorService.switchCmd(in.message());
-        }
+        }*/
         
         if ((in.text() != null)
                 && (in.chatId() != null)
@@ -54,6 +59,10 @@ public class CmdSelectorService {
                                     .save()
                             ;
                         }
+                        return;
+                    case REPORT_EPT:
+                        String responseText = reportSelectorService.processingPetChoice(in.message(), in.endpoint().getValueAsLong());
+                        msgService.sendMsg(in.chatId(), responseText);
                         return;
                 }
                 
@@ -90,7 +99,21 @@ public class CmdSelectorService {
                                 .save()
                         ;
                         return;
-                    
+
+                    case "/submit_report":
+                        new TgOut()
+                                .tgIn(in)
+                                .generateMarkup(5L)
+                                //.textBody()
+                                .send()
+                                .save()
+                        ;
+                        //messageTemplate = navigationService.prepareMessageTemplate(inputMessage.chat().id(), 5L);
+                        /*msgService.interactiveMsg(inputMessage.chat().id(),
+                                messageTemplate.getKeyboard(),
+                                messageTemplate.getText());*/
+                        return;
+
                     default:
                         break;
                 }
@@ -99,7 +122,16 @@ public class CmdSelectorService {
             }
         }
     }
-    
+
+    /**
+     * Проверяю введена команда или обычный текст/фото
+     * @param inputMessage сообщение от пользователя
+     * @return истина если от пользователя получина не команда, а обычный текст или фото
+     */
+    private boolean isNonCommandMessages(Message inputMessage) {
+        return (inputMessage.text() != null && !inputMessage.text().startsWith("/")) || inputMessage.photo() != null;
+    }
+
 }
     
     
