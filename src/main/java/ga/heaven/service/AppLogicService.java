@@ -90,43 +90,94 @@ public class AppLogicService {
                 .collect(Collectors.toList()).toString());
         
     }
-    
+
+    /**
+     *
+     * @param chatId Telegram chat id
+     * @see #sendMultipurpose(Long, String, String)
+     */
     public void sendDatingRules(Long chatId) {
         sendMultipurpose(chatId, DATING_RULES_FIELD, DATING_RULES_NOT_FOUND);
     }
-    
+
+    /**
+     *
+     * @param chatId Telegram chat id
+     * @see #sendMultipurpose(Long, String, String)
+     */
     public void sendDocuments(Long chatId) {
         sendMultipurpose(chatId, DOCUMENTS_FIELD, DOCUMENTS_NOT_FOUND);
     }
-    
+
+    /**
+     *
+     * @param chatId Telegram chat id
+     * @see #sendMultipurpose(Long, String, String)
+     */
     public void sendTransportRules(Long chatId) {
         sendMultipurpose(chatId, TRANSPORT_FIELD, TRANSPORT_NOT_FOUND);
     }
-    
+
+    /**
+     *
+     * @param chatId Telegram chat id
+     * @see #sendMultipurpose(Long, String, String)
+     */
     public void sendComfortPet(Long chatId) {
         sendMultipurpose(chatId, COMFORT_PET_FIELD, COMFORT_PET_NOT_FOUND);
     }
-    
+
+    /**
+     *
+     * @param chatId Telegram chat id
+     * @see #sendMultipurpose(Long, String, String)
+     */
     public void sendComfortDog(Long chatId) {
         sendMultipurpose(chatId, COMFORT_DOG_FIELD, COMFORT_DOG_NOT_FOUND);
     }
-    
+
+    /**
+     *
+     * @param chatId Telegram chat id
+     * @see #sendMultipurpose(Long, String, String)
+     */
     public void sendComfortHandicapped(Long chatId) {
         sendMultipurpose(chatId, COMFORT_HANDICAPPED_FIELD, COMFORT_HANDICAPPED_NOT_FOUND);
     }
-    
+
+    /**
+     *
+     * @param chatId Telegram chat id
+     * @see #sendMultipurpose(Long, String, String)
+     */
     public void sendCynologistAdvice(Long chatId) {
         sendMultipurpose(chatId, CYNOLOGIST_ADVICE_FIELD, CYNOLOGIST_ADVICE_NOT_FOUND);
     }
-    
+
+    /**
+     *
+     * @param chatId Telegram chat id
+     * @see #sendMultipurpose(Long, String, String)
+     */
     public void sendCynologistsList(Long chatId) {
         sendMultipurpose(chatId, CYNOLOGISTS_LIST_FIELD, CYNOLOGIST_LIST_NOT_FOUND);
     }
-    
+
+    /**
+     *
+     * @param chatId Telegram chat id
+     * @see #sendMultipurpose(Long, String, String)
+     */
     public void sendReasonsRefusal(Long chatId) {
         sendMultipurpose(chatId, REASONS_REFUSAL_FIELD, REASONS_REFUSAL_NOT_FOUND);
     }
-    
+
+    /**
+     *
+     * @param chatId Telegram chat id
+     * @param areaField column "area" in Data Base Table "Info"
+     * @param notFoundMsg a message sent to the Telegram chat when there is no record with the areaField value
+     */
     protected void sendMultipurpose(Long chatId, String areaField, String notFoundMsg) {
         Info info = infoService.findInfoByArea(areaField);
 //        MessageTemplate tmp = navigationService.prepareMessageTemplate(chatId, 4L);

@@ -10,12 +10,28 @@ import java.util.Optional;
 
 @Repository
 public interface InfoRepository extends JpaRepository<Info, Long> {
+    /**
+     *
+     * @param key string value of "area" field
+     * @return the found entry in the database table
+     * @see Info
+     */
     Optional<Info> findFirstByAreaContainingIgnoreCase(String key);
 
     //@Query(value = "SELECT * FROM Info ORDER BY id", nativeQuery = true)
     //List<Info> findAll();
 
+    /**
+     *
+     * @param id value of "id" field
+     * @return found record "Info"
+     */
     Optional<Info> findInfoById(long id);
 
+    /**
+     *
+     * @param area value of "area" field
+     * @return found record
+     */
     Optional<Info> findInfoByArea(String area);
 }
