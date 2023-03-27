@@ -1,5 +1,6 @@
 package ga.heaven.service;
 
+import com.pengrad.telegrambot.model.Message;
 import ga.heaven.model.TgIn;
 import ga.heaven.model.TgOut;
 import org.slf4j.Logger;
@@ -62,7 +63,14 @@ public class CmdSelectorService {
                         return;
                     case REPORT_EPT:
                         String responseText = reportSelectorService.processingPetChoice(in.message(), in.endpoint().getValueAsLong());
-                        msgService.sendMsg(in.chatId(), responseText);
+                        new TgOut()
+                                .tgIn(in)
+                                .generateMarkup(in.getCustomer().getCustomerContext().getCurLevel())
+                                .textBody(responseText)
+                                .send()
+                                .save()
+                        ;
+                        //msgService.sendMsg(in.chatId(), responseText);
                         return;
                 }
                 
