@@ -21,17 +21,24 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     private final TelegramBot telegramBot;
     
     private final CmdSelectorService cmdSelectorService;
+    private final MsgService msgService;
     
+    private final CustomerService customerService;
+    private final AppLogicService appLogicService;
     
     private static TgIn tgInGlobal;
     
-    public TelegramBotUpdatesListener(TelegramBot telegramBot, CmdSelectorService cmdSelectorService, NavigationService navigationService, ShelterService shelterService) {
+    public TelegramBotUpdatesListener(TelegramBot telegramBot, CmdSelectorService cmdSelectorService, NavigationService navigationService, ShelterService shelterService, MsgService msgService, CustomerService customerService, AppLogicService appLogicService) {
         this.telegramBot = telegramBot;
         this.cmdSelectorService = cmdSelectorService;
+        this.msgService = msgService;
+        this.customerService = customerService;
+        this.appLogicService = appLogicService;
     
     
         tgInGlobal = new TgIn();
         tgInGlobal
+                .injectServices(msgService, customerService,appLogicService)
                 .setNavigationList(navigationService.findAll())
                 .setShelterList(shelterService.findAll());
     }
@@ -44,12 +51,15 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     @Override
     public int process(List<Update> updates) {
         updates.forEach(update -> {
-            LOGGER.info("Processing update: {}", update);
-            TgIn in = tgInGlobal.newInstance().update(update);
+            LOGGER.debug("Processing update: {}", update);
+            TgIn in = tgInGlobal
+                    .newInstance()
+                    .update(update)
+                    .initMsgInstanceEnvironment();
             if (Objects.nonNull(in.chatId())) {
                 cmdSelectorService.processingMsg(in);
             }
-            LOGGER.info("current in: {}", in);
+            //LOGGER.debug("current in: {}", in);
         });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }

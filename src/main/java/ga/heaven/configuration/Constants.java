@@ -6,6 +6,7 @@ public interface Constants {
      */
     String SHELTER_EPT = "shelter";
     Long ENDPOINT_LIST = 0L;
+    Long SHELTERS_MENU_LEVEL = 2L;
     
     /**
      * Commands

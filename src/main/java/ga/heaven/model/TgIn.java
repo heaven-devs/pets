@@ -7,7 +7,10 @@ import com.pengrad.telegrambot.BotUtils;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.PhotoSize;
 import com.pengrad.telegrambot.model.Update;
-import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
+import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
+import ga.heaven.service.AppLogicService;
+import ga.heaven.service.CustomerService;
+import ga.heaven.service.MsgService;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,10 +18,7 @@ import lombok.ToString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,12 +57,61 @@ public class TgIn {
     
     private Customer customer;
     
-    private Long CallbackQueryId;
+    private Long callbackQueryId;
+    
+    private Integer modalMessageId;
     
     private List<Navigation> navigationList;
     
     private List<Shelter> shelterList;
     
+    
+    private MsgService svcMsg;
+    private CustomerService svcCustomer;
+    private AppLogicService svcApp;
+    
+    
+    public TgIn injectServices(MsgService svcMsg, CustomerService svcCustomer, AppLogicService svcApp) {
+        this.svcMsg = svcMsg;
+        this.svcCustomer = svcCustomer;
+        this.svcApp = svcApp;
+        return this;
+    }
+    
+    public Integer renewMessageById(Integer past, Integer next) {
+        if (Objects.nonNull(past) && Objects.nonNull(next)) {
+            if (!past.equals(next)) {
+                svcMsg.deleteMsg(this.chatId(), past);
+            }
+        } else if (Objects.nonNull(past))  {
+            return past;
+        }
+        return next;
+    }
+    
+    
+    public TgIn initMsgInstanceEnvironment() {
+        Optional.ofNullable(svcCustomer.findCustomerByChatId(this.chatId()))
+                .ifPresentOrElse(
+                        c -> this.customer = c
+                        , () -> this.customer = svcCustomer.createCustomer(this.chatId())
+                );
+        
+        this.modalMessageId = renewMessageById(this.lastInQueryMessageId(), this.lastOutQueryMessageId());
+        
+        Optional.ofNullable(this.getCallbackQueryId())
+                .ifPresentOrElse(lId -> {
+                    svcMsg.sendCallbackQueryResponse(lId.toString());
+                    this.modalMessageId = renewMessageById(this.modalMessageId, this.messageId());
+                    this.getCustomer().getCustomerContext().setLastInMsg(this.getMsgJSON().toPrettyString());
+                }, () -> {
+                    svcMsg.deleteMsg(this.chatId(), this.messageId());
+                });
+        
+        svcApp.addInputInstance(this);
+        
+        return this;
+    }
     
     public Endpoint endpoint() {
         Endpoint result = new Endpoint();
@@ -85,15 +134,14 @@ public class TgIn {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        LOGGER.debug(Objects.isNull(this.msgJSON) ? "" : this.msgJSON.toString());
+        //LOGGER.debug(Objects.isNull(this.msgJSON) ? "" : this.msgJSON.toString());
     }
     
     public TgIn newInstance() {
-        TgIn result = new TgIn();
-        result.setShelterList(new ArrayList<>(this.getShelterList()));
-        result.setNavigationList(new ArrayList<>(this.getNavigationList()));
-        //result.getMsgJSON().set("", msgJSON.get(""));
-        return result;
+        return new TgIn()
+                .setShelterList(new ArrayList<>(this.getShelterList()))
+                .setNavigationList(new ArrayList<>(this.getNavigationList()))
+                .injectServices(this.svcMsg, this.svcCustomer,this.svcApp);
     }
     
     public Long chatId() {
@@ -113,8 +161,8 @@ public class TgIn {
         return BotUtils.fromJson(this.msgJSON.toPrettyString(), Message.class);
     }
     
-    public ReplyKeyboardMarkup replyMarkup() {
-        return BotUtils.fromJson(this.msgJSON.path("reply_markup").asText(null), ReplyKeyboardMarkup.class);
+    public InlineKeyboardMarkup inlineMarkup() {
+        return BotUtils.fromJson(this.msgJSON.path("reply_markup").asText(null), InlineKeyboardMarkup.class);
     }
     
     public Integer messageId() {
@@ -122,15 +170,33 @@ public class TgIn {
         return result == 0 ? null : result;
     }
     
+    public TgIn messageId(Integer messageId) {
+        Optional.ofNullable(messageId).ifPresent(m -> this.msgJSON.put("message_id", m));
+        return this;
+    }
+    
+    
+    public Integer lastInQueryMessageId() {
+        return Optional.ofNullable(this.customer.getCustomerContext().getLastInMsg())
+                .map(m -> BotUtils.fromJson(m, Message.class).messageId())
+                .orElse(null);
+    }
+    
+    public Integer lastOutQueryMessageId() {
+        return Optional.ofNullable(this.customer.getCustomerContext().getLastOutMsg())
+                .map(m -> BotUtils.fromJson(m, Message.class).messageId())
+                .orElse(null);
+    }
+    
     public TgIn setNavigationList(List<Navigation> navigationList) {
         this.navigationList = navigationList;
-        LOGGER.debug(String.valueOf(navigationList));
+        //LOGGER.debug(String.valueOf(navigationList));
         return this;
     }
     
     public TgIn setShelterList(List<Shelter> shelterList) {
         this.shelterList = shelterList;
-        LOGGER.debug(String.valueOf(shelterList));
+        //LOGGER.debug(String.valueOf(shelterList));
         return this;
     }
     
@@ -139,17 +205,25 @@ public class TgIn {
         return this;
     }
     
-    public String navigationLevelCaption(Long navigationLevel) {
+    public Navigation navigationItemById(Long navigationLevel) {
         return this.navigationList.stream().filter(n -> navigationLevel.equals(n.getId()))
-                .map(Navigation::getText)
+                //.map(Navigation::getText)
                 .findFirst()
                 .orElse(null);
     }
+    
+    
+    
+    
+    
     public Shelter currentShelter(Long shelterId) {
-        return this.shelterList.stream().filter(s -> shelterId.equals(s.getId()))
-                //.map(Shelter::getName)
-                .findFirst()
-                .orElse(null);
+        if (Objects.nonNull(shelterId)) {
+                return this.shelterList.stream().filter(s -> shelterId == s.getId())
+                        //.map(Shelter::getName)
+                        .findFirst()
+                        .orElse(null);
+            }
+        return null;
     }
     
     public TgIn update(Update updateObj) {
@@ -168,7 +242,7 @@ public class TgIn {
                                             n.put(TEXT_FIELD_NAME, updateObj.callbackQuery().data());
                                             n.remove(ENTITIES_SECTION_NAME);
                                             //n.remove(REPLY_SECTION_NAME);
-                                            this.CallbackQueryId = Long.valueOf(updateObj.callbackQuery().id());
+                                            this.callbackQueryId = Long.valueOf(updateObj.callbackQuery().id());
                                         }
                                     } catch (JsonProcessingException e) {
                                         throw new RuntimeException(e);
@@ -187,7 +261,7 @@ public class TgIn {
                         ))
                 .orElse(null);
         
-        LOGGER.debug(Objects.isNull(this.msgJSON) ? "" : this.msgJSON.toString());
+        //LOGGER.debug(Objects.isNull(this.msgJSON) ? "" : this.msgJSON.toString());
         return this;
         
     }

@@ -491,3 +491,7 @@ insert into public.navigation (id, endpoint, level_view, text, shelter_id, level
 -- changeset alrepin:11
 alter table navigation
     drop column if exists shelter_id;
+
+-- changeset alrepin:12
+alter table customer_context
+    add cur_level bigint;
