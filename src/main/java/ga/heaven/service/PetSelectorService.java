@@ -1,6 +1,7 @@
 package ga.heaven.service;
 
 import com.pengrad.telegrambot.model.Message;
+import ga.heaven.model.TgIn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,18 @@ public class PetSelectorService {
     public void switchCmd(Message inputMessage) {
         this.switchCmd(inputMessage.chat().id(), inputMessage.text());
     }
+    public void switchCmd(TgIn in) {
+        String Command = in.endpoint().getName();
+        switch (Command) {
+            case DATING_RULES_CMD:
+                appLogicService.sendDatingRules(in);
+                break;
+        }
+        
+        
+    }
+    
+    
     
     public void switchCmd(Long chatId, String Command) {
         

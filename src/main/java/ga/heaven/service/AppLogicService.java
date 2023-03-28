@@ -91,9 +91,22 @@ public class AppLogicService {
         InlineKeyboardButton keyboardButton = new InlineKeyboardButton(name + "'s profile "
         ).url("tg://user?id=" + customerChatId);
         InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup(keyboardButton);
-        msgService.sendMsg(chatId, "This person want to consult with volunteer about: " + shelter, keyboardMarkup);
+        msgService.sendMsg(chatId, "This person want to consult with volunteer supervised " + shelter, keyboardMarkup);
     }
     
+    
+    public void volunteerRequest(TgIn in) {
+        
+        
+        //msgService.sendMsg(inputMessage.chat().id(), "ok");
+//        volunteerRepository.findById(3L).ifPresent(volunteer -> msgService.sendMsg(inputMessage.chat().id(), volunteer.getShelters().toString()));
+        /*msgService.sendMsg(inputMessage.chat().id(),shelterRepository.findById(1L).ifPresent(shelter -> shelter.getVolunteers().forEach(v -> v.getName())));*/
+        Shelter s = shelterRepository.findById(1L).orElse(null);
+        msgService.sendMsg(in.chatId(), s.getVolunteers().stream()
+                .map(v -> v.getName())
+                .collect(Collectors.toList()).toString());
+        
+    }
     
     public void volunteerRequest(Long chatId) {
         TgIn in = this.getInputInstance(chatId);
@@ -101,8 +114,6 @@ public class AppLogicService {
                 .currentShelter(in.getCustomer().getCustomerContext().getShelterId())
                 .getVolunteers()
                 .forEach(v -> sendContact(v.getChatId(), chatId));
-        
-        
         
     }
     
@@ -113,7 +124,9 @@ public class AppLogicService {
     public void sendDatingRules(Long chatId) {
         sendMultipurpose(chatId, DATING_RULES_FIELD, DATING_RULES_NOT_FOUND);
     }
-    
+    public void sendDatingRules(TgIn in) {
+        sendMultipurpose(in, DATING_RULES_FIELD, DATING_RULES_NOT_FOUND);
+    }
     /**
      * @param chatId Telegram chat id
      * @see #sendMultipurpose(Long, String, String)
@@ -202,7 +215,28 @@ public class AppLogicService {
                 .save();
         
     }
-    
+    protected void sendMultipurpose(TgIn in, String areaField, String notFoundMsg) {
+/*        Info info = infoService.findInfoByArea(areaField);
+//        MessageTemplate tmp = navigationService.prepareMessageTemplate(chatId, 4L);
+        TgIn in = this.getInputInstance(chatId);*/
+        Info info = infoService.findInfoByArea(areaField);
+        TgOut out = new TgOut();
+        out = out
+                .tgIn(in)
+                //.inlineMarkup(in.inlineMarkup());
+                .generateMarkup(in.getCustomer().getCustomerContext().getCurLevel());
+        if (info == null) {
+            out = out
+            .textBody(notFoundMsg);
+        } else {
+            out = out
+            .textBody(info.getInstructions());
+        }
+        out
+                .send()
+                .save();
+        
+    }
     /**
      * Метод обновляет значения полей "context" и "petId"
      *
