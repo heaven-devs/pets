@@ -23,7 +23,7 @@ import static ga.heaven.configuration.Constants.*;
 public class AppLogicService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AppLogicService.class);
     
-    private final List<TgIn> ins = new ArrayList<>();
+    //private final List<TgIn> ins = new ArrayList<>();
     
     private final InfoService infoService;
     private final CustomerService customerService;
@@ -44,28 +44,28 @@ public class AppLogicService {
         this.navigationService = navigationService;
     }
     
-    public void addInputInstance(TgIn inObj) {
+   /* public void addInputInstance(TgIn inObj) {
         this.ins.add(inObj);
-    }
+    }*/
     
-    public TgIn getInputInstance(Long chatId) {
+    /*public TgIn getInputInstance(Long chatId) {
         return this.ins.stream().filter(i -> chatId.equals(i.chatId()))
                 //.map(Navigation::getText)
                 .findFirst()
                 .orElse(null);
-    }
+    }*/
     
-    public void removeInputInstance(Long chatId) {
+   /* public void removeInputInstance(Long chatId) {
         
         TgIn in = getInputInstance(chatId);
         this.ins.remove(in);
         //in = null;
-    }
+    }*/
     
-    public void removeInputInstance(TgIn in) {
+    /*public void removeInputInstance(TgIn in) {
         this.ins.remove(in);
         //in = null;
-    }
+    }*/
     
     public void initConversation(TgIn in) {
         TgOut t = new TgOut();
@@ -84,14 +84,14 @@ public class AppLogicService {
         LOGGER.debug("TgOut: {}", t);
     }
     
-    public void sendContact(Long chatId, Long customerChatId) {
-        TgIn in = this.getInputInstance(customerChatId);
+    public void sendContact(TgIn in,Long recipientChatId ,String text) {
+
         String name = in.message().chat().username();
-        String shelter = in.currentShelter(in.getCustomer().getCustomerContext().getShelterId()).getName();
+        
         InlineKeyboardButton keyboardButton = new InlineKeyboardButton(name + "'s profile "
-        ).url("tg://user?id=" + customerChatId);
+        ).url("tg://user?id=" + in.chatId());
         InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup(keyboardButton);
-        msgService.sendMsg(chatId, "This person want to consult with volunteer supervised " + shelter, keyboardMarkup);
+        msgService.sendMsg(recipientChatId, text, keyboardMarkup);
     }
     
     
@@ -101,21 +101,51 @@ public class AppLogicService {
         //msgService.sendMsg(inputMessage.chat().id(), "ok");
 //        volunteerRepository.findById(3L).ifPresent(volunteer -> msgService.sendMsg(inputMessage.chat().id(), volunteer.getShelters().toString()));
         /*msgService.sendMsg(inputMessage.chat().id(),shelterRepository.findById(1L).ifPresent(shelter -> shelter.getVolunteers().forEach(v -> v.getName())));*/
-        Shelter s = shelterRepository.findById(1L).orElse(null);
+        /*Shelter s = shelterRepository.findById(1L).orElse(null);
         msgService.sendMsg(in.chatId(), s.getVolunteers().stream()
                 .map(v -> v.getName())
-                .collect(Collectors.toList()).toString());
+                .collect(Collectors.toList()).toString());*/
+        
+        String shelterSupervisors = in
+                .currentShelter(in.getCustomer().getCustomerContext().getShelterId())
+                .getVolunteers().stream()
+                .map(v -> v.getName())
+                .collect(Collectors.toList()).toString();
+    
+        String shelter = in.currentShelter(in.getCustomer().getCustomerContext().getShelterId()).getName();
+        
+        String text = "This person want to consult with volunteer supervised " + shelter;
+        
+        
+        in
+        .currentShelter(in.getCustomer().getCustomerContext().getShelterId())
+                .getVolunteers()
+                .forEach(v -> sendContact(in,v.getChatId(), text))
+                
+        ;
+    
+        TgOut out = new TgOut();
+        out
+                .tgIn(in)
+                .generateMarkup(in.getCustomer().getCustomerContext().getCurLevel())
+                .textBody("Your request has been accepted.\n" +
+                        "You will be contacted by the first free volunteer from the list\n\n " + shelterSupervisors )
+                .send()
+                .save();
+                
+        
+        
         
     }
     
-    public void volunteerRequest(Long chatId) {
+    /*public void volunteerRequest(Long chatId) {
         TgIn in = this.getInputInstance(chatId);
         this.getInputInstance(chatId)
                 .currentShelter(in.getCustomer().getCustomerContext().getShelterId())
                 .getVolunteers()
                 .forEach(v -> sendContact(v.getChatId(), chatId));
         
-    }
+    }*/
     
     /**
      * @param chatId Telegram chat id
@@ -199,8 +229,8 @@ public class AppLogicService {
     protected void sendMultipurpose(Long chatId, String areaField, String notFoundMsg) {
         Info info = infoService.findInfoByArea(areaField);
 //        MessageTemplate tmp = navigationService.prepareMessageTemplate(chatId, 4L);
-        TgIn in = this.getInputInstance(chatId);
-        TgOut out = new TgOut();
+       
+       /* TgOut out = new TgOut();
         out
                 .tgIn(in)
                 //.inlineMarkup(in.inlineMarkup());
@@ -212,7 +242,7 @@ public class AppLogicService {
         }
         out
                 .send()
-                .save();
+                .save();*/
         
     }
     protected void sendMultipurpose(TgIn in, String areaField, String notFoundMsg) {

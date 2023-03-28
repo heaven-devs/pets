@@ -20,9 +20,7 @@ public class PetSelectorService {
         this.msgService = msgService;
     }
     
-    public void switchCmd(Message inputMessage) {
-        this.switchCmd(inputMessage.chat().id(), inputMessage.text());
-    }
+    
     public void switchCmd(TgIn in) {
         String Command = in.endpoint().getName();
         switch (Command) {

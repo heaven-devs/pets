@@ -22,18 +22,22 @@ public class VolunteerSelectorService {
     }
     
     public void switchCmd(TgIn in) {
-        this.switchCmd(in.chatId(), in.text());
+        switch (in.endpoint().getName()) {
+            case VOLUNTEER_REQUEST_CMD:
+                appLogicService.volunteerRequest(in);
+                break;
+        }
     }
-    public void switchCmd(Message inputMessage) {
+    /*public void switchCmd(Message inputMessage) {
         this.switchCmd(inputMessage.chat().id(), inputMessage.text());
-    }
-    public void switchCmd(Long chatId, String Command) {
+    }*/
+   /* public void switchCmd(Long chatId, String Command) {
         
         switch (Command) {
             case VOLUNTEER_REQUEST_CMD:
                 appLogicService.volunteerRequest(chatId);
                 break;
         }
-    }
+    }*/
     
 }

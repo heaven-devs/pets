@@ -108,7 +108,7 @@ public class TgIn {
                     svcMsg.deleteMsg(this.chatId(), this.messageId());
                 });
         
-        svcApp.addInputInstance(this);
+        //svcApp.addInputInstance(this);
         
         return this;
     }

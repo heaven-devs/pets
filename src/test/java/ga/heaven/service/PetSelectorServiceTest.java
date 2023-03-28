@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.pengrad.telegrambot.BotUtils;
 import com.pengrad.telegrambot.model.Update;
+import ga.heaven.model.TgIn;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,7 +61,7 @@ class PetSelectorServiceTest {
     @Test
     public void switchCmdTest() throws URISyntaxException, IOException, JSONException {
         Update update = createUpdate(CHAT_ID, DATING_RULES_CMD);
-        petSelectorService.switchCmd(update.message());
+        petSelectorService.switchCmd(new TgIn().update(update));
         ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
         Mockito.verify(appLogicService).sendDatingRules(argumentCaptor.capture());
         Long actualChatID = argumentCaptor.getValue();

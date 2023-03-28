@@ -588,3 +588,8 @@ values (30, '/main', 4, 'Main menu', null, null);
 UPDATE public.navigation
 SET text = 'Need human help'
 WHERE text = 'Need help';
+
+-- changeset alrepin:15
+DELETE
+FROM public.navigation
+WHERE id = 30
