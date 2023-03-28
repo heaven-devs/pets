@@ -1,14 +1,23 @@
 package ga.heaven.service;
 
+import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.model.File;
 import com.pengrad.telegrambot.model.Message;
+import com.pengrad.telegrambot.model.PhotoSize;
+import com.pengrad.telegrambot.request.GetFile;
+import com.pengrad.telegrambot.response.GetFileResponse;
 import ga.heaven.model.Customer;
-import ga.heaven.model.CustomerContext;
 import ga.heaven.model.CustomerContext.Context;
 import ga.heaven.model.Pet;
+import ga.heaven.model.Report;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.io.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,20 +29,25 @@ import static ga.heaven.model.CustomerContext.Context.*;
 public class ReportSelectorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportSelectorService.class);
 
+    private final AppLogicService appLogicService;
     private final MsgService msgService;
     private final ReportService reportService;
     private final CustomerService customerService;
     private final PetService petService;
+    private final TelegramBot telegramBot;
 
     private Message inputMessage;
     private Customer customer;
     private String responseText;
 
-    public ReportSelectorService(MsgService msgService, ReportService reportService, CustomerService customerService, PetService petService) {
+    public ReportSelectorService(AppLogicService appLogicService, MsgService msgService, ReportService reportService, CustomerService customerService, PetService petService,
+                                 TelegramBot telegramBot) {
+        this.appLogicService = appLogicService;
         this.msgService = msgService;
         this.reportService = reportService;
         this.customerService = customerService;
         this.petService = petService;
+        this.telegramBot = telegramBot;
     }
 
     /**
@@ -54,44 +68,45 @@ public class ReportSelectorService {
 
     /**
      * метод запускается, если пользователь отправил команду "/submit_report" и отправляет ответ пользователю
-     * в зависимости от того сколько питомцев взял пользователь
+     * в зависимости от того сколько питомцев у пользователя, и по каким из них не сдан сегодня отчет.
      */
     private String processingSubmitReport() {
-        // todo: сделать проверку, сдавал ли пользователь сегодня отчет?
-
         List<Pet> customerPetList = petService.findPetsByCustomerOrderById(customer);
-        responseText = ANSWER_DONT_HAVE_PETS;
+        System.out.println("customerPetList = " + customerPetList);
+        if (customerPetList.isEmpty()) {
+            appLogicService.updateCustomerContext(customer, FREE);
+            return ANSWER_DONT_HAVE_PETS;
+        }
 
-        if (customerPetList.size() == 1) {
-            responseText = ANSWER_ONE_PET;
-            updateCustomerContext(WAIT_REPORT, customerPetList.get(0).getId());
-        } else if (customerPetList.size() > 1) {
-            responseText = generateListOfCustomersPets(customerPetList);
-            updateCustomerContext(WAIT_PET_ID, 0);
+        List<Pet> customerPetListWithoutTodayReport = getPetsWithoutTodayReport();
+        if (customerPetListWithoutTodayReport.isEmpty()) {
+            responseText = ANSWER_NO_NEED_TO_REPORT;
+            appLogicService.updateCustomerContext(customer, FREE);
+        } else if (customerPetListWithoutTodayReport.size() == 1) {
+            Pet pet = customerPetListWithoutTodayReport.get(0);
+            responseText = ANSWER_ONE_PET + "\"" + pet.getName() + "\"";
+            appLogicService.updateCustomerContext(customer, WAIT_REPORT, pet.getId());
+        } else {
+            responseText = generateListOfCustomersPets(customerPetListWithoutTodayReport);
+            appLogicService.updateCustomerContext(customer, WAIT_PET_ID, 0);
         }
         return responseText;
     }
 
     /**
-     * Метод обновляет значения полей "context" и "petId"
-     * @param context новое значение поля "context"
-     * @param petId новое значение поля "petId"
+     * Метод ищет питомцев пользователя, для которых сегодня не был сдан отчет.
+     * @return список питомцев
      */
-    private void updateCustomerContext(Context context, long petId) {
-        CustomerContext customerContext = customer.getCustomerContext();
-        customerContext.setCurrentPetId(petId);
-        customerService.updateCustomer(customer);
-        updateCustomerContext(context);
-    }
-
-    /**
-     * Метод обновляет значения полей "context"
-     * @param context новое значение поля "context"
-     */
-    private void updateCustomerContext(Context context) {
-        CustomerContext customerContext = customer.getCustomerContext();
-        customerContext.setDialogContext(context);
-        customerService.updateCustomer(customer);
+    private List<Pet> getPetsWithoutTodayReport() {
+        List<Pet> currentCustomerPetList = petService.findPetsByCustomer(customer);
+        List<Pet> petWithoutReportList = new ArrayList<>();
+        for (Pet pet : currentCustomerPetList) {
+            Report report = reportService.findTodayCompletedReportsByPetId(pet.getId());
+            if (null == report) {
+                petWithoutReportList.add(pet);
+            }
+        }
+        return petWithoutReportList;
     }
 
     /**
@@ -133,8 +148,15 @@ public class ReportSelectorService {
                 .collect(Collectors.toList());
 
         if (validIdList.contains(inputMessage.text())) {
-            responseText = ANSWER_SEND_REPORT_FOR_PET_WITH_ID + inputMessage.text();
-            updateCustomerContext(WAIT_REPORT, Long.parseLong(inputMessage.text()));
+            Report report = reportService.findTodayNotCompletedReportsByPetId(Long.parseLong(inputMessage.text()));
+            if (report == null) {
+                responseText = ANSWER_SEND_REPORT_FOR_PET_WITH_ID + inputMessage.text();
+            } else if (report.getPetReport() == null) {
+                responseText = ANSWER_PHOTO_REPORT_ACCEPTED;
+            } else if (report.getPhoto() == null) {
+                responseText = ANSWER_TEST_REPORT_ACCEPTED;
+            }
+            appLogicService.updateCustomerContext(customer, WAIT_REPORT, Long.parseLong(inputMessage.text()));
         }
         return responseText;
     }
@@ -145,22 +167,31 @@ public class ReportSelectorService {
      */
     private String processingMsgWaitReport() {
 
-        // todo: реализовать запись данных в таблицу report
+        Long petId = customer.getCustomerContext().getCurrentPetId();
+        Pet pet = petService.read(petId);
+        Report todayReport = reportService.findTodayNotCompletedReportsByPetId(petId);
+        Report report = (null == todayReport) ? new Report() : todayReport;
+        report.setPet(pet);
+        report.setDate(LocalDateTime.now());
+        responseText = ANSWER_WAIT_REPORT;
 
-        System.out.println("inputMessage.photo() = " + inputMessage.photo());
-        if (inputMessage.photo() != null && inputMessage.caption() != null) {
-            responseText = ANSWER_REPORT_ACCEPTED;
-            updateCustomerContext(FREE, 0);
-            savePhotoToDB();
-
-        } else if (inputMessage.photo() != null) {
+        if (inputMessage.photo() != null) {
             responseText = ANSWER_REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED;
-            updateCustomerContext(WAIT_REPORT);
-            savePhotoToDB();
+            savePhotoToDB(report);
+        }
 
-        } else if (inputMessage.text() != null) {
+        if ((todayReport == null || todayReport.getPetReport() == null)
+                && (inputMessage.text() != null || (inputMessage.text() == null && inputMessage.caption() != null))) {
+            String textReport = (inputMessage.text() != null) ? inputMessage.text() : inputMessage.caption();
             responseText = ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED;
-            updateCustomerContext(WAIT_REPORT);
+            report.setPetReport(textReport);
+            reportService.updateReport(report);
+        }
+
+        if ((inputMessage.photo() != null || (todayReport != null && todayReport.getPhoto() != null))
+                && (inputMessage.caption() != null || inputMessage.text() != null || (todayReport != null && todayReport.getPetReport() != null))) {
+            responseText = ANSWER_REPORT_ACCEPTED;
+            appLogicService.updateCustomerContext(customer, FREE, 0);
         }
 
         return responseText;
@@ -169,8 +200,30 @@ public class ReportSelectorService {
     /**
      * Метод получает фото и записывает его в БД
      */
-    private void savePhotoToDB() {
-        // todo: получить фото от бота, разложить на байты, записать в базу. https://www.baeldung.com/java-download-file
-    }
+    private void savePhotoToDB(Report report) {
+        // todo: реализовать сохранение нескольких отправленных фото в отчет (добавить таблицу с фото)
 
+        PhotoSize[] photoSizes = inputMessage.photo();
+        for (PhotoSize photoSize : photoSizes) {
+            if (photoSize.width() != 320) {
+                continue;
+            }
+            LOGGER.error("id: " + photoSize.fileId() + ", size: " + photoSize.fileSize() + ", add: " + photoSize.width());
+            GetFile getFile = new GetFile(photoSize.fileId());
+            GetFileResponse getFileResponse = telegramBot.execute(getFile);
+            if (getFileResponse.isOk()) {
+                File file = getFileResponse.file();
+                String extension = StringUtils.getFilenameExtension(file.filePath()); // todo: расширение в базу (media_type)
+                report.setMediaType(extension);
+                try {
+                    byte[] image = telegramBot.getFileContent(file); // todo: байты в базу (photo)
+                    report.setPhoto(image);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        reportService.updateReport(report);
+
+    }
 }

@@ -3,17 +3,22 @@ package ga.heaven.controller;
 import ga.heaven.model.Report;
 import ga.heaven.service.ReportService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.hibernate.annotations.Parameter;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 @RestController
@@ -61,7 +66,7 @@ public class ReportController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<Report> findReportById(@PathVariable Long id) {
-        Report report = reportService.findReportsById(id);
+        Report report = reportService.findReportById(id);
         if (report == null) {
             return ResponseEntity.notFound().build();
         }
@@ -70,7 +75,7 @@ public class ReportController {
     
     @Operation(
             tags = "\uD83D\uDCCB Report store",
-            summary = "Deleting  for a report by its ID in the database.",
+            summary = "Delete for a report by its ID in the database.",
             responses = {
             @ApiResponse(
                     responseCode = "200",
@@ -89,6 +94,58 @@ public class ReportController {
         }
         return ResponseEntity.ok(report);
     }
-    
+
+    @Operation(
+            tags = "\uD83D\uDCCB Report store",
+            summary = "Updated a report by it's ID in the database.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Update JSON",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = Report[].class)
+                            )
+                    )
+            })
+    @PutMapping("/{id}")
+    public ResponseEntity<Report> updateReport(@RequestBody Report report) {
+        Report found = reportService.updateReport(report);
+        if (found == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        return ResponseEntity.ok(found);
+    }
+
+    @Operation(
+            tags = "\uD83D\uDCCB Report store",
+            summary = "Created a report in the database.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Create JSON",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = Report[].class)
+                            )
+                    )
+            })
+    @PostMapping
+    public ResponseEntity<Report> createReport(@RequestBody Report report){
+        Report create = reportService.createReport(report);
+        return ResponseEntity.ok(create);
+    }
+
+    @GetMapping(value = "/{id}/photo")
+    public void showPhoto(@PathVariable Long id, HttpServletResponse response) throws IOException {
+        Report report = reportService.findReportById(id);
+
+        response.setContentType("image/" + report.getMediaType());
+        OutputStream os = response.getOutputStream();
+        os.write(report.getPhoto());
+        os.flush();
+        os.close();
+    }
+
     
 }
