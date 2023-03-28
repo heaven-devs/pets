@@ -20,7 +20,13 @@ public class PetServiceImpl implements PetService {
 //        LOGGER.debug("Service wire with Repository");
         this.petRepository = petRepository;
     }
-    
+
+    /**
+     * 
+     * @param pet "Pet" record being created
+     * @return created record "Pet"
+     * @see PetRepository#save(Object)
+     */
     @Override
     public Pet create(Pet pet) {
 //        LOGGER.info("Method create was invoked");
@@ -29,19 +35,37 @@ public class PetServiceImpl implements PetService {
         return petRepository.save(pet);
     
     }
-    
+
+    /**
+     *
+     * @param id value of "id" field
+     * @return found record
+     * @see PetRepository#findById(Object)
+     */
     @Override
     public Pet read(Long id) {
 //        LOGGER.info("Method read was invoked");
         return petRepository.findById(id).orElse(null);
     }
-    
+
+    /**
+     *
+     * @return all found records
+     * @see PetRepository#findAll() 
+     */
     @Override
     public List<Pet> read() {
 //        LOGGER.info("Method read all was invoked");
         return petRepository.findAll();
     }
-    
+
+    /**
+     * 
+     * @param id value of "id" field
+     * @param pet value of "Pet" being updated
+     * @return updated "Pet" record or null if not found
+     * @see PetRepository#save(Object)
+     */
     public Pet update(Long id, Pet pet) {
         if (petRepository.existsById(id)) {
             pet.setId(id);
@@ -49,7 +73,13 @@ public class PetServiceImpl implements PetService {
         }
         return null;
     }
-    
+
+    /**
+     *
+     * @param id value of "id" field
+     * @return deleted record or <b>{@code null}</b> if not found
+     * @see PetRepository#deleteById(Object)
+     */
     public Pet delete(Long id) {
         Pet currentPet = petRepository.findById(id).orElse(null);
         if (currentPet == null) {
@@ -70,10 +100,21 @@ public class PetServiceImpl implements PetService {
         return null;*/
     }
 
+    /**
+     *
+     * @param customer record Customer
+     * @return list of "Pet" where customer field is <b>{@code customer}</b>
+     * @see PetRepository#findPetsByCustomer(Customer)
+     */
     public List<Pet> findPetsByCustomer(Customer customer) {
         return petRepository.findPetsByCustomer(customer);
     }
 
+    /**
+     *
+     * @param customer record Customer
+     * @return list of "Pet" where Pet's customer field is <b>{@code customer}</b> sorted by "id"
+     */
     public List<Pet> findPetsByCustomerOrderById(Customer customer) {
         return petRepository.findPetsByCustomerOrderById(customer);
     }

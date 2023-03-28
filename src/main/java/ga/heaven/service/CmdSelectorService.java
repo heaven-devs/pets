@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import static ga.heaven.configuration.Constants.*;
+import static ga.heaven.model.TgIn.Endpoint.Type.*;
 import static ga.heaven.model.CustomerContext.Context.WAIT_REPORT;
 import static ga.heaven.model.TgIn.Endpoint.Type.*;
 
@@ -17,15 +18,16 @@ public class CmdSelectorService {
     private final PetSelectorService petSelectorService;
     private final VolunteerSelectorService volunteerSelectorService;
     private final ReportSelectorService reportSelectorService;
-
-
+    
+    
     public CmdSelectorService(AppLogicService appLogicService, PetSelectorService petSelectorService, VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService) {
         this.appLogicService = appLogicService;
         this.petSelectorService = petSelectorService;
         this.volunteerSelectorService = volunteerSelectorService;
         this.reportSelectorService = reportSelectorService;
     }
-
+    
+    
     public void processingMsg(TgIn in) {
 //        LOGGER.debug("current in: {}", in);
         if (isNonCommandMessages(in)) {
@@ -65,14 +67,14 @@ public class CmdSelectorService {
                         ;
                         return;
                 }
-
+                
             } else if (STATIC.equals(in.endpoint().getType())) {
 //                LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", in);
                 switch (in.endpoint().getName()) {
                     case START_CMD:
                         appLogicService.initConversation(in);
                         return;
-
+                    
                     case "/how-adopt":
                         new TgOut()
                                 .tgIn(in)
@@ -90,7 +92,7 @@ public class CmdSelectorService {
                                 .save()
                         ;
                         return;
-
+                    
                     case "/main":
                         new TgOut()
                                 .tgIn(in)
@@ -113,8 +115,8 @@ public class CmdSelectorService {
                     default:
                         break;
                 }
-                petSelectorService.switchCmd(in.message());
-                volunteerSelectorService.switchCmd(in.message());
+                petSelectorService.switchCmd(in);
+                volunteerSelectorService.switchCmd(in);
             }
         }
     }

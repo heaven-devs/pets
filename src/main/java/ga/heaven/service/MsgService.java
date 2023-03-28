@@ -52,14 +52,7 @@ public class MsgService {
         tgBot.execute(sendMessage);
     }
     
-    public void sendContact(Long chatId) {
-        SendMessage sendMessage = new SendMessage(chatId, "This person want to consult with volunteer:").parseMode(ParseMode.HTML);
-        
-        InlineKeyboardButton keyboardButton = new InlineKeyboardButton("profile").url("tg://user?id=" + chatId);
-        InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup(keyboardButton);
-        sendMessage.replyMarkup(keyboardMarkup);
-        tgBot.execute(sendMessage);
-    }
+    
     
     public Boolean editMsg(Long chatId, Integer msgId, InlineKeyboardMarkup keyboard) {
         Boolean result = false;
@@ -104,68 +97,6 @@ public class MsgService {
         }
         return true;
     }
-    
-    /*public Message msgExtractor(Update updateObj) {
-        Message msgObj = new Message();
-        ObjectNode msgJSON = null;
-        String msgStringJSON;
-        
-        ObjectMapper mapper;
-        
-        Customer customer = new Customer();
-        CustomerContext context;
-        
-        if (updateObj.message() != null) {
-            customer = customerService.findCustomerByChatId(updateObj.message().chat().id());
-            msgObj = updateObj.message();
-            msgStringJSON = BotUtils.toJson(msgObj);
-        }
-        
-        if (updateObj.callbackQuery() != null) {
-            if (updateObj.callbackQuery().id() != null) {
-                sendCallbackQueryResponse(updateObj.callbackQuery().id());
-            }
-            
-            
-            customer = customerService.findCustomerByChatId(updateObj.callbackQuery().message().chat().id());
-            
-            if (customer == null) {
-                return null;
-            }
-            
-            msgObj = updateObj.callbackQuery().message();
-            msgStringJSON = BotUtils.toJson(msgObj);
-            
-            try {
-                mapper = new ObjectMapper();
-                msgJSON = (ObjectNode) mapper.readTree(msgStringJSON);
-                *//*if (updateObj.callbackQuery().from() != null) {
-                    mapper = new ObjectMapper();
-                    msgJSON.set("from", mapper.readTree(BotUtils.toJson(updateObj.callbackQuery().from())));
-                }*//*
-                
-                if (updateObj.callbackQuery().data() != null) {
-                    msgJSON.put("text", updateObj.callbackQuery().data());
-                }
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-            msgJSON.remove("entities");
-            msgJSON.remove("reply_markup");
-            
-            msgObj = BotUtils.fromJson(msgJSON.toPrettyString(), Message.class);
-        }
-        
-        if (msgJSON != null) {
-            context = customer.getCustomerContext();
-            context.setLastInMsg(msgJSON.toPrettyString());
-            customerService.updateCustomer(customer);
-        }
-        
-        return msgObj;
-        
-    }*/
-    
     
     public void interactiveMsg(Long chatId, InlineKeyboardMarkup newKeyboard, String newText) {
         ObjectMapper mapper = new ObjectMapper();

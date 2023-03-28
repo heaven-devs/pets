@@ -23,7 +23,7 @@ public interface Constants {
     String BASE_URL = "https://api.telegram.org/bot";
     String START_CMD = "/start";
     String DATING_RULES_CMD = "/dating_rules";
-    String VOLUNTEER_REQUEST_CMD = "/call_volunteer";
+    String VOLUNTEER_REQUEST_CMD = "/call-valunteer";
     String REPORT_SUBMIT_CMD = "/submit_report";
     String DOCUMENTS_CMD = "/documents"; // команда выдать список документов
     String TRANSPORT_CMD = "/transport"; // команда выдать список документов
