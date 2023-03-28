@@ -216,20 +216,16 @@ public class AppLogicService {
         
     }
     protected void sendMultipurpose(TgIn in, String areaField, String notFoundMsg) {
-/*        Info info = infoService.findInfoByArea(areaField);
-//        MessageTemplate tmp = navigationService.prepareMessageTemplate(chatId, 4L);
-        TgIn in = this.getInputInstance(chatId);*/
         Info info = infoService.findInfoByArea(areaField);
         TgOut out = new TgOut();
-        out = out
+        out
                 .tgIn(in)
-                //.inlineMarkup(in.inlineMarkup());
                 .generateMarkup(in.getCustomer().getCustomerContext().getCurLevel());
         if (info == null) {
-            out = out
+        out
             .textBody(notFoundMsg);
         } else {
-            out = out
+        out
             .textBody(info.getInstructions());
         }
         out
