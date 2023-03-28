@@ -14,6 +14,7 @@ public interface Constants {
     String SHELTER_EPT = "shelter";
     String REPORT_EPT = "submit_report";
     Long ENDPOINT_LIST = 0L;
+    Long SHELTERS_MENU_LEVEL = 2L;
     
     /**
      * Commands

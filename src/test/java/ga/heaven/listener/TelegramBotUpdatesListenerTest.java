@@ -4,6 +4,7 @@ import com.pengrad.telegrambot.BotUtils;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
+import ga.heaven.model.TgIn;
 import ga.heaven.service.CmdSelectorService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,9 +40,9 @@ public class TelegramBotUpdatesListenerTest {
         Update update = getUpdate(json, "/start");
         telegramBotUpdatesListener.process(Collections.singletonList(update));
 
-        ArgumentCaptor<Message> argumentCaptor = ArgumentCaptor.forClass(Message.class);
+        ArgumentCaptor<TgIn> argumentCaptor = ArgumentCaptor.forClass(TgIn.class);
         Mockito.verify(cmdSelectorService).processingMsg(argumentCaptor.capture());
-        Message actual = argumentCaptor.getValue();
+        Message actual = argumentCaptor.getValue().message();
         assertThat(actual.messageId()).isNull();
     }
 

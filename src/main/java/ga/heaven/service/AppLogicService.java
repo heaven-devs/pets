@@ -1,15 +1,16 @@
 package ga.heaven.service;
 
-import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
-import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import ga.heaven.model.*;
-import ga.heaven.model.CustomerContext.*;
+import ga.heaven.model.CustomerContext.Context;
 import ga.heaven.repository.ShelterRepository;
 import ga.heaven.repository.VolunteerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static ga.heaven.configuration.Constants.*;
@@ -18,6 +19,8 @@ import static ga.heaven.configuration.Constants.*;
 public class AppLogicService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AppLogicService.class);
     
+    private final List<TgIn> ins = new ArrayList<>();
+    
     private final InfoService infoService;
     private final CustomerService customerService;
     private final MsgService msgService;
@@ -25,6 +28,7 @@ public class AppLogicService {
     private final ShelterRepository shelterRepository;
     private final ShelterService shelterService;
     private final NavigationService navigationService;
+    
     
     public AppLogicService(InfoService infoService, CustomerService customerService, MsgService msgService, VolunteerRepository volunteerRepository, ShelterRepository shelterRepository, ShelterService shelterService, NavigationService navigationService) {
         this.infoService = infoService;
@@ -36,18 +40,44 @@ public class AppLogicService {
         this.navigationService = navigationService;
     }
     
-    public void initConversation(Long chatId) {
-        if (!customerService.isPresent(chatId)) {
-            msgService.sendMsg(chatId, infoService.findInfoByArea(COMMON_INFO_FIELD).getInstructions());
-            customerService.createCustomer(chatId);
+    public void addInputInstance(TgIn inObj) {
+        this.ins.add(inObj);
+    }
+    
+    public TgIn getInputInstance(Long chatId) {
+        return this.ins.stream().filter(i -> chatId.equals(i.chatId()))
+                //.map(Navigation::getText)
+                .findFirst()
+                .orElse(null);
+    }
+    
+    public void removeInputInstance(Long chatId) {
+        
+        TgIn in = getInputInstance(chatId);
+        this.ins.remove(in);
+        //in = null;
+    }
+    
+    public void removeInputInstance(TgIn in) {
+        this.ins.remove(in);
+        //in = null;
+    }
+    
+    public void initConversation(TgIn in) {
+        TgOut t = new TgOut();
+        t
+                .tgIn(in)
+                .generateMarkup(SHELTERS_MENU_LEVEL);
+        
+        if (!Objects.nonNull(t.getIn().lastInQueryMessageId())) {
+            t.textBody(infoService.findInfoByArea(COMMON_INFO_FIELD).getInstructions());
         }
         
-        InlineKeyboardMarkup kbMarkup = new InlineKeyboardMarkup();
-        shelterService.findAll().forEach(shelter -> {
-            kbMarkup.addRow(new InlineKeyboardButton(shelter.getName()).callbackData("/shelter/" + shelter.getId()));
-        });
-        msgService.sendMsg(chatId, SHELTER_CHOOSE_MSG + " \n", kbMarkup);
-        
+        t
+                .send()
+                .save()
+        ;
+        LOGGER.debug("TgOut: {}", t);
     }
     
     public void volunteerRequest(Long chatId) {
@@ -99,14 +129,22 @@ public class AppLogicService {
     
     protected void sendMultipurpose(Long chatId, String areaField, String notFoundMsg) {
         Info info = infoService.findInfoByArea(areaField);
-        MessageTemplate tmp = navigationService.prepareMessageTemplate(chatId, 4L);
+//        MessageTemplate tmp = navigationService.prepareMessageTemplate(chatId, 4L);
+        TgIn in = this.getInputInstance(chatId);
+        TgOut out = new TgOut();
+        out
+                .tgIn(in)
+                //.inlineMarkup(in.inlineMarkup());
+                .generateMarkup(in.getCustomer().getCustomerContext().getCurLevel());
         if (info == null) {
-            tmp.setTextBody(notFoundMsg);
+            out.textBody(notFoundMsg);
         } else {
-            tmp.setTextBody(info.getInstructions());
+            out.textBody(info.getInstructions());
         }
+        out
+                .send()
+                .save();
         
-        msgService.interactiveMsg(chatId, null, tmp.getText());
     }
     
     /**
