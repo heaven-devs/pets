@@ -55,7 +55,7 @@ public class TgOut {
             throw new RuntimeException(e);
         }
         
-        LOGGER.debug(Objects.isNull(this.msgJSON) ? "" : this.msgJSON.toString());
+//        LOGGER.debug(Objects.isNull(this.msgJSON) ? "" : this.msgJSON.toString());
     }
 
     private void injectServices(MsgService svcMsg, CustomerService svcCustomer, ReportService reportService) {

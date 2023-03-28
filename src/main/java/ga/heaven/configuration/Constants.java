@@ -75,17 +75,17 @@ public interface Constants {
     String CYNOLOGIST_ADVICE_NOT_FOUND = "The dog handler's advice was not found. Please contact the administration.";
     String CYNOLOGIST_LIST_NOT_FOUND = "The list of dog handlers was not found. Please contact the administration.";
     String REASONS_REFUSAL_NOT_FOUND = "The list of reasons for refusal was not found. Please contact the administration.";
-    String ANSWER_WAIT_REPORT = "Waiting for a pet report ";
-    String ANSWER_REPORT_ACCEPTED = "<b>Report accepted</b>";
-    String ANSWER_REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED =
+    String REPORT_WAIT_REPORT = "Waiting for a pet report ";
+    String REPORT_ACCEPTED = "<b>Report accepted</b>";
+    String REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED =
             "<b>Report not accepted</b>" + CR +
                     "Submit the following information:" + CR +
                     "1. Animal diet." + CR +
                     "2. General well-being and getting used to a new place." + CR +
                     "3. Change in behavior: abandoning old habits, acquiring new ones.";
-    String ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED =
+    String REPORT_NOT_ACCEPTED_PHOTO_REQIRED =
             "<b>Report not accepted</b>" + CR +
                     "Submit a photo of your pet";
-    String ANSWER_PHOTO_ADD_TO_REPORT = "Photo added to the report";
-    String ANSWER_UNRECOGNIZED_PHOTO = "Unrecognized photo";
+    String REPORT_PHOTO_ADD_TO_REPORT = "Photo added to the report";
+    String REPORT_UNRECOGNIZED_PHOTO = "Unrecognized photo";
 }

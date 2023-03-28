@@ -2,7 +2,6 @@ package ga.heaven.service;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.File;
-import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.PhotoSize;
 import com.pengrad.telegrambot.request.GetFile;
 import com.pengrad.telegrambot.response.GetFileResponse;
@@ -28,29 +27,20 @@ import static ga.heaven.model.CustomerContext.Context.*;
 public class ReportSelectorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportSelectorService.class);
 
-    private final AppLogicService appLogicService;
-    private final MsgService msgService;
     private final ReportService reportService;
-    private final CustomerService customerService;
     private final PetService petService;
     private final TelegramBot telegramBot;
-    private final NavigationService navigationService;
     private final ReportPhotoRepository reportPhotoRepository;
 
     private TgIn in;
-    private Customer customer;
     private String responseText;
 
-    public ReportSelectorService(AppLogicService appLogicService, MsgService msgService, ReportService reportService, CustomerService customerService, PetService petService,
-                                 TelegramBot telegramBot, ReportPhotoRepository reportPhotoRepository, NavigationService navigationService) {
-        this.appLogicService = appLogicService;
-        this.msgService = msgService;
+    public ReportSelectorService(ReportService reportService, PetService petService,
+                                 TelegramBot telegramBot, ReportPhotoRepository reportPhotoRepository) {
         this.reportService = reportService;
-        this.customerService = customerService;
         this.petService = petService;
         this.telegramBot = telegramBot;
         this.reportPhotoRepository = reportPhotoRepository;
-        this.navigationService = navigationService;
     }
 
     /**
@@ -61,7 +51,6 @@ public class ReportSelectorService {
     public void processingNonCommandMessagesForReport(TgIn in) {
         this.in = in;
         Context context = in.getCustomer().getCustomerContext().getDialogContext();
-        LOGGER.error("context: " + context);
 
         switch (context) {
             case WAIT_REPORT: responseText = processingMsgWaitReport(); break;
@@ -70,7 +59,7 @@ public class ReportSelectorService {
 
         new TgOut()
                 .tgIn(in)
-                .setTextMessage(responseText)
+                .textBody(responseText)
                 .generateMarkup(5L)
                 .send()
                 .save()
@@ -84,34 +73,29 @@ public class ReportSelectorService {
      * @return текст ответа пользователю
      */
     private String processingMsgWaitReport() {
-        LOGGER.error("processingMsgWaitReport-start");
         Long petId = in.getCustomer().getCustomerContext().getCurrentPetId();
         Pet pet = petService.read(petId);
-        Report todayReport = reportService.findTodayReportByPetId(petId);
-        todayReport = (null == todayReport) ? new Report() : todayReport;
-        todayReport.setPet(pet);
-        todayReport.setDate(LocalDateTime.now());
-        responseText = ANSWER_WAIT_REPORT;
+        Report report = reportService.findTodayReportByPetId(petId);
+        report = (null == report) ? new Report() : report;
+        report.setPet(pet);
+        report.setDate(LocalDateTime.now());
+        responseText = REPORT_WAIT_REPORT;
 
         if (isHavePhotoInReport()) {
-            LOGGER.error("isHavePhotoInReport");
-            savePhotoToDB(todayReport);
-            responseText = ANSWER_REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED;
+            savePhotoToDB(report);
+            responseText = REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED;
         }
 
-        if (isHaveTextInReport(todayReport)) {
-            LOGGER.error("isHaveTextInReport");
-            responseText = ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED;
-            todayReport.setPetReport(getReportText());
-            reportService.updateReport(todayReport);
+        if (isHaveTextInReport(report)) {
+            responseText = REPORT_NOT_ACCEPTED_PHOTO_REQIRED;
+            report.setPetReport(getReportText());
+            reportService.updateReport(report);
         }
 
-        if (isHavePhotoAndTextInReport(todayReport)) {
-            LOGGER.error("isHavePhotoAndTextInReport");
-            responseText = ANSWER_REPORT_ACCEPTED;
-            appLogicService.updateCustomerContext(customer, FREE);
+        if (isHavePhotoAndTextInReport(report)) {
+            responseText = REPORT_ACCEPTED;
+            in.getCustomer().getCustomerContext().setDialogContext(FREE);
         }
-        LOGGER.error("processingMsgWaitReport-exit");
 
         return responseText;
     }
@@ -125,27 +109,24 @@ public class ReportSelectorService {
     public String processingPetChoice(TgIn in) {
         this.in = in;
         long petId = in.endpoint().getValueAsLong();
-        customer = customerService.findCustomerByChatId(in.chatId());
-        customer.getCustomerContext().setDialogContext(WAIT_REPORT);
-        customer.getCustomerContext().setCurrentPetId(petId);
-        customerService.updateCustomer(customer);
-
         Pet pet = petService.read(petId);
 
-        Report todayReport = reportService.findTodayReportByPetId(petId);
-        if (todayReport != null) {
-            todayReport.setDate(LocalDateTime.now());
+        in.getCustomer().getCustomerContext().setDialogContext(WAIT_REPORT);
+        in.getCustomer().getCustomerContext().setCurrentPetId(petId);
+
+        Report report = reportService.findTodayReportByPetId(petId);
+        if (report != null) {
+            report.setDate(LocalDateTime.now());
         }
 
-        if (todayReport == null) {
-//            responseText = ANSWER_WAIT_REPORT + "\"" + pet.getName() + "\"";
-            responseText = ANSWER_WAIT_REPORT + "\"" + pet.getName() + "\"";
-        } else if (todayReport.getPetReport() != null && isHavePhotoInCurrentReportFromDB(todayReport)) {
-            responseText = ANSWER_REPORT_ACCEPTED;
-        } else if (todayReport.getPetReport() != null) {
-            responseText = ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED;
+        if (report == null) {
+            responseText = REPORT_WAIT_REPORT + "\"" + pet.getName() + "\"";
+        } else if (report.getPetReport() != null && isHavePhotoInCurrentReportFromDB(report)) {
+            responseText = REPORT_ACCEPTED;
+        } else if (report.getPetReport() != null) {
+            responseText = REPORT_NOT_ACCEPTED_PHOTO_REQIRED;
         } else {
-            responseText = ANSWER_REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED;
+            responseText = REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED;
         }
 
         return responseText;
@@ -158,7 +139,7 @@ public class ReportSelectorService {
      * @return имеется или нет
      */
     private boolean isHavePhotoAndTextInReport(Report report) {
-        return (in.photo() != null || (report != null && isHavePhotoInCurrentReportFromDB(report)))
+        return (in.message().photo() != null || (report != null && isHavePhotoInCurrentReportFromDB(report)))
                 && (in.message().caption() != null || in.text() != null || (report != null && report.getPetReport() != null));
     }
 
@@ -167,7 +148,7 @@ public class ReportSelectorService {
      * @return имеется или нет
      */
     private boolean isHavePhotoInReport() {
-        return in.photo() != null;
+        return in.message().photo() != null;
     }
 
     /**
@@ -204,10 +185,9 @@ public class ReportSelectorService {
      * @return Сообщение пользователю
      */
     private String addAdditionalPhoto() {
-        LOGGER.error("addAdditionalPhoto");
-        Long petId = customer.getCustomerContext().getCurrentPetId();
+        Long petId = in.getCustomer().getCustomerContext().getCurrentPetId();
         Report todayReport = reportService.findTodayReportByPetId(petId);
-        if (in.photo() == null || todayReport == null) {
+        if (in.message().photo() == null || todayReport == null) {
             return "";
         }
         LocalDateTime currentTime = LocalDateTime.now();
@@ -215,10 +195,11 @@ public class ReportSelectorService {
         long diffTime = ChronoUnit.SECONDS.between(reportTime, currentTime);
         if (diffTime < 180) {
             savePhotoToDB(todayReport);
-            responseText = ANSWER_PHOTO_ADD_TO_REPORT;
+            responseText = REPORT_PHOTO_ADD_TO_REPORT;
         } else {
-            appLogicService.updateCustomerContext(customer, FREE, 0);
-            responseText = ANSWER_UNRECOGNIZED_PHOTO;
+            in.getCustomer().getCustomerContext().setDialogContext(FREE);
+            in.getCustomer().getCustomerContext().setCurrentPetId(0L);
+            responseText = REPORT_UNRECOGNIZED_PHOTO;
         }
         return responseText;
     }
@@ -228,8 +209,7 @@ public class ReportSelectorService {
      */
     private void savePhotoToDB(Report report) {
         reportService.updateReport(report);
-
-        PhotoSize[] photoSizes = in.photo();
+        PhotoSize[] photoSizes = in.message().photo();
         PhotoSize photoSize = Arrays.stream(photoSizes)
                 .max(Comparator.comparing(PhotoSize::fileSize))
                 .orElseThrow(RuntimeException::new);

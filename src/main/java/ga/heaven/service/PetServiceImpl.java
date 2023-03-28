@@ -17,13 +17,13 @@ public class PetServiceImpl implements PetService {
     private final static Logger LOGGER = LoggerFactory.getLogger(PetService.class);
     
     public PetServiceImpl(PetRepository petRepository) {
-        LOGGER.debug("Service wire with Repository");
+//        LOGGER.debug("Service wire with Repository");
         this.petRepository = petRepository;
     }
     
     @Override
     public Pet create(Pet pet) {
-        LOGGER.info("Method create was invoked");
+//        LOGGER.info("Method create was invoked");
         Example<Pet> e = Example.of(pet);
         boolean exists = petRepository.exists(e);
         return petRepository.save(pet);
@@ -32,13 +32,13 @@ public class PetServiceImpl implements PetService {
     
     @Override
     public Pet read(Long id) {
-        LOGGER.info("Method read was invoked");
+//        LOGGER.info("Method read was invoked");
         return petRepository.findById(id).orElse(null);
     }
     
     @Override
     public List<Pet> read() {
-        LOGGER.info("Method read all was invoked");
+//        LOGGER.info("Method read all was invoked");
         return petRepository.findAll();
     }
     

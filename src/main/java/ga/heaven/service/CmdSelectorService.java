@@ -27,10 +27,8 @@ public class CmdSelectorService {
     }
 
     public void processingMsg(TgIn in) {
-        LOGGER.debug("current in: {}", in);
-
+//        LOGGER.debug("current in: {}", in);
         if (isNonCommandMessages(in)) {
-
             reportSelectorService.processingNonCommandMessagesForReport(in);
             return;
         }
@@ -40,7 +38,7 @@ public class CmdSelectorService {
         ) {
             if (DYNAMIC.equals(in.endpoint().getType())) {
 
-                LOGGER.debug("Dynamic endpoint message\n{}\nsent to: switchDynCmd methods", in);
+//                LOGGER.debug("Dynamic endpoint message\n{}\nsent to: switchDynCmd methods", in);
                 switch (in.endpoint().getName()) {
                     case SHELTER_EPT:
                         if (ENDPOINT_LIST.equals(in.endpoint().getValueAsLong())) {
@@ -59,6 +57,7 @@ public class CmdSelectorService {
                         new TgOut()
                                 .tgIn(in)
                                 .textBody(reportSelectorService.processingPetChoice(in))
+                                .setCustomerContext(WAIT_REPORT)
                                 .setCurrentPet(in.endpoint().getValueAsLong())
                                 .generateMarkup(5L)
                                 .send()
@@ -68,7 +67,7 @@ public class CmdSelectorService {
                 }
 
             } else if (STATIC.equals(in.endpoint().getType())) {
-                LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", in);
+//                LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", in);
                 switch (in.endpoint().getName()) {
                     case START_CMD:
                         appLogicService.initConversation(in);
@@ -127,8 +126,7 @@ public class CmdSelectorService {
      * @return истина если от пользователя получина не команда, а обычный текст или фото
      */
     private boolean isNonCommandMessages(TgIn in) {
-        LOGGER.error(in.photo().toString());
-        return (in.text() != null && !in.text().startsWith("/")) || in.photo() != null;
+        return (in.text() != null && !in.text().startsWith("/")) || in.message().photo() != null;
     }
 
 }

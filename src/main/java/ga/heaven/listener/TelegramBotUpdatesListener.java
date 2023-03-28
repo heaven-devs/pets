@@ -21,15 +21,16 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     private final TelegramBot telegramBot;
     
     private final CmdSelectorService cmdSelectorService;
+
     private final MsgService msgService;
-    
     private final CustomerService customerService;
     private final AppLogicService appLogicService;
     private final ReportService reportService;
     
     private static TgIn tgInGlobal;
     
-    public TelegramBotUpdatesListener(TelegramBot telegramBot, CmdSelectorService cmdSelectorService, NavigationService navigationService, ShelterService shelterService, MsgService msgService, CustomerService customerService, AppLogicService appLogicService, ReportService reportService) {
+    public TelegramBotUpdatesListener(TelegramBot telegramBot, CmdSelectorService cmdSelectorService, NavigationService navigationService,
+                                      ShelterService shelterService, MsgService msgService, CustomerService customerService, AppLogicService appLogicService, ReportService reportService) {
         this.telegramBot = telegramBot;
         this.cmdSelectorService = cmdSelectorService;
         this.msgService = msgService;
@@ -53,7 +54,8 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     @Override
     public int process(List<Update> updates) {
         updates.forEach(update -> {
-            LOGGER.debug("Processing update: {}", update);
+            LOGGER.debug("========================================================================================================================");
+//            LOGGER.debug("Processing update: {}", update);
             TgIn in = tgInGlobal
                     .newInstance()
                     .update(update)

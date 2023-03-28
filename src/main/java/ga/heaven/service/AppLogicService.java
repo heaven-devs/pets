@@ -24,20 +24,13 @@ public class AppLogicService {
     private final InfoService infoService;
     private final CustomerService customerService;
     private final MsgService msgService;
-    private final VolunteerRepository volunteerRepository;
     private final ShelterRepository shelterRepository;
-    private final ShelterService shelterService;
-    private final NavigationService navigationService;
     
-    
-    public AppLogicService(InfoService infoService, CustomerService customerService, MsgService msgService, VolunteerRepository volunteerRepository, ShelterRepository shelterRepository, ShelterService shelterService, NavigationService navigationService) {
+    public AppLogicService(InfoService infoService, CustomerService customerService, MsgService msgService, ShelterRepository shelterRepository) {
         this.infoService = infoService;
         this.customerService = customerService;
         this.msgService = msgService;
-        this.volunteerRepository = volunteerRepository;
         this.shelterRepository = shelterRepository;
-        this.shelterService = shelterService;
-        this.navigationService = navigationService;
     }
     
     public void addInputInstance(TgIn inObj) {
@@ -146,21 +139,8 @@ public class AppLogicService {
                 .save();
         
     }
-    
-    /**
-     * Метод обновляет значения полей "context" и "petId"
-     *
-     * @param customer текущий пользователь
-     * @param context  новое значение поля "context"
-     * @param petId    новое значение поля "petId"
-     */
-    void updateCustomerContext(Customer customer, Context context, long petId) {
-        CustomerContext customerContext = customer.getCustomerContext();
-        customerContext.setCurrentPetId(petId);
-        customerService.updateCustomer(customer);
-        updateCustomerContext(customer, context);
-    }
-    
+
+    // todo: deprecated
     /**
      * Метод обновляет значения полей "context"
      *
