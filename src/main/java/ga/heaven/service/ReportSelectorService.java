@@ -53,17 +53,20 @@ public class ReportSelectorService {
         Context context = in.getCustomer().getCustomerContext().getDialogContext();
 
         switch (context) {
-            case WAIT_REPORT: responseText = processingMsgWaitReport(); break;
-            case FREE: responseText = addAdditionalPhoto(); break;
+            case WAIT_REPORT:
+                responseText = processingMsgWaitReport();
+                new TgOut()
+                        .tgIn(in)
+                        .textBody(responseText)
+                        .generateMarkup(5L)
+                        .send()
+                        .save()
+                ;
+                break;
+            case FREE:
+                responseText = addAdditionalPhoto();
+                break;
         }
-
-        new TgOut()
-                .tgIn(in)
-                .textBody(responseText)
-                .generateMarkup(5L)
-                .send()
-                .save()
-        ;
     }
 
     /**
@@ -135,6 +138,7 @@ public class ReportSelectorService {
     /**
      * Имеются ли в базе текст отчета, а в сообщении от пользователя фото,
      * или наоборот в базе фото, а в сообщении от пользователя текст отчета? Т.е. есть и фото и текст отчета.
+     *
      * @param report проверяемый отчет
      * @return имеется или нет
      */
@@ -145,6 +149,7 @@ public class ReportSelectorService {
 
     /**
      * Имеется ли в текущем сообщении от пользователя картинка (фото)
+     *
      * @return имеется или нет
      */
     private boolean isHavePhotoInReport() {
@@ -153,6 +158,7 @@ public class ReportSelectorService {
 
     /**
      * Имеется ли в текущем сообщении от пользователя фото
+     *
      * @param todayReport текущий отчет
      * @return имеется или нет
      */
@@ -163,6 +169,7 @@ public class ReportSelectorService {
 
     /**
      * Имеется ли фото в текущем отчете
+     *
      * @param report текущий отчет
      * @return имеется или нет
      */
@@ -172,6 +179,7 @@ public class ReportSelectorService {
 
     /**
      * Метод выбирает откуда брать текст отчета .text или .caption
+     *
      * @return текст отчета
      */
     private String getReportText() {
@@ -182,6 +190,7 @@ public class ReportSelectorService {
 
     /**
      * Метод добавляет к отчету дополнительные фото и возвращает сообщение пользователю об успехе добавления картинки в отчет.
+     *
      * @return Сообщение пользователю
      */
     private String addAdditionalPhoto() {

@@ -1,8 +1,6 @@
 package ga.heaven.service;
 
-import com.pengrad.telegrambot.model.Message;
-import ga.heaven.model.Customer;
-import ga.heaven.model.Shelter;
+import ga.heaven.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -14,129 +12,138 @@ import static ga.heaven.model.CustomerContext.Context.*;
 public class ShelterSelectorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ShelterSelectorService.class);
 
-    private final AppLogicService appLogicService;
-    private final MsgService msgService;
     private final ShelterService shelterService;
-    private final CustomerService customerService;
 
-    private Message inputMessage;
-    private Shelter currentShelter;
-    private Long chatId;
-    private Customer customer;
+    private TgIn in;
 
-    public ShelterSelectorService(AppLogicService appLogicService, MsgService msgService, ShelterService shelterService, CustomerService customerService) {
-        this.appLogicService = appLogicService;
-        this.msgService = msgService;
+    public ShelterSelectorService(ShelterService shelterService) {
         this.shelterService = shelterService;
-        this.customerService = customerService;
+    }
+
+    /**
+     * Обрабатываю текстовые сообщения пользователя (которые начинаются не с /) и фото
+     *
+     * @param in сообщение от пользователя
+     */
+    public void processingNonCommandMessagesForShelter(TgIn in) {
+        this.in = in;
+        CustomerContext.Context context = in.getCustomer().getCustomerContext().getDialogContext();
+        switch (context) {
+            case WAIT_CUSTOMER_NAME:
+                in.getCustomer().getCustomerContext().setDialogContext(WAIT_CUSTOMER_PHONE);
+                formatFieldName(in.text());
+                generateMenu(SHELTER_SEND_PHONE_MSG);
+                break;
+            case WAIT_CUSTOMER_PHONE:
+                in.getCustomer().getCustomerContext().setDialogContext(WAIT_CUSTOMER_ADDRESS);
+                in.getCustomer().setPhone(truncate(formatFieldPhone(in.text()), 11));
+                generateMenu(SHELTER_SEND_ADDRESS_MSG);
+                break;
+            case WAIT_CUSTOMER_ADDRESS:
+                in.getCustomer().getCustomerContext().setDialogContext(FREE);
+                in.getCustomer().setAddress(in.text());
+                generateMenu(SHELTER_CONTACT_SAVED);
+                break;
+        }
+    }
+
+    private void generateMenu(String text) {
+        new TgOut()
+                .tgIn(in)
+                .textBody(text)
+                .generateMarkup(3L)
+                .send()
+                .save()
+        ;
     }
 
     /**
      * Метод определяет какая команда была введена
-     * @param inputMessage входящий массив от бота
+     *
+     * @param in входящий массив от бота
      */
-    public void switchCmd(Message inputMessage) {
-        this.inputMessage = inputMessage;
-        chatId = inputMessage.chat().id();
-        customer = customerService.findCustomerByChatId(chatId);
-        currentShelter = shelterService.findById(customer.getCustomerContext().getShelterId());
-        if (currentShelter == null) {
-            msgService.sendMsg(chatId, SHELTER_NOT_FOUND);
+    public void switchCmd(TgIn in) {
+        this.in = in;
+        Shelter shelter = shelterService.findById(in.getCustomer().getCustomerContext().getShelterId());
+
+        if (shelter == null) {
+            LOGGER.error("level 1L");
+            new TgOut()
+                    .tgIn(in)
+                    .textBody(SHELTER_NOT_FOUND)
+                    .generateMarkup(1L)
+                    .send()
+                    .save()
+            ;
             return;
         }
 
-        String command = inputMessage.text();
+        String responseText = "";
+        String command = in.text();
         switch (command) {
             case SHELTER_INFO_CMD:
-                sendShelterInformation(currentShelter.getDescription(), SHELTER_INFO_NOT_FOUND);
+                responseText = sendShelterInformation(shelter.getDescription(), SHELTER_INFO_NOT_FOUND);
                 break;
             case SHELTER_ADDRESS_CMD:
-                sendShelterInformation(currentShelter.getAddress(), SHELTER_ADDRESS_NOT_FOUND);
+                responseText = sendShelterInformation(shelter.getAddress(), SHELTER_ADDRESS_NOT_FOUND);
                 break;
             case SHELTER_SAFETY_CMD:
-                sendShelterInformation(currentShelter.getRules(), SHELTER_RULES_NOT_FOUND);
+                responseText = sendShelterInformation(shelter.getRules(), SHELTER_RULES_NOT_FOUND);
                 break;
             case SHELTER_LEAVE_CONTACT_CMD:
-                appLogicService.updateCustomerContext(customer, WAIT_CUSTOMER_NAME);
-                msgService.sendMsg(chatId, SHELTER_SEND_NAME_MSG);
+                in.getCustomer().getCustomerContext().setDialogContext(WAIT_CUSTOMER_NAME);
+                responseText = SHELTER_SEND_NAME_MSG;
                 break;
         }
+
+        new TgOut()
+                .tgIn(in)
+                .textBody(responseText)
+                .generateMarkup(3L)
+                .send()
+                .save()
+        ;
     }
 
     /**
      * Метод отправляет боту сообщение
-     * @param areaField текст сообщения
+     *
+     * @param areaField   текст сообщения
      * @param notFoundMsg текст ошибки, если сообщение не найдено
      */
-    private void sendShelterInformation(String areaField, String notFoundMsg) {
-        if (areaField != null) {
-            msgService.sendMsg(chatId, areaField);
-        } else {
-            msgService.sendMsg(chatId, notFoundMsg);
-        }
-    }
-
-    /**
-     * Метод выполняется если введена не команда, а простой текст. Метод выбирает что делать с данными, в зависимости от контекста
-     * @param inputMessage входящее сообщение от бота
-     */
-    public void switchText(Message inputMessage) {
-        this.inputMessage = inputMessage;
-        chatId = inputMessage.chat().id();
-        customer = customerService.findCustomerByChatId(chatId);
-
-        String text = inputMessage.text();
-        switch (customer.getCustomerContext().getDialogContext()) {
-
-            case WAIT_CUSTOMER_NAME:
-                appLogicService.updateCustomerContext(customer, WAIT_CUSTOMER_PHONE);
-                formatFieldName(text);
-                msgService.sendMsg(chatId, SHELTER_SEND_PHONE_MSG);
-                break;
-
-            case WAIT_CUSTOMER_PHONE:
-                appLogicService.updateCustomerContext(customer, WAIT_CUSTOMER_ADDRESS);
-                customer.setPhone(truncate(formatFieldPhone(text), 11));
-                customerService.updateCustomer(customer);
-                msgService.sendMsg(chatId, SHELTER_SEND_ADDRESS_MSG);
-                break;
-
-            case WAIT_CUSTOMER_ADDRESS:
-                appLogicService.updateCustomerContext(customer, FREE);
-                customer.setAddress(text);
-                customerService.updateCustomer(customer);
-                msgService.sendMsg(chatId, SHELTER_CONTACT_SAVED);
-                break;
-        }
+    private String sendShelterInformation(String areaField, String notFoundMsg) {
+        return areaField != null ? areaField : notFoundMsg;
     }
 
     /**
      * Метод форматирует поле ФИО в зависимости от введенных данных
+     *
      * @param text введенные пользователем данные
      */
     private void formatFieldName(String text) {
         String[] nameParts = text.split(" ");
         if (nameParts.length == 1) {
-            customer.setName(truncate(nameParts[0], 25));
+            in.getCustomer().setName(truncate(nameParts[0], 25));
         } else {
             if (nameParts.length >= 2) {
-                customer.setSurname(truncate(nameParts[0], 25));
-                customer.setName(truncate(nameParts[1], 25));
+                in.getCustomer().setSurname(truncate(nameParts[0], 25));
+                in.getCustomer().setName(truncate(nameParts[1], 25));
             }
             if (nameParts.length >= 3) {
                 StringBuilder sb = new StringBuilder();
                 for (int i = 2; i < nameParts.length; i++) {
                     sb.append(nameParts[i] + " ");
                 }
-                customer.setSecondName(truncate(sb.toString(), 25));
+                in.getCustomer().setSecondName(truncate(sb.toString(), 25));
             }
         }
-        customerService.updateCustomer(customer);
+//        customerService.updateCustomer(customer);
     }
 
     /**
      * Метод обрезает текст до указанного количества символов
-     * @param text текст, который обрезаем
+     *
+     * @param text   текст, который обрезаем
      * @param length длина, которую нужно оставить
      * @return возвращаю обрезанный текст
      */
@@ -149,10 +156,12 @@ public class ShelterSelectorService {
 
     /**
      * Метод оставляет в строке только цифры
+     *
      * @param text входящее сообщение от бота
      * @return отформатированная строка
      */
     private String formatFieldPhone(String text) {
         return text.replaceAll("\\D+", "");
     }
+
 }

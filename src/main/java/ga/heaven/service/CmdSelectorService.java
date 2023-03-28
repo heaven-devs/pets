@@ -17,19 +17,24 @@ public class CmdSelectorService {
     private final PetSelectorService petSelectorService;
     private final VolunteerSelectorService volunteerSelectorService;
     private final ReportSelectorService reportSelectorService;
+    private final ShelterSelectorService shelterSelectorService;
 
 
-    public CmdSelectorService(AppLogicService appLogicService, PetSelectorService petSelectorService, VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService) {
+    public CmdSelectorService(AppLogicService appLogicService, PetSelectorService petSelectorService,
+                              VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService,
+                              ShelterSelectorService shelterSelectorService) {
         this.appLogicService = appLogicService;
         this.petSelectorService = petSelectorService;
         this.volunteerSelectorService = volunteerSelectorService;
         this.reportSelectorService = reportSelectorService;
+        this.shelterSelectorService = shelterSelectorService;
     }
 
     public void processingMsg(TgIn in) {
 //        LOGGER.debug("current in: {}", in);
         if (isNonCommandMessages(in)) {
             reportSelectorService.processingNonCommandMessagesForReport(in);
+            shelterSelectorService.processingNonCommandMessagesForShelter(in);
             return;
         }
 
@@ -115,6 +120,7 @@ public class CmdSelectorService {
                 }
                 petSelectorService.switchCmd(in.message());
                 volunteerSelectorService.switchCmd(in.message());
+                shelterSelectorService.switchCmd(in);
             }
         }
     }

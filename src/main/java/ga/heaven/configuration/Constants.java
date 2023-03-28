@@ -35,7 +35,7 @@ public interface Constants {
     String REASONS_REFUSAL_CMD = "/reasons_refusal"; // команда выдать причины отказа
     String SHELTER_INFO_CMD = "/shelter_info"; // команда выдать информацию о приюте
     String SHELTER_ADDRESS_CMD = "/address"; // команда выдать адрес приюта
-    String SHELTER_SAFETY_CMD = "/safety"; // команда выдать правила поведения на территории приюта
+    String SHELTER_SAFETY_CMD = "/security_contact"; // команда выдать правила поведения на территории приюта
     String SHELTER_LEAVE_CONTACT_CMD = "/leave_contact"; // команда получить контакты от пользователя
 
 

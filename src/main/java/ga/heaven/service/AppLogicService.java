@@ -22,13 +22,11 @@ public class AppLogicService {
     private final List<TgIn> ins = new ArrayList<>();
     
     private final InfoService infoService;
-    private final CustomerService customerService;
     private final MsgService msgService;
     private final ShelterRepository shelterRepository;
     
-    public AppLogicService(InfoService infoService, CustomerService customerService, MsgService msgService, ShelterRepository shelterRepository) {
+    public AppLogicService(InfoService infoService, MsgService msgService, ShelterRepository shelterRepository) {
         this.infoService = infoService;
-        this.customerService = customerService;
         this.msgService = msgService;
         this.shelterRepository = shelterRepository;
     }
@@ -138,19 +136,6 @@ public class AppLogicService {
                 .send()
                 .save();
         
-    }
-
-    // todo: deprecated
-    /**
-     * Метод обновляет значения полей "context"
-     *
-     * @param customer текущий пользователь
-     * @param context  новое значение поля "context"
-     */
-    void updateCustomerContext(Customer customer, Context context) {
-        CustomerContext customerContext = customer.getCustomerContext();
-        customerContext.setDialogContext(context);
-        customerService.updateCustomer(customer);
     }
     
 }
