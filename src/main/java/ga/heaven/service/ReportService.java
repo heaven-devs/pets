@@ -91,6 +91,11 @@ public class ReportService {
         return reportRepository.save(report);
     }
 
+    /**
+     * Метод ищет сегодняшний ЗАВЕРШЕННЫЙ отчет по id питомца
+     * @param petId id питомца
+     * @return найденный отчет
+     */
     public Report findTodayCompletedReportsByPetId(Long petId) {
         LocalDate localDate = LocalDate.now();
         LocalDateTime startTime = localDate.atStartOfDay();
@@ -106,6 +111,11 @@ public class ReportService {
         return todayReport;
     }
 
+    /**
+     * Метод ищет сегодняшние отчеты по id питомца
+     * @param petId id питомца
+     * @return найденный отчет
+     */
     public Report findTodayReportByPetId(Long petId) {
         LocalDate localDate = LocalDate.now();
         LocalDateTime startTime = localDate.atStartOfDay();
@@ -113,13 +123,12 @@ public class ReportService {
         return reportRepository.findReportByPetIdAndDateBetween(petId, startTime, finishTime);
     }
 
-
     /**
      * Метод ищет питомцев пользователя, для которых сегодня не был сдан отчет.
      *
      * @return список питомцев
      */
-    List<Pet> findPetsWithoutTodayReport(Customer customer) {
+    public List<Pet> findPetsWithoutTodayReport(Customer customer) {
         List<Pet> petWithoutReportList = new ArrayList<>();
         for (Pet pet : petService.findPetsByCustomer(customer)) {
             Report report = findTodayCompletedReportsByPetId(pet.getId());

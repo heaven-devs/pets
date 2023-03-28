@@ -10,6 +10,7 @@ import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import ga.heaven.service.CustomerService;
 import ga.heaven.service.MsgService;
+import ga.heaven.service.ReportService;
 import io.github.jamsesso.jsonlogic.JsonLogic;
 import io.github.jamsesso.jsonlogic.JsonLogicException;
 import lombok.*;
@@ -19,8 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-import static ga.heaven.configuration.Constants.SHELTERS_MENU_LEVEL;
-import static ga.heaven.configuration.Constants.SHELTER_EPT;
+import static ga.heaven.configuration.Constants.*;
 
 @Getter
 @Setter
@@ -43,6 +43,7 @@ public class TgOut {
     
     private MsgService svcMsg;
     private CustomerService svcCustomer;
+    private ReportService reportService;
     
     public TgOut() {
         this.textStatus = new ArrayList<>();
@@ -56,8 +57,9 @@ public class TgOut {
         
         LOGGER.debug(Objects.isNull(this.msgJSON) ? "" : this.msgJSON.toString());
     }
-    
-    private void injectServices(MsgService svcMsg, CustomerService svcCustomer) {
+
+    private void injectServices(MsgService svcMsg, CustomerService svcCustomer, ReportService reportService) {
+        this.reportService = reportService;
         this.svcMsg = svcMsg;
         this.svcCustomer = svcCustomer;
     }
@@ -138,7 +140,7 @@ public class TgOut {
     public TgOut tgIn(TgIn in) {
         this.in = in;
         this.chatId(this.in.chatId());
-        this.injectServices(in.getSvcMsg(), in.getSvcCustomer());
+        this.injectServices(in.getSvcMsg(), in.getSvcCustomer(), in.getReportService());
         this.updateTextField();
         return this;
     }
@@ -175,11 +177,11 @@ public class TgOut {
         in.getCustomer().getCustomerContext().setShelterId(shelterId);
         return this;
     }
-    
+
     public Shelter getCurrentShelter() {
         return in.currentShelter(in.getCustomer().getCustomerContext().getShelterId());
     }
-    
+
     public TgOut send() {
         this.messageId(in.getModalMessageId());
         //Message msgObj = BotUtils.fromJson(msgJSON.toPrettyString(), Message.class);
@@ -187,23 +189,19 @@ public class TgOut {
             Message newMsg = svcMsg.sendMsg(this.chatId(), this.text(), this.inlineMarkup());
             this.messageId(newMsg.messageId());
         }
-        
+
         in.getCustomer().getCustomerContext().setLastOutMsg(this.msgJSON.toPrettyString());
         return this;
     }
-    
-   /* public TgOut generateMarkup() {
-    
-    }*/
-    
-    
+
+
     public TgOut generateMarkup(Long id) {
         in.getCustomer().getCustomerContext().setCurLevel(id);
         this.textMenuCaption(in.navigationItemById(id).getText());
         Optional.ofNullable(this.getCurrentShelter())
                 .map(Shelter::getName)
                 .ifPresent(s -> this.addStatusLine("Selected shelter: " + s));
-    
+
         if (SHELTERS_MENU_LEVEL.equals(id)) {
             this.inlineMarkup = new InlineKeyboardMarkup();
             in.getShelterList()
@@ -211,7 +209,7 @@ public class TgOut {
                             .addRow(new InlineKeyboardButton(shelter.getName())
                                     .callbackData("/" + SHELTER_EPT + "/" + shelter.getId())));
             this.applyKeyboardMarkup();
-            
+
             return this;
         }
         this.inlineMarkup = new InlineKeyboardMarkup();
@@ -234,9 +232,46 @@ public class TgOut {
                         .addRow(new InlineKeyboardButton(button.getText()).callbackData(button.getEndpoint()));
             }
         });
+
+        if (id.equals(REPORTS_MENU_LEVEL)) {
+            generateAdditionalButtonsForReportMenu(in.getCustomer())
+                    .forEach(button ->
+                            this.inlineMarkup
+                                    .addRow(new InlineKeyboardButton(button.getText()).callbackData(button.getEndpoint())));
+        }
+
         this.applyKeyboardMarkup();
-    
+
         return this;
     }
-    
+
+    /**
+     * Метод генерирует кнопки с питомцами пользователя, для которых сегодня не сдавались отчеты
+     *
+     * @param customer текущий пользователь
+     * @return список кнопок с питомцами
+     */
+    List<Navigation> generateAdditionalButtonsForReportMenu(Customer customer) {
+        List<Navigation> buttons = new ArrayList<>();
+        reportService.findPetsWithoutTodayReport(customer).forEach(pet -> {
+            String endpoint = "/submit_report/" + pet.getId();
+            String text = pet.getName();
+            buttons.add(new Navigation(REPORTS_MENU_LEVEL, REPORTS_MENU_LEVEL, endpoint, text, null));
+        });
+        return buttons;
+    }
+
+    /* public TgOut generateMarkup() {
+
+     }*/
+
+    public TgOut setCustomerContext(CustomerContext.Context context) {
+        this.getIn().getCustomer().getCustomerContext().setDialogContext(context);
+        return this;
+    }
+
+    public TgOut setCurrentPet(Long petId) {
+        this.getIn().getCustomer().getCustomerContext().setCurrentPetId(petId);
+        return this;
+    }
 }

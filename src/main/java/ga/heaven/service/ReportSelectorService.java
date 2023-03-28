@@ -37,7 +37,7 @@ public class ReportSelectorService {
     private final NavigationService navigationService;
     private final ReportPhotoRepository reportPhotoRepository;
 
-    private Message inputMessage;
+    private TgIn in;
     private Customer customer;
     private String responseText;
 
@@ -56,38 +56,25 @@ public class ReportSelectorService {
     /**
      * Обрабатываю текстовые сообщения пользователя (которые начинаются не с /) и фото
      *
-     * @param inputMessage сообщение от пользователя
+     * @param in сообщение от пользователя
      */
-    public void processingNonCommandMessagesForReport(Message inputMessage) {
-        this.inputMessage = inputMessage;
-        customer = customerService.findCustomerByChatId(inputMessage.chat().id());
-        String response = processingUserMessages();
-        msgService.sendMsg(inputMessage.chat().id(), response);
+    public void processingNonCommandMessagesForReport(TgIn in) {
+        this.in = in;
+        Context context = in.getCustomer().getCustomerContext().getDialogContext();
+        LOGGER.error("context: " + context);
 
-        // добавляю меню после сообщения о том, что отчет принят
-        if (response.equals(ANSWER_REPORT_ACCEPTED)) {
-            msgService.sendMsg(inputMessage.chat().id(), "1");
-            MessageTemplate messageTemplate = navigationService.prepareMessageTemplate(inputMessage.chat().id(), 1L);
-            msgService.interactiveMsg(inputMessage.chat().id(),
-                    messageTemplate.getKeyboard(),
-                    messageTemplate.getText());
-        }
-    }
-
-    /**
-     * Получил текст/фото (не команду) от пользователя, в зависимости от контекста выбираю что делать дальше
-     * контекст FREE может быть, если отчет уже есть, а пользователь добавляет дополнительные фото.
-     * @return текст ответа пользователю
-     */
-    private String processingUserMessages() {
-        responseText = "";
-        Context context = customer.getCustomerContext().getDialogContext();
         switch (context) {
             case WAIT_REPORT: responseText = processingMsgWaitReport(); break;
             case FREE: responseText = addAdditionalPhoto(); break;
         }
 
-        return responseText;
+        new TgOut()
+                .tgIn(in)
+                .setTextMessage(responseText)
+                .generateMarkup(5L)
+                .send()
+                .save()
+        ;
     }
 
     /**
@@ -97,7 +84,8 @@ public class ReportSelectorService {
      * @return текст ответа пользователю
      */
     private String processingMsgWaitReport() {
-        Long petId = customer.getCustomerContext().getCurrentPetId();
+        LOGGER.error("processingMsgWaitReport-start");
+        Long petId = in.getCustomer().getCustomerContext().getCurrentPetId();
         Pet pet = petService.read(petId);
         Report todayReport = reportService.findTodayReportByPetId(petId);
         todayReport = (null == todayReport) ? new Report() : todayReport;
@@ -106,20 +94,24 @@ public class ReportSelectorService {
         responseText = ANSWER_WAIT_REPORT;
 
         if (isHavePhotoInReport()) {
+            LOGGER.error("isHavePhotoInReport");
             savePhotoToDB(todayReport);
             responseText = ANSWER_REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED;
         }
 
         if (isHaveTextInReport(todayReport)) {
+            LOGGER.error("isHaveTextInReport");
             responseText = ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED;
             todayReport.setPetReport(getReportText());
             reportService.updateReport(todayReport);
         }
 
         if (isHavePhotoAndTextInReport(todayReport)) {
+            LOGGER.error("isHavePhotoAndTextInReport");
             responseText = ANSWER_REPORT_ACCEPTED;
             appLogicService.updateCustomerContext(customer, FREE);
         }
+        LOGGER.error("processingMsgWaitReport-exit");
 
         return responseText;
     }
@@ -127,14 +119,13 @@ public class ReportSelectorService {
     /**
      * Обработка нажатия кнопки меню с одним из питомцев.
      *
-     * @param inputMessage сообщение от пользователя (нажатие кнопки)
-     * @param petId id выбранного питомца
+     * @param in сообщение от пользователя (нажатие кнопки)
      * @return ответ бота
      */
-    public String processingPetChoice(Message inputMessage, long petId) {
-        this.inputMessage = inputMessage;
-
-        customer = customerService.findCustomerByChatId(inputMessage.chat().id());
+    public String processingPetChoice(TgIn in) {
+        this.in = in;
+        long petId = in.endpoint().getValueAsLong();
+        customer = customerService.findCustomerByChatId(in.chatId());
         customer.getCustomerContext().setDialogContext(WAIT_REPORT);
         customer.getCustomerContext().setCurrentPetId(petId);
         customerService.updateCustomer(customer);
@@ -147,6 +138,7 @@ public class ReportSelectorService {
         }
 
         if (todayReport == null) {
+//            responseText = ANSWER_WAIT_REPORT + "\"" + pet.getName() + "\"";
             responseText = ANSWER_WAIT_REPORT + "\"" + pet.getName() + "\"";
         } else if (todayReport.getPetReport() != null && isHavePhotoInCurrentReportFromDB(todayReport)) {
             responseText = ANSWER_REPORT_ACCEPTED;
@@ -166,8 +158,8 @@ public class ReportSelectorService {
      * @return имеется или нет
      */
     private boolean isHavePhotoAndTextInReport(Report report) {
-        return (inputMessage.photo() != null || (report != null && isHavePhotoInCurrentReportFromDB(report)))
-                && (inputMessage.caption() != null || inputMessage.text() != null || (report != null && report.getPetReport() != null));
+        return (in.photo() != null || (report != null && isHavePhotoInCurrentReportFromDB(report)))
+                && (in.message().caption() != null || in.text() != null || (report != null && report.getPetReport() != null));
     }
 
     /**
@@ -175,7 +167,7 @@ public class ReportSelectorService {
      * @return имеется или нет
      */
     private boolean isHavePhotoInReport() {
-        return inputMessage.photo() != null;
+        return in.photo() != null;
     }
 
     /**
@@ -185,9 +177,14 @@ public class ReportSelectorService {
      */
     private boolean isHaveTextInReport(Report todayReport) {
         return (todayReport == null || todayReport.getPetReport() == null)
-                && (inputMessage.text() != null || (inputMessage.text() == null && inputMessage.caption() != null));
+                && (in.text() != null || (in.text() == null && in.message().caption() != null));
     }
 
+    /**
+     * Имеется ли фото в текущем отчете
+     * @param report текущий отчет
+     * @return имеется или нет
+     */
     private boolean isHavePhotoInCurrentReportFromDB(Report report) {
         return reportPhotoRepository.findFirstByReportId(report.getId()) != null;
     }
@@ -197,9 +194,9 @@ public class ReportSelectorService {
      * @return текст отчета
      */
     private String getReportText() {
-        return inputMessage.text() != null
-                ? inputMessage.text()
-                : inputMessage.caption();
+        return in.text() != null
+                ? in.text()
+                : in.message().caption();
     }
 
     /**
@@ -207,9 +204,10 @@ public class ReportSelectorService {
      * @return Сообщение пользователю
      */
     private String addAdditionalPhoto() {
+        LOGGER.error("addAdditionalPhoto");
         Long petId = customer.getCustomerContext().getCurrentPetId();
         Report todayReport = reportService.findTodayReportByPetId(petId);
-        if (inputMessage.photo() == null || todayReport == null) {
+        if (in.photo() == null || todayReport == null) {
             return "";
         }
         LocalDateTime currentTime = LocalDateTime.now();
@@ -231,7 +229,7 @@ public class ReportSelectorService {
     private void savePhotoToDB(Report report) {
         reportService.updateReport(report);
 
-        PhotoSize[] photoSizes = inputMessage.photo();
+        PhotoSize[] photoSizes = in.photo();
         PhotoSize photoSize = Arrays.stream(photoSizes)
                 .max(Comparator.comparing(PhotoSize::fileSize))
                 .orElseThrow(RuntimeException::new);

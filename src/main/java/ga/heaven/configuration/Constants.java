@@ -15,7 +15,8 @@ public interface Constants {
     String REPORT_EPT = "submit_report";
     Long ENDPOINT_LIST = 0L;
     Long SHELTERS_MENU_LEVEL = 2L;
-    
+    Long REPORTS_MENU_LEVEL = 5L;
+
     /**
      * Commands
      */

@@ -11,6 +11,7 @@ import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import ga.heaven.service.AppLogicService;
 import ga.heaven.service.CustomerService;
 import ga.heaven.service.MsgService;
+import ga.heaven.service.ReportService;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -69,12 +70,14 @@ public class TgIn {
     private MsgService svcMsg;
     private CustomerService svcCustomer;
     private AppLogicService svcApp;
+    private ReportService reportService;
     
     
-    public TgIn injectServices(MsgService svcMsg, CustomerService svcCustomer, AppLogicService svcApp) {
+    public TgIn injectServices(MsgService svcMsg, CustomerService svcCustomer, AppLogicService svcApp, ReportService reportService) {
         this.svcMsg = svcMsg;
         this.svcCustomer = svcCustomer;
         this.svcApp = svcApp;
+        this.reportService = reportService;
         return this;
     }
     
@@ -141,7 +144,7 @@ public class TgIn {
         return new TgIn()
                 .setShelterList(new ArrayList<>(this.getShelterList()))
                 .setNavigationList(new ArrayList<>(this.getNavigationList()))
-                .injectServices(this.svcMsg, this.svcCustomer,this.svcApp);
+                .injectServices(this.svcMsg, this.svcCustomer, this.svcApp, this.reportService);
     }
     
     public Long chatId() {

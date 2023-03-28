@@ -71,31 +71,7 @@ public class NavigationService {
             }
         });
 
-        if (level == 5) {
-            generateAdditionalButtonsForReportMenu(customer)
-                    .forEach(button ->
-                            msgTmp.getKeyboard().addRow(
-                                    new InlineKeyboardButton(button.getText()).callbackData(button.getEndpoint())));
-        }
-
         return msgTmp;
-    }
-
-    /**
-     * Метод генерирует кнопки с питомцами пользователя, для которых сегодня не сдавались отчеты
-     *
-     * @param customer текущий пользователь
-     * @return список кнопок с питомцами
-     */
-    List<Navigation> generateAdditionalButtonsForReportMenu(Customer customer) {
-        long level = 5L;
-        List<Navigation> buttons = new ArrayList<>();
-        reportService.findPetsWithoutTodayReport(customer).forEach(pet -> {
-            String endpoint = "/submit_report/" + pet.getId();
-            String text = pet.getName();
-            buttons.add(new Navigation(level, level, endpoint, text, null));
-        });
-        return buttons;
     }
 
 }

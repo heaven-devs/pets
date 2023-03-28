@@ -7,13 +7,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import static ga.heaven.configuration.Constants.*;
-import static ga.heaven.model.TgIn.Endpoint.Type.DYNAMIC;
-import static ga.heaven.model.TgIn.Endpoint.Type.STATIC;
+import static ga.heaven.model.CustomerContext.Context.WAIT_REPORT;
+import static ga.heaven.model.TgIn.Endpoint.Type.*;
 
 @Service
 public class CmdSelectorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CmdSelectorService.class);
-    private final MsgService msgService;
     private final AppLogicService appLogicService;
     private final PetSelectorService petSelectorService;
     private final VolunteerSelectorService volunteerSelectorService;
@@ -21,26 +20,19 @@ public class CmdSelectorService {
 
 
     public CmdSelectorService(AppLogicService appLogicService, PetSelectorService petSelectorService, VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService) {
-    private final ShelterService shelterService;
-    private final CustomerService customerService;
-    private final NavigationService navigationService;
-
-
-    public CmdSelectorService(MsgService msgService, AppLogicService appLogicService, PetSelectorService petSelectorService, VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService, ShelterService shelterService, CustomerService customerService, NavigationService navigationService) {
-        this.msgService = msgService;
         this.appLogicService = appLogicService;
         this.petSelectorService = petSelectorService;
         this.volunteerSelectorService = volunteerSelectorService;
         this.reportSelectorService = reportSelectorService;
     }
-    
 
     public void processingMsg(TgIn in) {
         LOGGER.debug("current in: {}", in);
 
-        if (in.text() != null || in.photo() != null) {
-            LOGGER.debug("Message\n{}\nsent to: reportSelectorService.switchCmd", in);
-            reportSelectorService.switchCmd(in.message());
+        if (isNonCommandMessages(in)) {
+
+            reportSelectorService.processingNonCommandMessagesForReport(in);
+            return;
         }
 
         if ((in.text() != null)
@@ -64,11 +56,17 @@ public class CmdSelectorService {
                         }
                         return;
                     case REPORT_EPT:
-                        String responseText = reportSelectorService.processingPetChoice(inputMessage, ENDPOINT_VALUE);
-                        msgService.sendMsg(inputMessage.chat().id(), responseText);
+                        new TgOut()
+                                .tgIn(in)
+                                .textBody(reportSelectorService.processingPetChoice(in))
+                                .setCurrentPet(in.endpoint().getValueAsLong())
+                                .generateMarkup(5L)
+                                .send()
+                                .save()
+                        ;
                         return;
                 }
-                
+
             } else if (STATIC.equals(in.endpoint().getType())) {
                 LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", in);
                 switch (in.endpoint().getName()) {
@@ -93,7 +91,7 @@ public class CmdSelectorService {
                                 .save()
                         ;
                         return;
-                    
+
                     case "/main":
                         new TgOut()
                                 .tgIn(in)
@@ -104,10 +102,13 @@ public class CmdSelectorService {
                         return;
 
                     case "/submit_report":
-                        messageTemplate = navigationService.prepareMessageTemplate(inputMessage.chat().id(), 5L);
-                        msgService.interactiveMsg(inputMessage.chat().id(),
-                                messageTemplate.getKeyboard(),
-                                messageTemplate.getText());
+                        new TgOut()
+                                .tgIn(in)
+                                .setCustomerContext(WAIT_REPORT)
+                                .generateMarkup(5L)
+                                .send()
+                                .save()
+                        ;
                         return;
 
                     default:
@@ -121,11 +122,13 @@ public class CmdSelectorService {
 
     /**
      * Проверяю введена команда или обычный текст/фото
-     * @param inputMessage сообщение от пользователя
+     *
+     * @param in сообщение от пользователя
      * @return истина если от пользователя получина не команда, а обычный текст или фото
      */
-    private boolean isNonCommandMessages(Message inputMessage) {
-        return (inputMessage.text() != null && !inputMessage.text().startsWith("/")) || inputMessage.photo() != null;
+    private boolean isNonCommandMessages(TgIn in) {
+        LOGGER.error(in.photo().toString());
+        return (in.text() != null && !in.text().startsWith("/")) || in.photo() != null;
     }
 
 }
