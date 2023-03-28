@@ -71,7 +71,6 @@ public class ReportControllerTest {
         Report actual = new ObjectMapper().readValue(response.getContentAsString(), report1.getClass());
         assertThat(actual.getId()).isEqualTo(report1.getId());
         assertThat(actual.getPetReport()).isEqualTo(report1.getPetReport());
-        assertThat(actual.getPhoto()).isEqualTo(report1.getPhoto());
         assertThat(actual.getDate()).isEqualTo(report1.getDate());
 
         when(reportRepository.findById(report1.getId())).thenReturn(Optional.empty());
@@ -95,7 +94,6 @@ public class ReportControllerTest {
         Report actual = new ObjectMapper().readValue(response.getContentAsString(), report1.getClass());
         assertThat(actual.getId()).isEqualTo(report1.getId());
         assertThat(actual.getPetReport()).isEqualTo(report1.getPetReport());
-        assertThat(actual.getPhoto()).isEqualTo(report1.getPhoto());
         assertThat(actual.getDate()).isEqualTo(report1.getDate());
 
         when(reportRepository.findById(report1.getId())).thenReturn(Optional.empty());
@@ -131,30 +129,18 @@ public class ReportControllerTest {
         reportObj.put("id", id);
         reportObj.put("petReport", newPetReport);
         reportObj.put("data", newDate);
-        reportObj.put("filePath", newFilePath);
-        reportObj.put("fileSize", newFileSize);
-        reportObj.put("mediaType", newMediaType);
-        reportObj.put("photo", newPhoto);
         reportObj.put("petId", petId);
 
         Report report = new Report();
         report.setId(id);
         report.setPetReport(oldPetReport);
         report.setDate(oldDate);
-        report.setFilePath(oldFilePath);
-        report.setFileSize(oldFileSize);
-        report.setMediaType(oldMediaType);
-        report.setPhoto(oldPhoto);
         report.setPet(petId);
 
         Report updateReport = new Report();
         report.setId(id);
         report.setPetReport(newPetReport);
         report.setDate(newDate);
-        report.setFilePath(newFilePath);
-        report.setFileSize(newFileSize);
-        report.setMediaType(newMediaType);
-        report.setPhoto(newPhoto);
         report.setPet(petId);
 
         when(reportRepository.findById(id)).thenReturn(Optional.of(report));
@@ -207,20 +193,12 @@ public class ReportControllerTest {
         reportObj.put("id", id);
         reportObj.put("petReport", petReport);
         reportObj.put("data", date);
-        reportObj.put("filePath", filePath);
-        reportObj.put("fileSize", fileSize);
-        reportObj.put("mediaType", mediaType);
-        reportObj.put("photo", photo);
         reportObj.put("petId", petId);
 
         Report report = new Report();
         report.setId(id);
         report.setPetReport(petReport);
         report.setDate(date);
-        report.setFilePath(filePath);
-        report.setFileSize(fileSize);
-        report.setMediaType(mediaType);
-        report.setPhoto(photo);
         report.setPet(petId);
 
 
@@ -271,10 +249,6 @@ public class ReportControllerTest {
         report.setId(id);
         report.setPetReport(petReport);
         report.setDate(date);
-        report.setFilePath(filePath);
-        report.setFileSize(fileSize);
-        report.setMediaType(mediaType);
-        report.setPhoto(photo);
         report.setPet(petId);
         return report;
     }

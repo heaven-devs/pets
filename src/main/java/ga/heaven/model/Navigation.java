@@ -24,7 +24,15 @@ public class Navigation {
     private String endpoint;
     private String rules;
     private String text;
-    
+
+    public Navigation(Long levelView, Long levelReference, String endpoint, String text, String rules) {
+        this.levelView = levelView;
+        this.levelReference = levelReference;
+        this.endpoint = endpoint;
+        this.text = text;
+        this.rules = rules;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

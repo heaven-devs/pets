@@ -1,127 +1,134 @@
 package ga.heaven.service;
 
-import com.pengrad.telegrambot.model.Message;
-import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
-import ga.heaven.model.Customer;
-import ga.heaven.model.CustomerContext;
-import ga.heaven.model.MessageTemplate;
-import ga.heaven.model.Shelter;
+import ga.heaven.model.TgIn;
+import ga.heaven.model.TgOut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import static ga.heaven.configuration.Constants.*;
+import static ga.heaven.model.CustomerContext.Context.WAIT_REPORT;
+import static ga.heaven.model.TgIn.Endpoint.Type.*;
 
 @Service
 public class CmdSelectorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CmdSelectorService.class);
-    private static final String DYNAMIC_ENDPOINT_REGEXP = "^/(.*)/(.*)[0-9]*";
-    private static final String STATIC_ENDPOINT_REGEXP = "^/([^/]*)$";
-    private final MsgService msgService;
     private final AppLogicService appLogicService;
     private final PetSelectorService petSelectorService;
     private final VolunteerSelectorService volunteerSelectorService;
     private final ReportSelectorService reportSelectorService;
-    private final ShelterService shelterService;
-    private final CustomerService customerService;
-    private final NavigationService navigationService;
-    
-    
-    public CmdSelectorService(MsgService msgService, AppLogicService appLogicService, PetSelectorService petSelectorService, VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService, ShelterService shelterService, CustomerService customerService, NavigationService navigationService) {
-        this.msgService = msgService;
+
+
+    public CmdSelectorService(AppLogicService appLogicService, PetSelectorService petSelectorService, VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService) {
         this.appLogicService = appLogicService;
         this.petSelectorService = petSelectorService;
         this.volunteerSelectorService = volunteerSelectorService;
         this.reportSelectorService = reportSelectorService;
-        this.shelterService = shelterService;
-        this.customerService = customerService;
-        this.navigationService = navigationService;
     }
-    
-    public void processingMsg(Message inputMessage) {
-        MessageTemplate messageTemplate;
-        if (inputMessage.text() != null || inputMessage.photo() != null) {
-            LOGGER.debug("Message\n{}\nsent to: reportSelectorService.switchCmd", inputMessage);
-            reportSelectorService.switchCmd(inputMessage);
+
+    public void processingMsg(TgIn in) {
+//        LOGGER.debug("current in: {}", in);
+        if (isNonCommandMessages(in)) {
+            reportSelectorService.processingNonCommandMessagesForReport(in);
+            return;
         }
-        
-        if ((inputMessage.text() != null)
-                && (inputMessage.chat() != null)
-                && (inputMessage.chat().id() != null)
+
+        if ((in.text() != null)
+                && (in.chatId() != null)
         ) {
-            final Matcher matcher = Pattern.compile(DYNAMIC_ENDPOINT_REGEXP).matcher(inputMessage.text());
-            if (matcher.matches()) {
-                LOGGER.debug("Dynamic endpoint message\n{}\nsent to: switchDynCmd methods", inputMessage);
-                final String ENDPOINT_NAME = matcher.group(1);
-                final Long ENDPOINT_VALUE = Long.parseLong(matcher.group(2));
-                switch (ENDPOINT_NAME) {
+            if (DYNAMIC.equals(in.endpoint().getType())) {
+
+//                LOGGER.debug("Dynamic endpoint message\n{}\nsent to: switchDynCmd methods", in);
+                switch (in.endpoint().getName()) {
                     case SHELTER_EPT:
-                        if (ENDPOINT_VALUE.equals(ENDPOINT_LIST)) {
-                            messageTemplate = navigationService.prepareMessageTemplate(inputMessage.chat().id(), 2L);
-                            shelterService.findAll().forEach(shelter -> {
-                                messageTemplate.getKeyboard().addRow(new InlineKeyboardButton(shelter.getName()).callbackData("/"+SHELTER_EPT+"/" + shelter.getId()));
-                            });
-    
-                            msgService.interactiveMsg(inputMessage.chat().id()
-                                    ,messageTemplate.getKeyboard()
-                                    ,messageTemplate.getText());
+                        if (ENDPOINT_LIST.equals(in.endpoint().getValueAsLong())) {
+                            appLogicService.initConversation(in);
                         } else {
-                            Shelter selectedShelter = shelterService.findById(Long.valueOf(matcher.group(2)));
-                            Customer customer = customerService.findCustomerByChatId(inputMessage.chat().id());
-                            CustomerContext context = customer.getCustomerContext();
-                            context.setShelterId(selectedShelter.getId());
-                            customerService.updateCustomer(customer);
-    
-                            messageTemplate = navigationService.prepareMessageTemplate(inputMessage.chat().id(), 1L);
-                            msgService.interactiveMsg(inputMessage.chat().id()
-                                    ,messageTemplate.getKeyboard()
-                                    ,messageTemplate.getText());
+                            new TgOut()
+                                    .tgIn(in)
+                                    .setSelectedShelter(in.endpoint().getValueAsLong())
+                                    .generateMarkup(1L)
+                                    .send()
+                                    .save()
+                            ;
                         }
                         return;
+                    case REPORT_EPT:
+                        new TgOut()
+                                .tgIn(in)
+                                .textBody(reportSelectorService.processingPetChoice(in))
+                                .setCustomerContext(WAIT_REPORT)
+                                .setCurrentPet(in.endpoint().getValueAsLong())
+                                .generateMarkup(5L)
+                                .send()
+                                .save()
+                        ;
+                        return;
                 }
-                
-            } else if (Pattern.compile(STATIC_ENDPOINT_REGEXP).matcher(inputMessage.text()).matches()) {
-                LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", inputMessage);
-                switch (inputMessage.text()) {
-                    
+
+            } else if (STATIC.equals(in.endpoint().getType())) {
+//                LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", in);
+                switch (in.endpoint().getName()) {
                     case START_CMD:
-                        appLogicService.initConversation(inputMessage.chat().id());
-                        msgService.deleteMsg(inputMessage.chat().id(), inputMessage.messageId());
+                        appLogicService.initConversation(in);
                         return;
-                        
+
                     case "/how-adopt":
-                        messageTemplate = navigationService.prepareMessageTemplate(inputMessage.chat().id(), 4L);
-                        msgService.interactiveMsg(inputMessage.chat().id()
-                                ,messageTemplate.getKeyboard()
-                                ,messageTemplate.getText());
+                        new TgOut()
+                                .tgIn(in)
+                                .generateMarkup(4L)
+                                .send()
+                                .save()
+                        ;
                         return;
-                        
+
                     case "/shelter":
-                        messageTemplate = navigationService.prepareMessageTemplate(inputMessage.chat().id(), 3L);
-                        msgService.interactiveMsg(inputMessage.chat().id()
-                                ,messageTemplate.getKeyboard()
-                                ,messageTemplate.getText());
+                        new TgOut()
+                                .tgIn(in)
+                                .generateMarkup(3L)
+                                .send()
+                                .save()
+                        ;
                         return;
-                    
+
                     case "/main":
-                        messageTemplate = navigationService.prepareMessageTemplate(inputMessage.chat().id(), 1L);
-                        msgService.interactiveMsg(inputMessage.chat().id()
-                                ,messageTemplate.getKeyboard()
-                                ,messageTemplate.getText());
+                        new TgOut()
+                                .tgIn(in)
+                                .generateMarkup(1L)
+                                .send()
+                                .save()
+                        ;
                         return;
-                    
+
+                    case "/submit_report":
+                        new TgOut()
+                                .tgIn(in)
+                                .setCustomerContext(WAIT_REPORT)
+                                .generateMarkup(5L)
+                                .send()
+                                .save()
+                        ;
+                        return;
+
                     default:
                         break;
                 }
-                petSelectorService.switchCmd(inputMessage);
-                volunteerSelectorService.switchCmd(inputMessage);
+                petSelectorService.switchCmd(in.message());
+                volunteerSelectorService.switchCmd(in.message());
             }
         }
     }
-    
+
+    /**
+     * Проверяю введена команда или обычный текст/фото
+     *
+     * @param in сообщение от пользователя
+     * @return истина если от пользователя получина не команда, а обычный текст или фото
+     */
+    private boolean isNonCommandMessages(TgIn in) {
+        return (in.text() != null && !in.text().startsWith("/")) || in.message().photo() != null;
+    }
+
 }
     
     

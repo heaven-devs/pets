@@ -9,6 +9,7 @@ import ga.heaven.listener.TelegramBotUpdatesListenerTest;
 import ga.heaven.model.Customer;
 import ga.heaven.model.CustomerContext;
 import ga.heaven.model.Info;
+import ga.heaven.model.TgIn;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,7 +65,7 @@ public class AppLogicServiceTest {
         expectedCustomer.setId(1L);
         expectedCustomer.setChatId(expectedChatId);
         expectedCustomer.setName("Ivan");
-        expectedCustomer.setCustomerContext(new CustomerContext(1L, FREE, 2L, 1L, null,null));
+        expectedCustomer.setCustomerContext(new CustomerContext(1L, FREE, 2L, 1L, null, null, null));
 
         argCaptor1 = ArgumentCaptor.forClass(Long.class);
         argCaptor2 = ArgumentCaptor.forClass(InlineKeyboardMarkup.class);
@@ -115,7 +116,7 @@ public class AppLogicServiceTest {
         when(customerService.createCustomer(expectedChatId)).thenReturn(expectedCustomer);
 
         Update update = getUpdateFromResourceFile("text_update.json", expectedCommand);
-        appLogicService.initConversation(update.message().chat().id());
+        appLogicService.initConversation(new TgIn().update(update));
 
         ArgumentCaptor<Long> argumentCaptor1 = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<String> argumentCaptor2 = ArgumentCaptor.forClass(String.class);
@@ -133,7 +134,7 @@ public class AppLogicServiceTest {
         when(customerService.isPresent(expectedChatId)).thenReturn(true);
 
         Update update = getUpdateFromResourceFile("text_update.json", COMMON_INFO_FIELD);
-        appLogicService.initConversation(update.message().chat().id());
+        appLogicService.initConversation(new TgIn().update(update));
 
         ArgumentCaptor<Long> argumentCaptor1 = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<String> argumentCaptor2 = ArgumentCaptor.forClass(String.class);

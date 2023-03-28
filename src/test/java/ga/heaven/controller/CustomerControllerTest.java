@@ -60,7 +60,7 @@ class CustomerControllerTest {
     @MockBean
     private VolunteerService volunteerService;
 
-    private Gson gson = new Gson();
+    private final Gson gson = new Gson();
 
     private List<Customer> getInitialTestCustomers() {
         Customer customer1 = getTestCustomer(1L, "customerName1", "+71111111111");
@@ -139,7 +139,7 @@ class CustomerControllerTest {
 
     @Test
     void updateCustomerPositive() throws Exception {
-        CustomerContext expectedCustomerContext = new CustomerContext(1L, FREE, null, null,null,null);
+        CustomerContext expectedCustomerContext = new CustomerContext(1L, FREE, null, null, null, null, null);
         Customer expectedCustomer = new Customer(1L, 333_333_333L, "Petrov", "Ivan", "Frolovich", "+71111111111", "address", expectedCustomerContext);
 
         when(customerRepository.findCustomerById(expectedCustomer.getId())).thenReturn(Optional.of(expectedCustomer));

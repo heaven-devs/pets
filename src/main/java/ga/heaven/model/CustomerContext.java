@@ -20,6 +20,8 @@ public class CustomerContext {
     private Long currentPetId;
     private Long shelterId;
     
+    private Long curLevel;
+    
     private String lastOutMsg;
     private String lastInMsg;
 

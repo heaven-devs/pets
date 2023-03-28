@@ -9,5 +9,5 @@ public interface ReportRepository  extends JpaRepository<Report, Long> {
 
     Report findReportByPetIdAndDateBetween(Long petId, LocalDateTime startTime, LocalDateTime finishTime);
 
-    Report findReportByPetIdAndPetReportNotNullAndPhotoIsNotNullAndDateBetween(Long petId, LocalDateTime startTime, LocalDateTime finishTime);
+    Report findFirstByPetIdAndPetReportNotNullAndDateBetween(Long petId, LocalDateTime startTime, LocalDateTime finishTime);
 }
