@@ -126,7 +126,7 @@ public class CmdSelectorService {
                         break;
                 }
                 petSelectorService.switchCmd(in.message());
-                volunteerSelectorService.switchCmd(in.message());
+                volunteerSelectorService.switchCmd(in);
             }
         }
     }
