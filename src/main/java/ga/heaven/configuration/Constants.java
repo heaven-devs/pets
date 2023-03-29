@@ -3,12 +3,6 @@ package ga.heaven.configuration;
 public interface Constants {
 
     /**
-     * RegExp
-     */
-    String DYNAMIC_ENDPOINT_REGEXP = "^/(.*)/(.*)[0-9]*";
-    String STATIC_ENDPOINT_REGEXP = "^/([^/]*)$";
-
-    /**
      * Dynamic endpoints
      */
     String SHELTER_EPT = "shelter";
@@ -16,7 +10,10 @@ public interface Constants {
     String START_EPT = "start";
     String VOLUNTEER_REQUEST_EPT = "call_volunteer";
     Long ENDPOINT_LIST = 0L;
+    Long MAIN_MENU_LEVEL = 1L;
     Long SHELTERS_MENU_LEVEL = 2L;
+    Long SHELTER_INFO_MENU_LEVEL = 3L;
+    Long DATING_INFO_MENU_LEVEL = 4L;
     Long REPORTS_MENU_LEVEL = 5L;
 
     /**
@@ -29,15 +26,15 @@ public interface Constants {
     String REPORT_SUBMIT_CMD = "/submit_report";
     String DOCUMENTS_CMD = "/documents"; // команда выдать список документов
     String TRANSPORT_CMD = "/transport"; // команда выдать список документов
-    String COMFORT_PET_CMD = "/comfort_pet"; // команда выдать рекомендации по обустройству дома для питомца
-    String COMFORT_DOG_CMD = "/comfort_dog"; // команда выдать рекомендации по обустройству дома для взрослой собаки
+    String COMFORT_YOUNG_CMD = "/comfort_young"; // команда выдать рекомендации по обустройству дома для питомца
+    String COMFORT_ADULT_CMD = "/comfort_adult"; // команда выдать рекомендации по обустройству дома для взрослой собаки
     String COMFORT_HANDICAPPED_CMD = "/comfort_handicapped"; // команда выдать рекомендации по обустройству дома для питомца с ограниченными возможностями
     String CYNOLOGIST_ADVICE_CMD = "/cynologist_advice"; // команда выдать рекомендации кинолога
     String CYNOLOGISTS_LIST_CMD = "/cynologists_list"; // команда выдать рекомендации кинолога
     String REASONS_REFUSAL_CMD = "/reasons_refusal"; // команда выдать причины отказа
     String SHELTER_INFO_CMD = "/shelter_info"; // команда выдать информацию о приюте
     String SHELTER_ADDRESS_CMD = "/address"; // команда выдать адрес приюта
-    String SHELTER_SAFETY_CMD = "/safety"; // команда выдать правила поведения на территории приюта
+    String SHELTER_SAFETY_CMD = "/security_contact"; // команда выдать правила поведения на территории приюта
     String SHELTER_LEAVE_CONTACT_CMD = "/leave_contact"; // команда получить контакты от пользователя
 
 

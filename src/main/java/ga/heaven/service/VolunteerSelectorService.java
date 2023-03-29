@@ -11,12 +11,9 @@ import static ga.heaven.configuration.Constants.VOLUNTEER_REQUEST_EPT;
 public class VolunteerSelectorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(VolunteerSelectorService.class);
     private final AppLogicService appLogicService;
-    
-    private final MsgService msgService;
-    
-    public VolunteerSelectorService(AppLogicService appLogicService, MsgService msgService) {
+
+    public VolunteerSelectorService(AppLogicService appLogicService) {
         this.appLogicService = appLogicService;
-        this.msgService = msgService;
     }
     
     public void switchCmd(TgIn in) {
@@ -26,16 +23,4 @@ public class VolunteerSelectorService {
                 break;
         }
     }
-    /*public void switchCmd(Message inputMessage) {
-        this.switchCmd(inputMessage.chat().id(), inputMessage.text());
-    }*/
-   /* public void switchCmd(Long chatId, String Command) {
-        
-        switch (Command) {
-            case VOLUNTEER_REQUEST_CMD:
-                appLogicService.volunteerRequest(chatId);
-                break;
-        }
-    }*/
-    
 }

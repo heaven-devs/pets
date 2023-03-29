@@ -21,16 +21,12 @@ public class NavigationService {
 
     private final NavigationRepository navigationRepository;
     private final CustomerService customerService;
-    private final PetService petService;
-    private final ReportService reportService;
 
     private final ShelterService shelterService;
 
-    public NavigationService(NavigationRepository navigationRepository, CustomerService customerService, PetService petService, ReportService reportService, ShelterService shelterService) {
+    public NavigationService(NavigationRepository navigationRepository, CustomerService customerService, ShelterService shelterService) {
         this.navigationRepository = navigationRepository;
         this.customerService = customerService;
-        this.petService = petService;
-        this.reportService = reportService;
         this.shelterService = shelterService;
     }
 

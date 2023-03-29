@@ -30,42 +30,36 @@ public class AppLogicService {
     }
     
     public void initConversation(TgIn in) {
-        TgOut t = new TgOut();
-        t
-                .tgIn(in)
+        TgOut out = new TgOut();
+        out.tgIn(in)
                 .generateMarkup(SHELTERS_MENU_LEVEL);
-        
-        if (!Objects.nonNull(t.getIn().lastInQueryMessageId())) {
-            t.textBody(infoService.findInfoByArea(COMMON_INFO_FIELD).getInstructions());
-        }
-        
-        t
-                .send()
-                .save()
-        ;
-        LOGGER.debug("initConversation with chatId: {}", in.chatId());
-    }
-    
-    public void sendContact(TgIn in,Long recipientChatId ,String text) {
 
+        if (!Objects.nonNull(out.getIn().lastInQueryMessageId())) {
+            out.textBody(infoService.findInfoByArea(COMMON_INFO_FIELD).getInstructions());
+        }
+
+        out.send().save();
+        LOGGER.debug("initConversation with chatId: {}", in.chatId());
+//        LOGGER.debug("TgOut: {}", t);
+    }
+
+    public void sendContact(TgIn in, Long recipientChatId, String text) {
         String name = in.message().chat().username();
         InlineKeyboardButton keyboardButton = new InlineKeyboardButton(name + "'s profile "
         ).url("tg://user?id=" + in.chatId());
         InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup(keyboardButton);
         msgService.sendMsg(recipientChatId, text, keyboardMarkup);
     }
-    
-    
+
+
     public void volunteerRequest(TgIn in) {
         
         String shelterSupervisors = in
                 .currentShelter(in.getCustomer().getCustomerContext().getShelterId())
-                .getVolunteers()
-                .stream()
-                .map(v -> v.getName())
-                .collect(Collectors.toList())
-                .toString();
-    
+                .getVolunteers().stream()
+                .map(Volunteer::getName)
+                .collect(Collectors.toList()).toString();
+
         String shelter = in.currentShelter(in.getCustomer().getCustomerContext().getShelterId()).getName();
         String text = "This person want to consult with volunteer supervised " + shelter;
         
@@ -73,13 +67,14 @@ public class AppLogicService {
         .currentShelter(in.getCustomer().getCustomerContext().getShelterId())
                 .getVolunteers()
                 .forEach(v -> sendContact(in,v.getChatId(), text))
+                
         ;
     
         new TgOut()
                 .tgIn(in)
                 .generateMarkup(in.getCustomer().getCustomerContext().getCurLevel())
                 .textBody("Your request has been accepted.\n" +
-                        "You will be contacted by the first free volunteer from the list\n\n " + shelterSupervisors )
+                        "You will be contacted by the first free volunteer from the list\n\n " + shelterSupervisors)
                 .send()
                 .save();
         

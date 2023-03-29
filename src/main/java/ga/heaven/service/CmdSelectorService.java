@@ -21,21 +21,23 @@ public class CmdSelectorService {
     private final AppLogicService appLogicService;
     private final VolunteerSelectorService volunteerSelectorService;
     private final ReportSelectorService reportSelectorService;
+    private final ShelterSelectorService shelterSelectorService;
     
-    
-    public CmdSelectorService(AppLogicService appLogicService, VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService) {
+    public CmdSelectorService(AppLogicService appLogicService, VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService,ShelterSelectorService shelterSelectorService) {
         this.appLogicService = appLogicService;
         this.volunteerSelectorService = volunteerSelectorService;
         this.reportSelectorService = reportSelectorService;
+        this.shelterSelectorService = shelterSelectorService;
     }
     
     public void processingMsg(TgIn in) {
 //        LOGGER.debug("current in: {}", in);
         if (isNonCommandMessages(in)) {
             reportSelectorService.processingNonCommandMessagesForReport(in);
+            shelterSelectorService.processingNonCommandMessagesForShelter(in);
             return;
         }
-        
+
         if ((in.text() != null)
                 && (in.chatId() != null)
         ) {
@@ -50,7 +52,7 @@ public class CmdSelectorService {
                             new TgOut()
                                     .tgIn(in)
                                     .setSelectedShelter(in.endpoint().getValueAsLong())
-                                    .generateMarkup(1L)
+                                    .generateMarkup(MAIN_MENU_LEVEL)
                                     .send()
                                     .save()
                             ;
@@ -62,15 +64,14 @@ public class CmdSelectorService {
                                 .textBody(reportSelectorService.processingPetChoice(in))
                                 .setCustomerContext(WAIT_REPORT)
                                 .setCurrentPet(in.endpoint().getValueAsLong())
-                                .generateMarkup(5L)
+                                .generateMarkup(REPORTS_MENU_LEVEL)
                                 .send()
                                 .save()
                         ;
                         return;
                 }
-                
+
             } else if (STATIC.equals(in.endpoint().getType())) {
-            
 //                LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", in);
                 switch (in.endpoint().getName()) {
                     case START_EPT:
@@ -80,7 +81,7 @@ public class CmdSelectorService {
                     case "how-adopt":
                         new TgOut()
                                 .tgIn(in)
-                                .generateMarkup(4L)
+                                .generateMarkup(DATING_INFO_MENU_LEVEL)
                                 .send()
                                 .save()
                         ;
@@ -89,7 +90,7 @@ public class CmdSelectorService {
                     case "shelter":
                         new TgOut()
                                 .tgIn(in)
-                                .generateMarkup(3L)
+                                .generateMarkup(SHELTER_INFO_MENU_LEVEL)
                                 .send()
                                 .save()
                         ;
@@ -98,7 +99,7 @@ public class CmdSelectorService {
                     case "main":
                         new TgOut()
                                 .tgIn(in)
-                                .generateMarkup(1L)
+                                .generateMarkup(MAIN_MENU_LEVEL)
                                 .send()
                                 .save()
                         ;
@@ -108,22 +109,23 @@ public class CmdSelectorService {
                         new TgOut()
                                 .tgIn(in)
                                 .setCustomerContext(WAIT_REPORT)
-                                .generateMarkup(5L)
+                                .generateMarkup(REPORTS_MENU_LEVEL)
                                 .send()
                                 .save()
                         ;
                         return;
-                    
+
                     default:
                         break;
                 }
                 informationEndpoints(in);
                 //petSelectorService.switchCmd(in);
                 volunteerSelectorService.switchCmd(in);
+                shelterSelectorService.switchCmd(in);
             }
         }
     }
-    
+
     /**
      * Проверяю введена команда или обычный текст/фото
      *
