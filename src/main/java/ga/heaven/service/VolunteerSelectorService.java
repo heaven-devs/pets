@@ -1,6 +1,7 @@
 package ga.heaven.service;
 
 import com.pengrad.telegrambot.model.Message;
+import ga.heaven.model.TgIn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -20,17 +21,23 @@ public class VolunteerSelectorService {
         this.msgService = msgService;
     }
     
-    public void switchCmd(Message inputMessage) {
-        this.switchCmd(inputMessage.chat().id(), inputMessage.text());
+    public void switchCmd(TgIn in) {
+        switch (in.endpoint().getName()) {
+            case VOLUNTEER_REQUEST_CMD:
+                appLogicService.volunteerRequest(in);
+                break;
+        }
     }
-    
-    public void switchCmd(Long chatId, String Command) {
+    /*public void switchCmd(Message inputMessage) {
+        this.switchCmd(inputMessage.chat().id(), inputMessage.text());
+    }*/
+   /* public void switchCmd(Long chatId, String Command) {
         
         switch (Command) {
             case VOLUNTEER_REQUEST_CMD:
                 appLogicService.volunteerRequest(chatId);
                 break;
         }
-    }
+    }*/
     
 }

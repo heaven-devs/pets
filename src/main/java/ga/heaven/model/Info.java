@@ -5,6 +5,9 @@ import lombok.*;
 import javax.persistence.*;
 import java.util.Objects;
 
+/**
+ *  This entity corresponds to a table "Info" in the database
+ */
 @Entity
 @Getter
 @Setter

@@ -167,7 +167,7 @@ public class TgOut {
     
     public void save() {
         svcCustomer.updateCustomer(this.in.getCustomer());
-        this.in.getSvcApp().removeInputInstance(in);
+        //this.in.getSvcApp().removeInputInstance(in);
         //this.in = null;
         //return this;
     }

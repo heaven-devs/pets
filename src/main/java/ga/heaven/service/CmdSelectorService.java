@@ -118,8 +118,8 @@ public class CmdSelectorService {
                     default:
                         break;
                 }
-                petSelectorService.switchCmd(in.message());
-                volunteerSelectorService.switchCmd(in.message());
+                petSelectorService.switchCmd(in);
+                volunteerSelectorService.switchCmd(in);
                 shelterSelectorService.switchCmd(in);
             }
         }

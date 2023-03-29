@@ -60,14 +60,14 @@ public class CmdSelectorServiceTest {
         String json = Files.readString(
                 Paths.get(TelegramBotUpdatesListenerTest.class.getResource("text_update.json").toURI()));
         Update update = getUpdate(json, "any text");
-        volunteerSelectorService.switchCmd(update.message());
+        volunteerSelectorService.switchCmd(new TgIn().update(update));
 
-        ArgumentCaptor<Message> argumentCaptor = ArgumentCaptor.forClass(Message.class);
+        ArgumentCaptor<TgIn> argumentCaptor = ArgumentCaptor.forClass(TgIn.class);
         Mockito.verify(volunteerSelectorService).switchCmd(argumentCaptor.capture());
-        Message actual = argumentCaptor.getValue();
+        TgIn actual = argumentCaptor.getValue();
 
         assertThat(actual.text()).isEqualTo("any text");
-        assertThat(actual.chat().id()).isEqualTo(777_777_777L);
+        assertThat(actual.chatId()).isEqualTo(777_777_777L);
         verify(volunteerSelectorService, times(NUMBER_OF_INVOCATIONS)).switchCmd(actual);
     }
 
