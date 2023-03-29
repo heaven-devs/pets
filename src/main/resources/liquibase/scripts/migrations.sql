@@ -617,11 +617,16 @@ ALTER TABLE report
     DROP COLUMN IF EXISTS photo;
 
 INSERT INTO public.navigation (id, endpoint, level_view, text, level_reference, rules)
-    VALUES (31, '/main', 5, 'Main menu', 1, null);
+    VALUES (30, '/main', 5, 'Main menu', 1, null);
 INSERT INTO public.navigation (id, endpoint, level_view, text, level_reference, rules)
-    VALUES (32, '/call-valunteer', 5, 'Need help', 1, null);
-
+    VALUES (31, '/call-valunteer', 5, 'Need help', 5, null);
+INSERT INTO public.navigation (id, endpoint, level_view, text, level_reference, rules)
+    VALUES (32, '/leave_contact', 3, 'Leave contact', 3, null);
 UPDATE public.navigation SET endpoint = '/security_contact' WHERE endpoint = '/security-contact';
 UPDATE public.navigation SET endpoint = '/shelter_info' WHERE endpoint = '/shelter-info';
-INSERT INTO public.navigation (id, endpoint, level_view, text, level_reference, rules)
-    VALUES (33, '/leave_contact', 3, 'Leave contact', 3, null);
+UPDATE public.navigation SET endpoint = '/comfort_adult' WHERE endpoint = '/comfort-adult';
+UPDATE public.navigation SET endpoint = '/comfort_young' WHERE endpoint = '/comfort-young';
+UPDATE public.navigation SET id = 34 WHERE id = 10;
+UPDATE public.navigation SET level_reference = 4 WHERE id BETWEEN 18 AND 29;
+UPDATE public.info SET area = 'comfort_young' WHERE area = 'comfort_pet';
+UPDATE public.info SET area = 'comfort_adult' WHERE area = 'comfort_dog';

@@ -52,7 +52,7 @@ public class CmdSelectorService {
                             new TgOut()
                                     .tgIn(in)
                                     .setSelectedShelter(in.endpoint().getValueAsLong())
-                                    .generateMarkup(1L)
+                                    .generateMarkup(MAIN_MENU_LEVEL)
                                     .send()
                                     .save()
                             ;
@@ -64,7 +64,7 @@ public class CmdSelectorService {
                                 .textBody(reportSelectorService.processingPetChoice(in))
                                 .setCustomerContext(WAIT_REPORT)
                                 .setCurrentPet(in.endpoint().getValueAsLong())
-                                .generateMarkup(5L)
+                                .generateMarkup(REPORTS_MENU_LEVEL)
                                 .send()
                                 .save()
                         ;
@@ -81,7 +81,7 @@ public class CmdSelectorService {
                     case "/how-adopt":
                         new TgOut()
                                 .tgIn(in)
-                                .generateMarkup(4L)
+                                .generateMarkup(DATING_INFO_MENU_LEVEL)
                                 .send()
                                 .save()
                         ;
@@ -90,7 +90,7 @@ public class CmdSelectorService {
                     case "/shelter":
                         new TgOut()
                                 .tgIn(in)
-                                .generateMarkup(3L)
+                                .generateMarkup(SHELTER_INFO_MENU_LEVEL)
                                 .send()
                                 .save()
                         ;
@@ -99,17 +99,17 @@ public class CmdSelectorService {
                     case "/main":
                         new TgOut()
                                 .tgIn(in)
-                                .generateMarkup(1L)
+                                .generateMarkup(MAIN_MENU_LEVEL)
                                 .send()
                                 .save()
                         ;
                         return;
 
-                    case "/submit_report":
+                    case REPORT_SUBMIT_CMD:
                         new TgOut()
                                 .tgIn(in)
                                 .setCustomerContext(WAIT_REPORT)
-                                .generateMarkup(5L)
+                                .generateMarkup(REPORTS_MENU_LEVEL)
                                 .send()
                                 .save()
                         ;

@@ -32,26 +32,31 @@ public class ShelterSelectorService {
             case WAIT_CUSTOMER_NAME:
                 in.getCustomer().getCustomerContext().setDialogContext(WAIT_CUSTOMER_PHONE);
                 formatFieldName(in.text());
-                generateMenu(SHELTER_SEND_PHONE_MSG);
+                generateMenu(SHELTER_SEND_PHONE_MSG, SHELTER_INFO_MENU_LEVEL);
                 break;
             case WAIT_CUSTOMER_PHONE:
                 in.getCustomer().getCustomerContext().setDialogContext(WAIT_CUSTOMER_ADDRESS);
                 in.getCustomer().setPhone(truncate(formatFieldPhone(in.text()), 11));
-                generateMenu(SHELTER_SEND_ADDRESS_MSG);
+                generateMenu(SHELTER_SEND_ADDRESS_MSG, SHELTER_INFO_MENU_LEVEL);
                 break;
             case WAIT_CUSTOMER_ADDRESS:
                 in.getCustomer().getCustomerContext().setDialogContext(FREE);
                 in.getCustomer().setAddress(in.text());
-                generateMenu(SHELTER_CONTACT_SAVED);
+                generateMenu(SHELTER_CONTACT_SAVED, SHELTER_INFO_MENU_LEVEL);
                 break;
         }
     }
 
-    private void generateMenu(String text) {
+    /**
+     * Метод создает набор кнопок меню и подставляет переданный текст в сообщение бота
+     *
+     * @param text текст в тело сообщения
+     */
+    private void generateMenu(String text, Long level) {
         new TgOut()
                 .tgIn(in)
                 .textBody(text)
-                .generateMarkup(3L)
+                .generateMarkup(level)
                 .send()
                 .save()
         ;
@@ -66,43 +71,25 @@ public class ShelterSelectorService {
         this.in = in;
         Shelter shelter = shelterService.findById(in.getCustomer().getCustomerContext().getShelterId());
 
-        if (shelter == null) {
-            LOGGER.error("level 1L");
-            new TgOut()
-                    .tgIn(in)
-                    .textBody(SHELTER_NOT_FOUND)
-                    .generateMarkup(1L)
-                    .send()
-                    .save()
-            ;
-            return;
-        }
-
-        String responseText = "";
-        String command = in.text();
-        switch (command) {
+        String text;
+        switch (in.endpoint().getName()) {
             case SHELTER_INFO_CMD:
-                responseText = sendShelterInformation(shelter.getDescription(), SHELTER_INFO_NOT_FOUND);
+                text = sendShelterInformation(shelter.getDescription(), SHELTER_INFO_NOT_FOUND);
+                generateMenu(text, SHELTER_INFO_MENU_LEVEL);
                 break;
             case SHELTER_ADDRESS_CMD:
-                responseText = sendShelterInformation(shelter.getAddress(), SHELTER_ADDRESS_NOT_FOUND);
+                text = sendShelterInformation(shelter.getAddress(), SHELTER_ADDRESS_NOT_FOUND);
+                generateMenu(text, SHELTER_INFO_MENU_LEVEL);
                 break;
             case SHELTER_SAFETY_CMD:
-                responseText = sendShelterInformation(shelter.getRules(), SHELTER_RULES_NOT_FOUND);
+                text = sendShelterInformation(shelter.getRules(), SHELTER_RULES_NOT_FOUND);
+                generateMenu(text, SHELTER_INFO_MENU_LEVEL);
                 break;
             case SHELTER_LEAVE_CONTACT_CMD:
                 in.getCustomer().getCustomerContext().setDialogContext(WAIT_CUSTOMER_NAME);
-                responseText = SHELTER_SEND_NAME_MSG;
+                generateMenu(SHELTER_SEND_NAME_MSG, SHELTER_INFO_MENU_LEVEL);
                 break;
         }
-
-        new TgOut()
-                .tgIn(in)
-                .textBody(responseText)
-                .generateMarkup(3L)
-                .send()
-                .save()
-        ;
     }
 
     /**

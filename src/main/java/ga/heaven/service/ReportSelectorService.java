@@ -58,7 +58,7 @@ public class ReportSelectorService {
                 new TgOut()
                         .tgIn(in)
                         .textBody(responseText)
-                        .generateMarkup(5L)
+                        .generateMarkup(REPORTS_MENU_LEVEL)
                         .send()
                         .save()
                 ;
