@@ -1,32 +1,33 @@
 package ga.heaven.service;
 
+import ga.heaven.model.Info;
+import ga.heaven.model.Navigation;
 import ga.heaven.model.TgIn;
 import ga.heaven.model.TgOut;
+import org.assertj.core.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 import static ga.heaven.configuration.Constants.*;
 import static ga.heaven.model.TgIn.Endpoint.Type.*;
 import static ga.heaven.model.CustomerContext.Context.WAIT_REPORT;
-import static ga.heaven.model.TgIn.Endpoint.Type.*;
 
 @Service
 public class CmdSelectorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CmdSelectorService.class);
     private final AppLogicService appLogicService;
-    private final PetSelectorService petSelectorService;
     private final VolunteerSelectorService volunteerSelectorService;
     private final ReportSelectorService reportSelectorService;
     
     
-    public CmdSelectorService(AppLogicService appLogicService, PetSelectorService petSelectorService, VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService) {
+    public CmdSelectorService(AppLogicService appLogicService, VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService) {
         this.appLogicService = appLogicService;
-        this.petSelectorService = petSelectorService;
         this.volunteerSelectorService = volunteerSelectorService;
         this.reportSelectorService = reportSelectorService;
     }
-    
     
     public void processingMsg(TgIn in) {
 //        LOGGER.debug("current in: {}", in);
@@ -34,7 +35,7 @@ public class CmdSelectorService {
             reportSelectorService.processingNonCommandMessagesForReport(in);
             return;
         }
-
+        
         if ((in.text() != null)
                 && (in.chatId() != null)
         ) {
@@ -69,13 +70,14 @@ public class CmdSelectorService {
                 }
                 
             } else if (STATIC.equals(in.endpoint().getType())) {
+            
 //                LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", in);
                 switch (in.endpoint().getName()) {
-                    case START_CMD:
+                    case START_EPT:
                         appLogicService.initConversation(in);
                         return;
                     
-                    case "/how-adopt":
+                    case "how-adopt":
                         new TgOut()
                                 .tgIn(in)
                                 .generateMarkup(4L)
@@ -83,8 +85,8 @@ public class CmdSelectorService {
                                 .save()
                         ;
                         return;
-
-                    case "/shelter":
+                    
+                    case "shelter":
                         new TgOut()
                                 .tgIn(in)
                                 .generateMarkup(3L)
@@ -93,7 +95,7 @@ public class CmdSelectorService {
                         ;
                         return;
                     
-                    case "/main":
+                    case "main":
                         new TgOut()
                                 .tgIn(in)
                                 .generateMarkup(1L)
@@ -101,8 +103,8 @@ public class CmdSelectorService {
                                 .save()
                         ;
                         return;
-
-                    case "/submit_report":
+                    
+                    case "submit_report":
                         new TgOut()
                                 .tgIn(in)
                                 .setCustomerContext(WAIT_REPORT)
@@ -111,16 +113,17 @@ public class CmdSelectorService {
                                 .save()
                         ;
                         return;
-
+                    
                     default:
                         break;
                 }
-                petSelectorService.switchCmd(in);
+                informationEndpoints(in);
+                //petSelectorService.switchCmd(in);
                 volunteerSelectorService.switchCmd(in);
             }
         }
     }
-
+    
     /**
      * Проверяю введена команда или обычный текст/фото
      *
@@ -130,7 +133,37 @@ public class CmdSelectorService {
     private boolean isNonCommandMessages(TgIn in) {
         return (in.text() != null && !in.text().startsWith("/")) || in.message().photo() != null;
     }
-
+    
+    private void informationEndpoints(TgIn in) {
+        in
+                .getInfoList()
+                .stream()
+                .filter(i -> Optional.ofNullable(Strings.concat("/", i.getArea()))
+                        .equals(
+                                in.getNavigationList()
+                                        .stream()
+                                        .filter(n -> n.getEndpoint().equals(Strings.concat("/", in.endpoint().getName())))
+                                        .filter(n -> n.getLevelView().equals(in.getCustomer().getCustomerContext().getCurLevel()))
+                                        .findFirst()
+                                        .map(Navigation::getEndpoint
+                                        )
+                        )
+                )
+                .findFirst()
+                .map(Info::getInstructions)
+                .ifPresent(instructions -> {
+                            new TgOut()
+                                    .tgIn(in)
+                                    .generateMarkup(in.getCustomer().getCustomerContext().getCurLevel())
+                                    .textBody(instructions)
+                                    .send()
+                                    .save()
+                            ;
+                        }
+                )
+        ;
+    }
+    
 }
     
     

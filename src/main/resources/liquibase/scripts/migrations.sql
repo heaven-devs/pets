@@ -592,4 +592,14 @@ WHERE text = 'Need help';
 -- changeset alrepin:15
 DELETE
 FROM public.navigation
-WHERE id = 30
+WHERE id = 30;
+
+-- changeset alrepin:16
+UPDATE public.navigation
+SET level_reference = 2
+WHERE endpoint = '/shelter/0';
+
+-- changeset alrepin:17
+UPDATE public.navigation
+SET endpoint = '/call_volunteer'
+WHERE endpoint = '/call-valunteer';

@@ -13,6 +13,8 @@ public interface Constants {
      */
     String SHELTER_EPT = "shelter";
     String REPORT_EPT = "submit_report";
+    String START_EPT = "start";
+    String VOLUNTEER_REQUEST_EPT = "call_volunteer";
     Long ENDPOINT_LIST = 0L;
     Long SHELTERS_MENU_LEVEL = 2L;
     Long REPORTS_MENU_LEVEL = 5L;
@@ -21,9 +23,9 @@ public interface Constants {
      * Commands
      */
     String BASE_URL = "https://api.telegram.org/bot";
-    String START_CMD = "/start";
+    
     String DATING_RULES_CMD = "/dating_rules";
-    String VOLUNTEER_REQUEST_CMD = "/call-valunteer";
+    
     String REPORT_SUBMIT_CMD = "/submit_report";
     String DOCUMENTS_CMD = "/documents"; // команда выдать список документов
     String TRANSPORT_CMD = "/transport"; // команда выдать список документов

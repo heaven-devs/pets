@@ -66,6 +66,7 @@ public class TgIn {
     
     private List<Shelter> shelterList;
     
+    private List<Info> infoList;
     
     private MsgService svcMsg;
     private CustomerService svcCustomer;
@@ -73,11 +74,11 @@ public class TgIn {
     private ReportService reportService;
     
     
-    public TgIn injectServices(MsgService svcMsg, CustomerService svcCustomer, AppLogicService svcApp, ReportService reportService) {
+    public TgIn injectServices(MsgService svcMsg, CustomerService svcCustomer, AppLogicService svcApp, ReportService svcReport) {
         this.svcMsg = svcMsg;
         this.svcCustomer = svcCustomer;
         this.svcApp = svcApp;
-        this.reportService = reportService;
+        this.reportService = svcReport;
         return this;
     }
     
@@ -118,15 +119,18 @@ public class TgIn {
     
     public Endpoint endpoint() {
         Endpoint result = new Endpoint();
-        final Matcher matcher = Pattern.compile(DYNAMIC_ENDPOINT_REGEXP).matcher(this.text());
+        Matcher matcher = Pattern.compile(DYNAMIC_ENDPOINT_REGEXP).matcher(this.text());
         if (matcher.matches()) {
             result.setType(DYNAMIC);
             result.setName(matcher.group(1));
             result.setValue(matcher.group(2));
-        } else if (Pattern.compile(STATIC_ENDPOINT_REGEXP).matcher(this.text()).matches()) {
-            result.setType(STATIC);
-            result.setName(this.text());
-            //result.setValue(null);
+        } else {
+            matcher = Pattern.compile(STATIC_ENDPOINT_REGEXP).matcher(this.text());
+            if (matcher.matches()) {
+                result.setType(STATIC);
+                result.setName(matcher.group(1));
+                //result.setValue(null);
+            }
         }
         return result;
     }
@@ -144,6 +148,7 @@ public class TgIn {
         return new TgIn()
                 .setShelterList(new ArrayList<>(this.getShelterList()))
                 .setNavigationList(new ArrayList<>(this.getNavigationList()))
+                .setInfoList(new ArrayList<>(this.getInfoList()))
                 .injectServices(this.svcMsg, this.svcCustomer, this.svcApp, this.reportService);
     }
     
@@ -203,6 +208,12 @@ public class TgIn {
         return this;
     }
     
+    public TgIn setInfoList(List<Info> infoList) {
+        this.infoList = infoList;
+        //LOGGER.debug(String.valueOf(shelterList));
+        return this;
+    }
+    
     public TgIn setCustomer(Customer customer) {
         this.customer = customer;
         return this;
@@ -215,10 +226,6 @@ public class TgIn {
                 .orElse(null);
     }
     
-    
-    
-    
-    
     public Shelter currentShelter(Long shelterId) {
         if (Objects.nonNull(shelterId)) {
                 return this.shelterList.stream().filter(s -> shelterId == s.getId())
@@ -230,8 +237,6 @@ public class TgIn {
     }
     
     public TgIn update(Update updateObj) {
-        
-        
         this.msgJSON = Optional.ofNullable(updateObj)
                 .flatMap(u -> Optional.ofNullable(u.callbackQuery())
                         .flatMap(c -> Optional.ofNullable(c.message())
@@ -263,7 +268,6 @@ public class TgIn {
                                         })
                         ))
                 .orElse(null);
-        
         //LOGGER.debug(Objects.isNull(this.msgJSON) ? "" : this.msgJSON.toString());
         return this;
         

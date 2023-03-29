@@ -95,4 +95,8 @@ public class InfoService {
     public Info findInfoByArea(String area) {
         return infoRepository.findFirstByAreaContainingIgnoreCase(area).orElse(null);
     }
+    
+    public List<Info> findAll() {
+        return infoRepository.findAll();
+    }
 }

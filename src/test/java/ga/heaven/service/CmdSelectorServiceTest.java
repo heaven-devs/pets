@@ -1,7 +1,6 @@
 package ga.heaven.service;
 
 import com.pengrad.telegrambot.BotUtils;
-import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import ga.heaven.listener.TelegramBotUpdatesListenerTest;
 import ga.heaven.model.TgIn;
@@ -18,8 +17,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import static ga.heaven.configuration.Constants.START_CMD;
-import static ga.heaven.configuration.Constants.VOLUNTEER_REQUEST_CMD;
+import static ga.heaven.configuration.Constants.START_EPT;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -44,7 +42,7 @@ public class CmdSelectorServiceTest {
     public void checkInitConversationParameter() throws URISyntaxException, IOException {
         String json = Files.readString(
                 Paths.get(TelegramBotUpdatesListenerTest.class.getResource("text_update.json").toURI()));
-        Update update = getUpdate(json, START_CMD);
+        Update update = getUpdate(json, START_EPT);
         cmdSelectorService.processingMsg(new TgIn().update(update));
 
         Long expectedChatId = 777_777_777L;

@@ -58,7 +58,7 @@ class PetSelectorServiceTest {
         return BotUtils.fromJson(rootNode.toPrettyString(), Update.class);
     }*/
     
-    @Test
+    /*@Test
     public void switchCmdTest() throws URISyntaxException, IOException, JSONException {
         Update update = createUpdate(CHAT_ID, DATING_RULES_CMD);
         petSelectorService.switchCmd(new TgIn().update(update));
@@ -69,7 +69,7 @@ class PetSelectorServiceTest {
         assertThat(actualChatID).isEqualTo(expectedChatId);
         verify(appLogicService, times(NUMBER_OF_INVOCATIONS)).sendDatingRules(actualChatID);
         
-    }
+    }*/
     
     
 }

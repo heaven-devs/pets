@@ -20,8 +20,7 @@ public class PetSelectorService {
         this.msgService = msgService;
     }
     
-    
-    public void switchCmd(TgIn in) {
+    /*public void switchCmd(TgIn in) {
         String Command = in.endpoint().getName();
         switch (Command) {
             case DATING_RULES_CMD:
@@ -30,10 +29,8 @@ public class PetSelectorService {
         }
         
         
-    }
-    
-    
-    
+    }*/
+    /*
     public void switchCmd(Long chatId, String Command) {
         
         switch (Command) {
@@ -66,5 +63,5 @@ public class PetSelectorService {
                 break;
         }
     }
-    
+    */
 }
