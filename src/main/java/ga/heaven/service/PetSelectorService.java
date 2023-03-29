@@ -65,16 +65,16 @@ public class PetSelectorService {
     }
     */
 
-    private String getActualBodyText(String text, String alternativeText) {
+    /*private String getActualBodyText(String text, String alternativeText) {
         return infoService.findInfoByArea(text) == null ? alternativeText : text;
-    }
+    }*/
 
     /**
      * Метод создает набор кнопок меню и подставляет переданный текст в сообщение бота
      *
      * @param text текст в тело сообщения
      */
-    private void generateMenu(TgIn in, String text, Long level) {
+   /* private void generateMenu(TgIn in, String text, Long level) {
         new TgOut()
                 .tgIn(in)
                 .textBody(text)
@@ -82,5 +82,5 @@ public class PetSelectorService {
                 .send()
                 .save()
         ;
-    }
+    }*/
 }
