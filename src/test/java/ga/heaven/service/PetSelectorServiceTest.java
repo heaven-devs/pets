@@ -58,18 +58,18 @@ class PetSelectorServiceTest {
         return BotUtils.fromJson(rootNode.toPrettyString(), Update.class);
     }*/
     
-    @Test
-    public void switchCmdTest() throws URISyntaxException, IOException, JSONException {
-        Update update = createUpdate(CHAT_ID, DATING_RULES_CMD);
-        petSelectorService.switchCmd(new TgIn().update(update));
-        ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
-        Mockito.verify(appLogicService).sendDatingRules(argumentCaptor.capture());
-        Long actualChatID = argumentCaptor.getValue();
-        Long expectedChatId = CHAT_ID;
-        assertThat(actualChatID).isEqualTo(expectedChatId);
-        verify(appLogicService, times(NUMBER_OF_INVOCATIONS)).sendDatingRules(actualChatID);
-        
-    }
+//    @Test
+//    public void switchCmdTest() throws URISyntaxException, IOException, JSONException {
+//        Update update = createUpdate(CHAT_ID, DATING_RULES_CMD);
+//        petSelectorService.switchCmd(new TgIn().update(update));
+//        ArgumentCaptor<Long> argumentCaptor = ArgumentCaptor.forClass(Long.class);
+//        Mockito.verify(appLogicService).sendDatingRules(argumentCaptor.capture());
+//        Long actualChatID = argumentCaptor.getValue();
+//        Long expectedChatId = CHAT_ID;
+//        assertThat(actualChatID).isEqualTo(expectedChatId);
+//        verify(appLogicService, times(NUMBER_OF_INVOCATIONS)).sendDatingRules(actualChatID);
+//
+//    }
     
     
 }

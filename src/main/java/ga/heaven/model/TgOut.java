@@ -54,8 +54,6 @@ public class TgOut {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        
-//        LOGGER.debug(Objects.isNull(this.msgJSON) ? "" : this.msgJSON.toString());
     }
 
     private void injectServices(MsgService svcMsg, CustomerService svcCustomer, ReportService reportService) {
@@ -167,13 +165,9 @@ public class TgOut {
     
     public void save() {
         svcCustomer.updateCustomer(this.in.getCustomer());
-        //this.in.getSvcApp().removeInputInstance(in);
-        //this.in = null;
-        //return this;
     }
     
     public TgOut setSelectedShelter(Long shelterId) {
-       // in.getCustomer().getCustomerContext().setShelterId(in.currentShelter(shelterId).getId());
         in.getCustomer().getCustomerContext().setShelterId(shelterId);
         return this;
     }
@@ -194,9 +188,9 @@ public class TgOut {
         return this;
     }
 
-
     public TgOut generateMarkup(Long id) {
         in.getCustomer().getCustomerContext().setCurLevel(id);
+
         this.textMenuCaption(in.navigationItemById(id).getText());
         Optional.ofNullable(this.getCurrentShelter())
                 .map(Shelter::getName)
@@ -219,7 +213,7 @@ public class TgOut {
             Boolean enabled;
             try {
                 String rulesJson = button.getRules();
-                rulesJson = rulesJson==null ? "true" : rulesJson;
+                rulesJson = rulesJson == null ? "true" : rulesJson;
                 Map<String, String> data = new HashMap<>();
                 data.put("shelterId", in.getCustomer().getCustomerContext().getShelterId().toString());
                 data.put("dialogContext", in.getCustomer().getCustomerContext().getDialogContext().toString());
@@ -260,10 +254,6 @@ public class TgOut {
         });
         return buttons;
     }
-
-    /* public TgOut generateMarkup() {
-
-     }*/
 
     public TgOut setCustomerContext(CustomerContext.Context context) {
         this.getIn().getCustomer().getCustomerContext().setDialogContext(context);
