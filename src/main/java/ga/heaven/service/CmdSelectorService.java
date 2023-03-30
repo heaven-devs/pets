@@ -52,6 +52,7 @@ public class CmdSelectorService {
                             new TgOut()
                                     .tgIn(in)
                                     .setSelectedShelter(in.endpoint().getValueAsLong())
+                                    .textBody("For further work with the bot, was chosen " + in.currentShelter().getName())
                                     .generateMarkup(MAIN_MENU_LEVEL)
                                     .send()
                                     .save()
@@ -72,37 +73,11 @@ public class CmdSelectorService {
                 }
 
             } else if (STATIC.equals(in.endpoint().getType())) {
+//                informationEndpoints(in);
 //                LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", in);
                 switch (in.endpoint().getName()) {
                     case START_EPT:
                         appLogicService.initConversation(in);
-                        return;
-                    
-                    case "how-adopt":
-                        new TgOut()
-                                .tgIn(in)
-                                .generateMarkup(DATING_INFO_MENU_LEVEL)
-                                .send()
-                                .save()
-                        ;
-                        return;
-                    
-                    case "shelter":
-                        new TgOut()
-                                .tgIn(in)
-                                .generateMarkup(SHELTER_INFO_MENU_LEVEL)
-                                .send()
-                                .save()
-                        ;
-                        return;
-                    
-                    case "main":
-                        new TgOut()
-                                .tgIn(in)
-                                .generateMarkup(MAIN_MENU_LEVEL)
-                                .send()
-                                .save()
-                        ;
                         return;
                     
                     case "submit_report":
@@ -147,8 +122,10 @@ public class CmdSelectorService {
                                         .filter(n -> n.getEndpoint().equals(Strings.concat("/", in.endpoint().getName())))
                                         .filter(n -> n.getLevelView().equals(in.getCustomer().getCustomerContext().getCurLevel()))
                                         .findFirst()
-                                        .map(Navigation::getEndpoint
-                                        )
+                                        .map(n -> {
+                                            in.setRefLevel(n.getLevelReference());
+                                            return n.getEndpoint();
+                                        })
                         )
                 )
                 .findFirst()
@@ -156,7 +133,8 @@ public class CmdSelectorService {
                 .ifPresent(instructions -> {
                             new TgOut()
                                     .tgIn(in)
-                                    .generateMarkup(in.getCustomer().getCustomerContext().getCurLevel())
+                                    .generateMarkup(in.getRefLevel())
+                                    //.generateMarkup(in.getCustomer().getCustomerContext().getCurLevel())
                                     .textBody(instructions)
                                     .send()
                                     .save()

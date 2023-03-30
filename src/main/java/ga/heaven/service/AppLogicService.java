@@ -36,10 +36,12 @@ public class AppLogicService {
 
         //if (Objects.isNull(out.getIn().lastInQueryMessageId())) {
         if (Objects.isNull(out.getIn().getCustomer().getCustomerContext().getShelterId())) {
-            out.textBody(infoService.findInfoByArea(COMMON_INFO_FIELD).getInstructions());
+            out.textBody(infoService.findInfoByArea(COMMON_INFO_FIELD).getInstructions()+"\n");
         }
 
-        out.send().save();
+        out
+                .textBody(out.getTextBody() + "Please select a shelter depending on which animal you want to adopt.")
+                .send().save();
         LOGGER.debug("initConversation with chatId: {}", in.chatId());
 //        LOGGER.debug("TgOut: {}", t);
     }

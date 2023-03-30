@@ -62,6 +62,8 @@ public class TgIn {
     
     private Long callbackQueryId;
     
+    private Long refLevel;
+    
     private Integer modalMessageId;
     
     private List<Navigation> navigationList;
@@ -260,9 +262,7 @@ public class TgIn {
                 .findFirst()
                 .orElse(null)
                 ;
-                
 /*
-    
         if (shelterId.isPresent()) {
             return this.shelterList.stream().filter(s -> shelterId == s.getId())
                     //.map(Shelter::getName)
@@ -270,10 +270,6 @@ public class TgIn {
                     .orElse(null);
         }
         return null;*/
-        
-        
-        
-        
         //return this.currentShelter(this.getCustomer().getCustomerContext().getShelterId());
     }
     

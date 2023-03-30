@@ -215,8 +215,17 @@ public class TgOut {
                 String rulesJson = button.getRules();
                 rulesJson = rulesJson == null ? "true" : rulesJson;
                 Map<String, String> data = new HashMap<>();
-                data.put("shelterId", in.getCustomer().getCustomerContext().getShelterId().toString());
+                data.put("shelterId", Optional.ofNullable(in.getCustomer().getCustomerContext().getShelterId())
+                        .map(Object::toString)
+                        .orElse("null")
+                );
                 data.put("dialogContext", in.getCustomer().getCustomerContext().getDialogContext().toString());
+                
+                data.put("CurrentPetId", Optional.ofNullable(in.getCustomer().getCustomerContext().getCurrentPetId())
+                        .map(Object::toString)
+                        .orElse("null")
+                );
+                
                 enabled = (Boolean) jsonLogic.apply(rulesJson,data) && id.equals(button.getLevelView());
             } catch (JsonLogicException e) {
                 throw new RuntimeException(e);

@@ -605,3 +605,42 @@ WHERE endpoint = '/shelter/0';
 UPDATE public.navigation
 SET endpoint = '/call_volunteer'
 WHERE endpoint = '/call-valunteer';
+
+-- changeset alrepin:17
+UPDATE public.navigation
+SET rules = '{ "and" : [
+  {"!=" : [ { "var" : "CurrentPetId" }, "null" ]},
+  {"!=" : [ { "var" : "CurrentPetId" }, "0" ] }
+] }'
+WHERE endpoint = '/submit_report';
+UPDATE public.info SET instructions = 'An adult animal needs to be given more food than a yung.' WHERE area = 'comfort_adult';
+
+UPDATE public.navigation
+SET rules = '{"==" : [ { "var" : "shelterId" }, "1" ]}'
+WHERE rules = '{ "and" : [
+{ "or" : [
+  {"==" : [ { "var" : "shelterId" }, 1 ]},
+  {"==" : [ { "var" : "shelterId" }, null ] }
+] },
+{ "or" : [
+  {"==" : [ { "var" : "dialogContext" }, "FREE" ] },
+  {"==" : [ { "var" : "dialogContext" }, "WAIT_REPORT" ] }
+] }
+] }';
+
+UPDATE public.navigation
+SET rules = '{"==" : [ { "var" : "shelterId" }, "2" ]}'
+WHERE rules = '{ "and" : [
+{ "or" : [
+  {"==" : [ { "var" : "shelterId" }, 2 ]},
+  {"==" : [ { "var" : "shelterId" }, null ] }
+] },
+{ "or" : [
+  {"==" : [ { "var" : "dialogContext" }, "FREE" ] },
+  {"==" : [ { "var" : "dialogContext" }, "WAIT_REPORT" ] }
+] }
+] }';
+INSERT INTO public.info (id, area, instructions) VALUES (11, 'main', 'Please select the item you are interested in by clicking the button below');
+INSERT INTO public.info (id, area, instructions) VALUES (12, 'how-adopt', 'Please select the item from get pet menu or select Main menu to return back');
+INSERT INTO public.info (id, area, instructions) VALUES (13, 'shelter', 'All information about chosen shelter you can find below');
+INSERT INTO public.info (id, area, instructions) VALUES (14, 'submit_report', 'Please select the item you are interested in by clicking the button below');
