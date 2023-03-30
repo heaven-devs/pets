@@ -172,9 +172,9 @@ public class TgOut {
         return this;
     }
 
-    public Shelter getCurrentShelter() {
+/*    public Shelter getCurrentShelter() {
         return in.currentShelter(in.getCustomer().getCustomerContext().getShelterId());
-    }
+    }*/
 
     public TgOut send() {
         this.messageId(in.getModalMessageId());
@@ -192,7 +192,7 @@ public class TgOut {
         in.getCustomer().getCustomerContext().setCurLevel(id);
 
         this.textMenuCaption(in.navigationItemById(id).getText());
-        Optional.ofNullable(this.getCurrentShelter())
+        Optional.ofNullable(this.in.currentShelter())
                 .map(Shelter::getName)
                 .ifPresent(s -> this.addStatusLine("Selected shelter: " + s));
 

@@ -16,6 +16,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.assertj.core.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static ga.heaven.configuration.Constants.*;
 import static ga.heaven.model.TgIn.Endpoint.Type.*;
 
 @Getter
@@ -102,6 +104,12 @@ public class TgIn {
                 );
         
         this.modalMessageId = renewMessageById(this.lastInQueryMessageId(), this.lastOutQueryMessageId());
+    
+        /*if (Objects.isNull(this.modalMessageId)) {
+            svcMsg.sendMsg(this.chatId(), Strings.concat("/",START_EPT));
+            this.chatId(null);
+            return this;
+        }*/
         
         Optional.ofNullable(this.getCallbackQueryId())
                 .ifPresentOrElse(lId -> {
@@ -155,6 +163,11 @@ public class TgIn {
     public Long chatId() {
         long result = this.msgJSON.path("chat").path("id").asLong(0);
         return result == 0 ? null : result;
+    }
+    
+    public TgIn chatId(Long chatId) {
+        msgJSON.putObject("chat").put("id", chatId);
+        return this;
     }
     
     public String text() {
@@ -234,6 +247,34 @@ public class TgIn {
                         .orElse(null);
             }
         return null;
+    }
+    
+    public Shelter currentShelter() {
+/*        Optional<Long> shelterId =
+                Optional.ofNullable(this.getCustomer().getCustomerContext().getShelterId());*/
+    
+        return this.shelterList.stream().filter(s -> Optional.of(s.getId())
+                        .equals(
+                                Optional.ofNullable(this.getCustomer().getCustomerContext().getShelterId())
+                        ))
+                .findFirst()
+                .orElse(null)
+                ;
+                
+/*
+    
+        if (shelterId.isPresent()) {
+            return this.shelterList.stream().filter(s -> shelterId == s.getId())
+                    //.map(Shelter::getName)
+                    .findFirst()
+                    .orElse(null);
+        }
+        return null;*/
+        
+        
+        
+        
+        //return this.currentShelter(this.getCustomer().getCustomerContext().getShelterId());
     }
     
     public TgIn update(Update updateObj) {

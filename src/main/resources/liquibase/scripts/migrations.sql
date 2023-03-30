@@ -560,21 +560,6 @@ values (28, '/leave_contact', 4, 'Send contact for adoption', null, null);
 insert into public.navigation (id, endpoint, level_view, text, level_reference, rules)
 values (29, '/call-valunteer', 4, 'Need human help', null, null);
 
--- changeset alrepin:14
-UPDATE public.navigation
-SET text = 'Need human help'
-WHERE text = 'Need help';
-
--- changeset alrepin:15
-UPDATE public.navigation
-SET level_reference = 2
-WHERE endpoint = '/shelter/0';
-
--- changeset alrepin:16
-UPDATE public.navigation
-SET endpoint = '/call_volunteer'
-WHERE endpoint = '/call-valunteer';
-
 -- changeset starasov:5
 CREATE TABLE IF NOT EXISTS report_photo
 (
@@ -605,3 +590,18 @@ UPDATE public.navigation SET id = 34 WHERE id = 10;
 UPDATE public.navigation SET level_reference = 4 WHERE id BETWEEN 18 AND 29;
 UPDATE public.info SET area = 'comfort_young' WHERE area = 'comfort_pet';
 UPDATE public.info SET area = 'comfort_adult' WHERE area = 'comfort_dog';
+
+-- changeset alrepin:14
+UPDATE public.navigation
+SET text = 'Need human help'
+WHERE text = 'Need help';
+
+-- changeset alrepin:15
+UPDATE public.navigation
+SET level_reference = 2
+WHERE endpoint = '/shelter/0';
+
+-- changeset alrepin:16
+UPDATE public.navigation
+SET endpoint = '/call_volunteer'
+WHERE endpoint = '/call-valunteer';

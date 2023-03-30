@@ -69,6 +69,8 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
                     .update(update)
                     .initMsgInstanceEnvironment();
             if (Objects.nonNull(in.chatId())) {
+                LOGGER.debug(">>>>>>>>>>>>>>>>>>> [" +
+                        updateCounter + "] input with chatId {} redirected to cmdSelectorService >>>>>>>>>>>>>>>>>>",in.chatId());
                 cmdSelectorService.processingMsg(in);
             }
             //LOGGER.debug("current in: {}", in);

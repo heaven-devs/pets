@@ -21,9 +21,9 @@ public interface Constants {
      */
     String BASE_URL = "https://api.telegram.org/bot";
     
-    String DATING_RULES_CMD = "/dating_rules";
+    //String DATING_RULES_CMD = "/dating_rules";
     
-    String REPORT_SUBMIT_CMD = "/submit_report";
+/*    String REPORT_SUBMIT_CMD = "/submit_report";
     String DOCUMENTS_CMD = "/documents"; // команда выдать список документов
     String TRANSPORT_CMD = "/transport"; // команда выдать список документов
     String COMFORT_YOUNG_CMD = "/comfort_young"; // команда выдать рекомендации по обустройству дома для питомца
@@ -31,12 +31,15 @@ public interface Constants {
     String COMFORT_HANDICAPPED_CMD = "/comfort_handicapped"; // команда выдать рекомендации по обустройству дома для питомца с ограниченными возможностями
     String CYNOLOGIST_ADVICE_CMD = "/cynologist_advice"; // команда выдать рекомендации кинолога
     String CYNOLOGISTS_LIST_CMD = "/cynologists_list"; // команда выдать рекомендации кинолога
-    String REASONS_REFUSAL_CMD = "/reasons_refusal"; // команда выдать причины отказа
-    String SHELTER_INFO_CMD = "/shelter_info"; // команда выдать информацию о приюте
+    String REASONS_REFUSAL_CMD = "/reasons_refusal"; // команда выдать причины отказа*/
+/*    String SHELTER_INFO_CMD = "/shelter_info"; // команда выдать информацию о приюте
     String SHELTER_ADDRESS_CMD = "/address"; // команда выдать адрес приюта
     String SHELTER_SAFETY_CMD = "/security_contact"; // команда выдать правила поведения на территории приюта
-    String SHELTER_LEAVE_CONTACT_CMD = "/leave_contact"; // команда получить контакты от пользователя
-
+    String SHELTER_LEAVE_CONTACT_CMD = "/leave_contact"; // команда получить контакты от пользователя*/
+    String SHELTER_INFO_EPT = "shelter_info"; // команда выдать информацию о приюте
+    String SHELTER_ADDRESS_EPT = "address"; // команда выдать адрес приюта
+    String SHELTER_SAFETY_EPT = "security_contact"; // команда выдать правила поведения на территории приюта
+    String SHELTER_LEAVE_CONTACT_EPT = "leave_contact"; // команда получить контакты от пользователя
 
     /**
      * Info fields

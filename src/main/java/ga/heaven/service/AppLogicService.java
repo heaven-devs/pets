@@ -34,7 +34,8 @@ public class AppLogicService {
         out.tgIn(in)
                 .generateMarkup(SHELTERS_MENU_LEVEL);
 
-        if (!Objects.nonNull(out.getIn().lastInQueryMessageId())) {
+        //if (Objects.isNull(out.getIn().lastInQueryMessageId())) {
+        if (Objects.isNull(out.getIn().getCustomer().getCustomerContext().getShelterId())) {
             out.textBody(infoService.findInfoByArea(COMMON_INFO_FIELD).getInstructions());
         }
 

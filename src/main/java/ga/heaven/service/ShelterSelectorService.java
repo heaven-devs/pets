@@ -73,19 +73,19 @@ public class ShelterSelectorService {
 
         String text;
         switch (in.endpoint().getName()) {
-            case SHELTER_INFO_CMD:
+            case SHELTER_INFO_EPT:
                 text = sendShelterInformation(shelter.getDescription(), SHELTER_INFO_NOT_FOUND);
                 generateMenu(text, SHELTER_INFO_MENU_LEVEL);
                 break;
-            case SHELTER_ADDRESS_CMD:
+            case SHELTER_ADDRESS_EPT:
                 text = sendShelterInformation(shelter.getAddress(), SHELTER_ADDRESS_NOT_FOUND);
                 generateMenu(text, SHELTER_INFO_MENU_LEVEL);
                 break;
-            case SHELTER_SAFETY_CMD:
+            case SHELTER_SAFETY_EPT:
                 text = sendShelterInformation(shelter.getRules(), SHELTER_RULES_NOT_FOUND);
                 generateMenu(text, SHELTER_INFO_MENU_LEVEL);
                 break;
-            case SHELTER_LEAVE_CONTACT_CMD:
+            case SHELTER_LEAVE_CONTACT_EPT:
                 in.getCustomer().getCustomerContext().setDialogContext(WAIT_CUSTOMER_NAME);
                 generateMenu(SHELTER_SEND_NAME_MSG, SHELTER_INFO_MENU_LEVEL);
                 break;
