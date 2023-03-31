@@ -230,7 +230,7 @@ public class ReportSelectorService {
         if (getFileResponse.isOk()) {
             File file = getFileResponse.file();
             String extension = StringUtils.getFilenameExtension(file.filePath());
-            reportPhoto.setMediaType(extension);
+            reportPhoto.setMediaType(generateMediaType(extension));
             try {
                 byte[] image = telegramBot.getFileContent(file);
                 reportPhoto.setPhoto(image);
@@ -239,5 +239,17 @@ public class ReportSelectorService {
             }
         }
         reportPhotoRepository.save(reportPhoto);
+    }
+
+    private String generateMediaType(String extension) {
+        if (extension != null) {
+            switch (extension) {
+                case "gif":
+                    return "image/gif";
+                case "png":
+                    return "image/png";
+            }
+        }
+        return "image/jpeg";
     }
 }

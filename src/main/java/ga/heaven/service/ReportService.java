@@ -138,5 +138,14 @@ public class ReportService {
         }
         return petWithoutReportList;
     }
+
+    public List<ReportPhoto> getAllPhotoByReportId(Long reportId) {
+        Report report = reportRepository.findById(reportId).orElse(null);
+        return reportPhotoRepository.findAllByReport(report);
+    }
+
+    public ReportPhoto getPhotoById(Long id) {
+        return reportPhotoRepository.findById(id).orElse(null);
+    }
 }
 
