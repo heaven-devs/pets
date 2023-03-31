@@ -93,6 +93,7 @@ public class ReportService {
 
     /**
      * Метод ищет сегодняшний ЗАВЕРШЕННЫЙ отчет по id питомца
+     *
      * @param petId id питомца
      * @return найденный отчет
      */
@@ -113,6 +114,7 @@ public class ReportService {
 
     /**
      * Метод ищет сегодняшние отчеты по id питомца
+     *
      * @param petId id питомца
      * @return найденный отчет
      */
@@ -137,6 +139,31 @@ public class ReportService {
             }
         }
         return petWithoutReportList;
+    }
+
+    public List<ReportPhoto> getAllPhotoByReportId(Long reportId) {
+        Report report = reportRepository.findById(reportId).orElse(null);
+        return reportPhotoRepository.findAllByReport(report);
+    }
+
+    public ReportPhoto getPhotoById(Long id) {
+        return reportPhotoRepository.findById(id).orElse(null);
+    }
+
+    /**
+     * Формирую список пользователей, которые не сдали сегодня отчет
+     *
+     * @return список пользователей без отчета сегодня
+     */
+    public List<Customer> findCustomersWithoutTodayReport() {
+        List<Customer> customerWithoutReportList = new ArrayList<>();
+        for (Pet pet : petService.findPetsWithCustomer()) {
+            Report report = findTodayCompletedReportsByPetId(pet.getId());
+            if (null == report) {
+                customerWithoutReportList.add(pet.getCustomer());
+            }
+        }
+        return customerWithoutReportList;
     }
 }
 

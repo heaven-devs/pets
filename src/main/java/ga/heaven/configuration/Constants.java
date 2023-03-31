@@ -77,17 +77,18 @@ public interface Constants {
     String CYNOLOGIST_ADVICE_NOT_FOUND = "The dog handler's advice was not found. Please contact the administration.";
     String CYNOLOGIST_LIST_NOT_FOUND = "The list of dog handlers was not found. Please contact the administration.";
     String REASONS_REFUSAL_NOT_FOUND = "The list of reasons for refusal was not found. Please contact the administration.";
+    String REPORT_CHOICE_PET = "Select the pet for which you want to submit a report";
     String REPORT_WAIT_REPORT = "Waiting for a pet report ";
     String REPORT_ACCEPTED = "<b>Report accepted</b>";
-    String REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED =
-            "<b>Report not accepted</b>" + CR +
-                    "Submit the following information:" + CR +
-                    "1. Animal diet." + CR +
-                    "2. General well-being and getting used to a new place." + CR +
-                    "3. Change in behavior: abandoning old habits, acquiring new ones.";
-    String REPORT_NOT_ACCEPTED_PHOTO_REQIRED =
-            "<b>Report not accepted</b>" + CR +
-                    "Submit a photo of your pet";
+    String REPORT_NOT_ACCEPTED = "<b>Report not accepted</b>" + CR;
+    String REPORT_SUBMIT_TEXT = "Submit the following information:" + CR +
+            "1. Animal diet." + CR +
+            "2. General well-being and getting used to a new place." + CR +
+            "3. Change in behavior: abandoning old habits, acquiring new ones.";
+    String REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED = REPORT_NOT_ACCEPTED + REPORT_SUBMIT_TEXT;
+    String REPORT_SUBMIT_PHOTO = "Submit a photo of your pet";
+    String REPORT_NOT_ACCEPTED_PHOTO_REQIRED = REPORT_NOT_ACCEPTED + REPORT_SUBMIT_PHOTO;
+    String REPORT_DECISION_DATE = "You must submit reports by ";
     String REPORT_PHOTO_ADD_TO_REPORT = "Photo added to the report";
     String REPORT_UNRECOGNIZED_PHOTO = "Unrecognized photo";
 }

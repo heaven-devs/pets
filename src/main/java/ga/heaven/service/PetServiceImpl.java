@@ -13,16 +13,15 @@ import java.util.List;
 @Service
 public class PetServiceImpl implements PetService {
     private final PetRepository petRepository;
-    
+
     private final static Logger LOGGER = LoggerFactory.getLogger(PetService.class);
-    
+
     public PetServiceImpl(PetRepository petRepository) {
 //        LOGGER.debug("Service wire with Repository");
         this.petRepository = petRepository;
     }
 
     /**
-     * 
      * @param pet "Pet" record being created
      * @return created record "Pet"
      * @see PetRepository#save(Object)
@@ -33,11 +32,10 @@ public class PetServiceImpl implements PetService {
         Example<Pet> e = Example.of(pet);
         boolean exists = petRepository.exists(e);
         return petRepository.save(pet);
-    
+
     }
 
     /**
-     *
      * @param id value of "id" field
      * @return found record
      * @see PetRepository#findById(Object)
@@ -49,9 +47,8 @@ public class PetServiceImpl implements PetService {
     }
 
     /**
-     *
      * @return all found records
-     * @see PetRepository#findAll() 
+     * @see PetRepository#findAll()
      */
     @Override
     public List<Pet> read() {
@@ -60,8 +57,7 @@ public class PetServiceImpl implements PetService {
     }
 
     /**
-     * 
-     * @param id value of "id" field
+     * @param id  value of "id" field
      * @param pet value of "Pet" being updated
      * @return updated "Pet" record or null if not found
      * @see PetRepository#save(Object)
@@ -75,7 +71,6 @@ public class PetServiceImpl implements PetService {
     }
 
     /**
-     *
      * @param id value of "id" field
      * @return deleted record or <b>{@code null}</b> if not found
      * @see PetRepository#deleteById(Object)
@@ -101,7 +96,6 @@ public class PetServiceImpl implements PetService {
     }
 
     /**
-     *
      * @param customer record Customer
      * @return list of "Pet" where customer field is <b>{@code customer}</b>
      * @see PetRepository#findPetsByCustomer(Customer)
@@ -111,12 +105,21 @@ public class PetServiceImpl implements PetService {
     }
 
     /**
-     *
      * @param customer record Customer
      * @return list of "Pet" where Pet's customer field is <b>{@code customer}</b> sorted by "id"
      */
     public List<Pet> findPetsByCustomerOrderById(Customer customer) {
         return petRepository.findPetsByCustomerOrderById(customer);
+    }
+
+    /**
+     * Список питомцев, для которых назначен усыновитель
+     *
+     * @return список питомцев
+     */
+    @Override
+    public List<Pet> findPetsWithCustomer() {
+        return petRepository.findPetsByCustomerNotNull();
     }
 
 }

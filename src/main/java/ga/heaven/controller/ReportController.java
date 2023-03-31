@@ -1,6 +1,7 @@
 package ga.heaven.controller;
 
 import ga.heaven.model.Report;
+import ga.heaven.model.ReportPhoto;
 import ga.heaven.service.ReportService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,12 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
 @RestController
@@ -26,11 +21,11 @@ import java.util.List;
 @Tag(name = "\uD83D\uDCCB Report store", description = "Report dependence model CRUD endpoints")
 public class ReportController {
     private final ReportService reportService;
-    
+
     public ReportController(ReportService reportService) {
         this.reportService = reportService;
     }
-    
+
     @Operation(
             tags = "\uD83D\uDCCB Report store",
             summary = "Search for all reports",
@@ -43,27 +38,27 @@ public class ReportController {
                                     schema = @Schema(implementation = List.class)
                             )
                     ),
-                
+
             }
     )
     @GetMapping
     public ResponseEntity<List<Report>> findAllReportFindAllReport() {
         return ResponseEntity.ok(reportService.findAllReports());
     }
-    
+
     @Operation(
             tags = "\uD83D\uDCCB Report store",
             summary = "Search a report by its ID in the database.",
             responses = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Report JSON",
-                    content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = Report[].class)
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Report JSON",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = Report[].class)
+                            )
                     )
-            )
-    })
+            })
     @GetMapping("/{id}")
     public ResponseEntity<Report> findReportById(@PathVariable Long id) {
         Report report = reportService.findReportById(id);
@@ -72,20 +67,20 @@ public class ReportController {
         }
         return ResponseEntity.ok(report);
     }
-    
+
     @Operation(
             tags = "\uD83D\uDCCB Report store",
             summary = "Delete for a report by its ID in the database.",
             responses = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Report JSON",
-                    content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = Report[].class)
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Report JSON",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = Report[].class)
+                            )
                     )
-            )
-    })
+            })
     @DeleteMapping("/{id}")
     public ResponseEntity<Report> deleteReport(@PathVariable Long id) {
         Report report = reportService.deleteReport(id);
@@ -131,9 +126,55 @@ public class ReportController {
                     )
             })
     @PostMapping
-    public ResponseEntity<Report> createReport(@RequestBody Report report){
+    public ResponseEntity<Report> createReport(@RequestBody Report report) {
         Report create = reportService.createReport(report);
         return ResponseEntity.ok(create);
     }
 
+    @Operation(
+            tags = "\uD83D\uDCCB Report store",
+            summary = "Preview photo by photo id",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Found reports",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = List.class)
+                            )
+                    ),
+
+            }
+    )
+    @GetMapping("/photo/{id}")
+    public ResponseEntity<byte[]> previewPhotoById(@PathVariable Long id) {
+        ReportPhoto reportPhoto = reportService.getPhotoById(id);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(reportPhoto.getMediaType()));
+        headers.setContentLength(reportPhoto.getPhoto().length);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .headers(headers)
+                .body(reportPhoto.getPhoto());
+    }
+
+    @Operation(
+            tags = "\uD83D\uDCCB Report store",
+            summary = "Search for all photos by report id",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Found reports",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = List.class)
+                            )
+                    ),
+
+            }
+    )
+    @GetMapping("{id}/photos")
+    public ResponseEntity<List<ReportPhoto>> getPhotosByReportId(@PathVariable Long id) {
+        return ResponseEntity.ok(reportService.getAllPhotoByReportId(id));
+    }
 }

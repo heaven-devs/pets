@@ -1,8 +1,8 @@
 package ga.heaven.controller;
 
 import ga.heaven.model.Customer;
-import ga.heaven.model.Info;
 import ga.heaven.service.CustomerService;
+import ga.heaven.service.ReportService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RequestMapping("customer")
@@ -21,9 +20,11 @@ import java.util.List;
 @Tag(name = "\uD83D\uDE4B Customer store", description = "Customer dependence model CRUD endpoints")
 public class CustomerController {
     private final CustomerService customerService;
+    private final ReportService reportService;
 
-    public CustomerController(CustomerService customerService) {
+    public CustomerController(CustomerService customerService, ReportService reportService) {
         this.customerService = customerService;
+        this.reportService = reportService;
     }
 
     @Operation(
@@ -133,6 +134,25 @@ public class CustomerController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
         return ResponseEntity.ok(customer);
+    }
+
+    @Operation(
+            summary = "Get customers, who didn't submit a report today",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Customer JSON",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = Customer.class)
+                            )
+                    ),
+            },
+            tags = "\uD83D\uDE4B Customer store"
+    )
+    @GetMapping("/without-report")
+    public ResponseEntity<List<Customer>> getCustomerListWithoutTodayReport() {
+        return ResponseEntity.ok(reportService.findCustomersWithoutTodayReport());
     }
 
 }
