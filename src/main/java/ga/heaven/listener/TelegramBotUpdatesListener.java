@@ -27,13 +27,14 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     private final CustomerService customerService;
     private final AppLogicService appLogicService;
     private final ReportService reportService;
+    private final PetService petService;
+    
     
     private static TgIn tgInGlobal;
     
     private static long updateCounter;
     
-    public TelegramBotUpdatesListener(TelegramBot telegramBot, CmdSelectorService cmdSelectorService, NavigationService navigationService,
-                                      ShelterService shelterService, InfoService infoService, MsgService msgService, CustomerService customerService, AppLogicService appLogicService, ReportService reportService) {
+    public TelegramBotUpdatesListener(TelegramBot telegramBot, CmdSelectorService cmdSelectorService, NavigationService navigationService, ShelterService shelterService, InfoService infoService, MsgService msgService, CustomerService customerService, AppLogicService appLogicService, ReportService reportService, PetService petService) {
         this.telegramBot = telegramBot;
         this.cmdSelectorService = cmdSelectorService;
         this.infoService = infoService;
@@ -41,11 +42,12 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         this.customerService = customerService;
         this.appLogicService = appLogicService;
         this.reportService = reportService;
+        this.petService = petService;
         
         
         tgInGlobal = new TgIn();
         tgInGlobal
-                .injectServices(msgService, customerService, appLogicService, reportService)
+                .injectServices(msgService, customerService, appLogicService, reportService, petService)
                 .setNavigationList(navigationService.findAll())
                 .setShelterList(shelterService.findAll())
                 .setInfoList(infoService.findAll())

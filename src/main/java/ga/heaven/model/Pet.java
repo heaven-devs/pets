@@ -28,7 +28,7 @@ public class Pet {
     private Integer ageInMonths;
     private String name; // имя питомца
     
-    @JsonIgnore
+    //@JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_customer")
     private Customer customer;

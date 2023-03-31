@@ -38,8 +38,8 @@ public interface Constants {
     String SHELTER_LEAVE_CONTACT_CMD = "/leave_contact"; // команда получить контакты от пользователя*/
     String SHELTER_INFO_EPT = "shelter_info"; // команда выдать информацию о приюте
     String SHELTER_ADDRESS_EPT = "address"; // команда выдать адрес приюта
-    String SHELTER_SAFETY_EPT = "security_contact"; // команда выдать правила поведения на территории приюта
-    String SHELTER_LEAVE_CONTACT_EPT = "leave_contact"; // команда получить контакты от пользователя
+    String SHELTER_SAFETY_EPT = "safety"; // команда выдать правила поведения на территории приюта
+    String SHELTER_SEND_CONTACT_EPT = "send_contact"; // команда получить контакты от пользователя
 
     /**
      * Info fields

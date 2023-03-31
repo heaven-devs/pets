@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import static java.util.Objects.isNull;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -31,10 +33,17 @@ public class Volunteer {
     @JoinTable(name = "volunteer_shelter",
             joinColumns = @JoinColumn(name = "volunteer_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "shelter_id", referencedColumnName = "id"))
-    
+    private Set<Shelter> shelters = new HashSet<>();
     //@ManyToMany(mappedBy = "volunteers", fetch = FetchType.EAGER)
     //@JsonIgnore
-    private Set<Shelter> shelters = new HashSet<>();
+    
+    
+    public void addShelter(Shelter shelter) {
+        if (isNull(shelters)) {
+            shelters = new HashSet<>();
+        }
+        shelters.add(shelter);
+    }
     
     /*@Override
     public boolean equals(Object o) {

@@ -8,15 +8,11 @@ import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.PhotoSize;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
-import ga.heaven.service.AppLogicService;
-import ga.heaven.service.CustomerService;
-import ga.heaven.service.MsgService;
-import ga.heaven.service.ReportService;
+import ga.heaven.service.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.assertj.core.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +20,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static ga.heaven.configuration.Constants.*;
 import static ga.heaven.model.TgIn.Endpoint.Type.*;
 
 @Getter
@@ -75,14 +70,16 @@ public class TgIn {
     private MsgService svcMsg;
     private CustomerService svcCustomer;
     private AppLogicService svcApp;
-    private ReportService reportService;
+    private ReportService svcReport;
+    private PetService svcPet;
     
     
-    public TgIn injectServices(MsgService svcMsg, CustomerService svcCustomer, AppLogicService svcApp, ReportService svcReport) {
+    public TgIn injectServices(MsgService svcMsg, CustomerService svcCustomer, AppLogicService svcApp, ReportService svcReport, PetService svcPet) {
         this.svcMsg = svcMsg;
         this.svcCustomer = svcCustomer;
         this.svcApp = svcApp;
-        this.reportService = svcReport;
+        this.svcReport = svcReport;
+        this.svcPet = svcPet;
         return this;
     }
     
@@ -159,7 +156,7 @@ public class TgIn {
                 .setShelterList(new ArrayList<>(this.getShelterList()))
                 .setNavigationList(new ArrayList<>(this.getNavigationList()))
                 .setInfoList(new ArrayList<>(this.getInfoList()))
-                .injectServices(this.svcMsg, this.svcCustomer, this.svcApp, this.reportService);
+                .injectServices(this.svcMsg, this.svcCustomer, this.svcApp, this.svcReport, this.svcPet);
     }
     
     public Long chatId() {

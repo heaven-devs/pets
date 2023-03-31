@@ -10,6 +10,7 @@ import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import ga.heaven.service.CustomerService;
 import ga.heaven.service.MsgService;
+import ga.heaven.service.PetService;
 import ga.heaven.service.ReportService;
 import io.github.jamsesso.jsonlogic.JsonLogic;
 import io.github.jamsesso.jsonlogic.JsonLogicException;
@@ -43,7 +44,9 @@ public class TgOut {
     
     private MsgService svcMsg;
     private CustomerService svcCustomer;
-    private ReportService reportService;
+    private ReportService svcReport;
+    
+    private PetService svcPet;
     
     public TgOut() {
         this.textStatus = new ArrayList<>();
@@ -56,10 +59,11 @@ public class TgOut {
         }
     }
 
-    private void injectServices(MsgService svcMsg, CustomerService svcCustomer, ReportService reportService) {
-        this.reportService = reportService;
+    private void injectServices(MsgService svcMsg, CustomerService svcCustomer, ReportService reportService, PetService svcPet) {
+        this.svcReport = reportService;
         this.svcMsg = svcMsg;
         this.svcCustomer = svcCustomer;
+        this.svcPet = svcPet;
     }
     
     public void updateTextField() {
@@ -138,7 +142,7 @@ public class TgOut {
     public TgOut tgIn(TgIn in) {
         this.in = in;
         this.chatId(this.in.chatId());
-        this.injectServices(in.getSvcMsg(), in.getSvcCustomer(), in.getReportService());
+        this.injectServices(in.getSvcMsg(), in.getSvcCustomer(), in.getSvcReport(), in.getSvcPet());
         this.updateTextField();
         return this;
     }
@@ -171,10 +175,6 @@ public class TgOut {
         in.getCustomer().getCustomerContext().setShelterId(shelterId);
         return this;
     }
-
-/*    public Shelter getCurrentShelter() {
-        return in.currentShelter(in.getCustomer().getCustomerContext().getShelterId());
-    }*/
 
     public TgOut send() {
         this.messageId(in.getModalMessageId());
@@ -215,16 +215,22 @@ public class TgOut {
                 String rulesJson = button.getRules();
                 rulesJson = rulesJson == null ? "true" : rulesJson;
                 Map<String, String> data = new HashMap<>();
+                
                 data.put("shelterId", Optional.ofNullable(in.getCustomer().getCustomerContext().getShelterId())
                         .map(Object::toString)
                         .orElse("null")
                 );
-                data.put("dialogContext", in.getCustomer().getCustomerContext().getDialogContext().toString());
+    
+                data.put("customersPetsCount", String.valueOf(svcPet.findPetsByCustomer(in.getCustomer()).size()));
                 
-                data.put("CurrentPetId", Optional.ofNullable(in.getCustomer().getCustomerContext().getCurrentPetId())
+                /*data.put("dialogContext", in.getCustomer().getCustomerContext().getDialogContext().toString());*/
+                
+                /*data.put("CurrentPetId", Optional.ofNullable(in.getCustomer().getCustomerContext().getCurrentPetId())
                         .map(Object::toString)
-                        .orElse("null")
-                );
+                        .orElse("null"));*/
+                
+                
+                
                 
                 enabled = (Boolean) jsonLogic.apply(rulesJson,data) && id.equals(button.getLevelView());
             } catch (JsonLogicException e) {
@@ -256,7 +262,7 @@ public class TgOut {
      */
     List<Navigation> generateAdditionalButtonsForReportMenu(Customer customer) {
         List<Navigation> buttons = new ArrayList<>();
-        reportService.findPetsWithoutTodayReport(customer).forEach(pet -> {
+        svcReport.findPetsWithoutTodayReport(customer).forEach(pet -> {
             String endpoint = "/submit_report/" + pet.getId();
             String text = pet.getName();
             buttons.add(new Navigation(REPORTS_MENU_LEVEL, REPORTS_MENU_LEVEL, endpoint, text, null));

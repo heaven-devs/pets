@@ -85,7 +85,7 @@ public class ShelterSelectorService {
                 text = sendShelterInformation(shelter.getRules(), SHELTER_RULES_NOT_FOUND);
                 generateMenu(text, SHELTER_INFO_MENU_LEVEL);
                 break;
-            case SHELTER_LEAVE_CONTACT_EPT:
+            case SHELTER_SEND_CONTACT_EPT:
                 in.getCustomer().getCustomerContext().setDialogContext(WAIT_CUSTOMER_NAME);
                 generateMenu(SHELTER_SEND_NAME_MSG, SHELTER_INFO_MENU_LEVEL);
                 break;

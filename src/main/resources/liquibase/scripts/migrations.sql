@@ -436,7 +436,7 @@ insert into public.navigation (id, endpoint, level_view, text, shelter_id, level
 insert into public.navigation (id, endpoint, level_view, text, shelter_id, level_reference, rules) values (6, '/call-valunteer', 1, 'Need help', null, 1, null);
 insert into public.navigation (id, endpoint, level_view, text, shelter_id, level_reference, rules) values (7, '/shelter-info', 3, 'Shelter info', null, 3, null);
 insert into public.navigation (id, endpoint, level_view, text, shelter_id, level_reference, rules) values (9, '/security-contact', 3, 'Security contact info', null, 3, null);
-insert into public.navigation (id, endpoint, level_view, text, shelter_id, level_reference, rules) values (8, '/address', 3, 'Shedule a visit', null, 3, null);
+insert into public.navigation (id, endpoint, level_view, text, shelter_id, level_reference, rules) values (8, '/address', 3, 'Shelter address ', null, 3, null);
 insert into public.navigation (id, endpoint, level_view, text, shelter_id, level_reference, rules) values (10, '/call-valunteer', 3, 'Need help', null, 3, null);
 insert into public.navigation (id, endpoint, level_view, text, shelter_id, level_reference, rules) values (14, '/dating_rules', 4, 'Cats dating rules', 1, 4, '{ "and" : [
 { "or" : [
@@ -644,3 +644,29 @@ INSERT INTO public.info (id, area, instructions) VALUES (11, 'main', 'Please sel
 INSERT INTO public.info (id, area, instructions) VALUES (12, 'how-adopt', 'Please select the item from get pet menu or select Main menu to return back');
 INSERT INTO public.info (id, area, instructions) VALUES (13, 'shelter', 'All information about chosen shelter you can find below');
 INSERT INTO public.info (id, area, instructions) VALUES (14, 'submit_report', 'Please select the item you are interested in by clicking the button below');
+
+-- changeset alrepin:18
+UPDATE public.navigation
+SET rules = '{">" : [ { "var" : "customersPetsCount" }, "0" ] }'
+WHERE endpoint = '/submit_report';
+
+UPDATE public.navigation
+SET text = 'Send reports'
+WHERE endpoint = '/submit_report';
+
+UPDATE public.navigation
+SET text = 'Prevention of accidents'
+WHERE endpoint = '/security_contact';
+
+UPDATE public.navigation
+SET endpoint = '/safety'
+WHERE endpoint = '/security_contact';
+
+UPDATE public.navigation
+SET endpoint = '/send_contact'
+WHERE endpoint = '/leave_contact';
+
+UPDATE public.navigation
+SET text = 'Send your contacts'
+WHERE endpoint = '/send_contact';
+
