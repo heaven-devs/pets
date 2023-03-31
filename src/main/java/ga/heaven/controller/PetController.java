@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -175,11 +176,13 @@ public class PetController {
             },
             tags = "\uD83D\uDC36 Pet store"
     )
-    @PutMapping("{petId}/customer/{customerId}")
-    public ResponseEntity<Pet> setCustomerForPet(@PathVariable long petId, @PathVariable long customerId) {
+    @PutMapping("{pet-id}/customer/{customer-id}")
+    public ResponseEntity<Pet> setCustomerForPet(@PathVariable(name = "pet-id") long petId, @PathVariable(name = "customer-id") long customerId) {
         Customer customer = customerService.findCustomerById(customerId);
         Pet pet = petService.read(petId);
         pet.setCustomer(customer);
+        LocalDateTime decisionDate = LocalDateTime.now().plusDays(30);
+        pet.setDecisionDate(decisionDate);
         petService.update(pet.getId(), pet);
 
         return ResponseEntity.ok(pet);

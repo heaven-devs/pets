@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 public interface PetRepository extends JpaRepository<Pet, Long> {
-    
+
     /**
      * Список питомцев по типу(породе) животного.
      */
