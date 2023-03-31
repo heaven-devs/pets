@@ -1,6 +1,8 @@
 package ga.heaven.controller;
 
+import ga.heaven.model.Customer;
 import ga.heaven.model.Pet;
+import ga.heaven.service.CustomerService;
 import ga.heaven.service.PetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -23,9 +25,11 @@ import static ga.heaven.service.ExceptionsService.statusByException;
 @Tag(name = "\uD83D\uDC36 Pet store", description = "Pet dependence model CRUD endpoints")
 public class PetController {
     private final PetService petService;
+    private final CustomerService customerService;
     
-    public PetController(PetService petService) {
+    public PetController(PetService petService, CustomerService customerService) {
         this.petService = petService;
+        this.customerService = customerService;
     }
     
     @ExceptionHandler(Exception.class)
@@ -156,5 +160,29 @@ public class PetController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
-    
+
+    @Operation(
+            summary = "[UPDATE] Set customer for pet",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "New version Pet's JSON",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = Pet.class)
+                            )
+                    ),
+            },
+            tags = "\uD83D\uDC36 Pet store"
+    )
+    @PutMapping("{petId}/customer/{customerId}")
+    public ResponseEntity<Pet> setCustomerForPet(@PathVariable long petId, @PathVariable long customerId) {
+        Customer customer = customerService.findCustomerById(customerId);
+        Pet pet = petService.read(petId);
+        pet.setCustomer(customer);
+        petService.update(pet.getId(), pet);
+
+        return ResponseEntity.ok(pet);
+    }
+
 }
