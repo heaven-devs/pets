@@ -74,6 +74,7 @@ public interface Constants {
     String CYNOLOGIST_ADVICE_NOT_FOUND = "The dog handler's advice was not found. Please contact the administration.";
     String CYNOLOGIST_LIST_NOT_FOUND = "The list of dog handlers was not found. Please contact the administration.";
     String REASONS_REFUSAL_NOT_FOUND = "The list of reasons for refusal was not found. Please contact the administration.";
+    String REPORT_CHOICE_PET = "Select the pet for which you want to submit a report";
     String REPORT_WAIT_REPORT = "Waiting for a pet report ";
     String REPORT_ACCEPTED = "<b>Report accepted</b>";
     String REPORT_NOT_ACCEPTED = "<b>Report not accepted</b>" + CR;

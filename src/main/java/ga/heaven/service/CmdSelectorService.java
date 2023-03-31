@@ -109,6 +109,7 @@ public class CmdSelectorService {
                         new TgOut()
                                 .tgIn(in)
                                 .setCustomerContext(WAIT_REPORT)
+                                .textBody(REPORT_CHOICE_PET)
                                 .generateMarkup(REPORTS_MENU_LEVEL)
                                 .send()
                                 .save()
