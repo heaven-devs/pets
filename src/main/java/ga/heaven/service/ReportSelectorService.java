@@ -17,6 +17,7 @@ import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -123,7 +124,11 @@ public class ReportSelectorService {
         }
 
         if (report == null) {
-            responseText = REPORT_WAIT_REPORT + "\"" + pet.getName() + "\"";
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+            responseText = REPORT_WAIT_REPORT + "\"" + pet.getName() + "\"" + CR + CR +
+                    REPORT_SUBMIT_TEXT + CR + CR +
+                    REPORT_SUBMIT_PHOTO + CR + CR +
+                    REPORT_DECISION_DATE + pet.getDecisionDate().format(formatter);
         } else if (report.getPetReport() != null && isHavePhotoInCurrentReportFromDB(report)) {
             responseText = REPORT_ACCEPTED;
         } else if (report.getPetReport() != null) {

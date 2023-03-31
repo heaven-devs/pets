@@ -117,7 +117,9 @@ public class PetServiceImpl implements PetService {
      *
      * @return список питомцев
      */
+    @Override
     public List<Pet> findPetsWithCustomer() {
         return petRepository.findPetsByCustomerNotNull();
     }
+
 }
