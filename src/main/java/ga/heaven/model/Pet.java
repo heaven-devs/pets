@@ -28,7 +28,7 @@ public class Pet {
     private Integer ageInMonths;
     private String name; // имя питомца
     
-    @JsonIgnore
+    //@JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_customer")
     private Customer customer;
@@ -64,5 +64,8 @@ public class Pet {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    public void setPet(Long petId) {
     }
 }

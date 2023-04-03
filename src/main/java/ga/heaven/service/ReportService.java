@@ -1,41 +1,56 @@
 package ga.heaven.service;
 
+import ga.heaven.model.Customer;
+import ga.heaven.model.Pet;
 import ga.heaven.model.Report;
-import ga.heaven.model.Shelter;
+import ga.heaven.model.ReportPhoto;
+import ga.heaven.repository.ReportPhotoRepository;
 import ga.heaven.repository.ReportRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 
 @Service
 public class ReportService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(ReportService.class);
 
     private final ReportRepository reportRepository;
+    private final ReportPhotoRepository reportPhotoRepository;
+    private final PetService petService;
 
-    public ReportService(ReportRepository reportRepository) {
+    public ReportService(ReportRepository reportRepository, ReportPhotoRepository reportPhotoRepository, PetService petService) {
 
         this.reportRepository = reportRepository;
+        this.reportPhotoRepository = reportPhotoRepository;
+        this.petService = petService;
     }
 
     /**
      * Search for all reports from the database. (Table - Report)
      * The repository method is used{@link JpaRepository#findAll()}
-     * @return - found reports
+     *
+     * @return - found the reports
      */
-    public List<Report> findAllReports(){
+    public List<Report> findAllReports() {
         return reportRepository.findAll();
     }
 
     /**
-     *Search for a report by its ID in the database. (Table - Report)
+     * Search for a report by its ID in the database. (Table - Report)
      * The repository method is used{@link JpaRepository#findById(Object)}
+     *
      * @param id - ID of the report we are looking for.
-     * @return - found report
+     * @return - found the report
      */
-    public Report findReportsById(long id){
+    public Report findReportById(long id) {
         return reportRepository.findById(id).orElse(null);
     }
 
@@ -46,23 +61,109 @@ public class ReportService {
      * @param id - ID of the report we want to delete.
      */
 
-    public  Report deleteReport(long id){
-        Report report = findReportsById(id);
+    public Report deleteReport(long id) {
+        Report report = findReportById(id);
         if (report != null) {
             reportRepository.delete(report);
         }
         return report;
-
     }
 
-    public Report findReportByPetIdAndDateBetween(Long petId, LocalDateTime startTime, LocalDateTime finishTime) {
+    /**
+     * Create a report and add it to the database. (Table - Report)
+     * The repository method is used{@link JpaRepository#save(Object)}
+     *
+     * @param report - The entity of the report we want to create.
+     * @return - created the report
+     */
+    public Report createReport(Report report) {
+        return reportRepository.save(report);
+    }
+
+    /**
+     * Update an existing report in the database.
+     * The repository method is used{@link JpaRepository#save(Object)
+     *
+     * @param report - ID of the volunteer we want to update.
+     * @return - updated a report
+     */
+    public Report updateReport(Report report) {
+        return reportRepository.save(report);
+    }
+
+    /**
+     * Метод ищет сегодняшний ЗАВЕРШЕННЫЙ отчет по id питомца
+     *
+     * @param petId id питомца
+     * @return найденный отчет
+     */
+    public Report findTodayCompletedReportsByPetId(Long petId) {
+        LocalDate localDate = LocalDate.now();
+        LocalDateTime startTime = localDate.atStartOfDay();
+        LocalDateTime finishTime = LocalTime.MAX.atDate(localDate);
+        Report todayReport = reportRepository.findFirstByPetIdAndPetReportNotNullAndDateBetween(petId, startTime, finishTime);
+        if (todayReport == null) {
+            return null;
+        }
+        ReportPhoto todayReportPhoto = reportPhotoRepository.findFirstByReportId(todayReport.getId());
+        if (todayReportPhoto == null) {
+            return null;
+        }
+        return todayReport;
+    }
+
+    /**
+     * Метод ищет сегодняшние отчеты по id питомца
+     *
+     * @param petId id питомца
+     * @return найденный отчет
+     */
+    public Report findTodayReportByPetId(Long petId) {
+        LocalDate localDate = LocalDate.now();
+        LocalDateTime startTime = localDate.atStartOfDay();
+        LocalDateTime finishTime = LocalTime.MAX.atDate(localDate);
         return reportRepository.findReportByPetIdAndDateBetween(petId, startTime, finishTime);
     }
 
-    public List<Report> findAllByDateBetween(LocalDateTime startTime, LocalDateTime finishTime) {
-        return reportRepository.findAllByDateBetween(startTime, finishTime);
+    /**
+     * Метод ищет питомцев пользователя, для которых сегодня не был сдан отчет.
+     *
+     * @return список питомцев
+     */
+    public List<Pet> findPetsWithoutTodayReport(Customer customer) {
+        List<Pet> petWithoutReportList = new ArrayList<>();
+        for (Pet pet : petService.findPetsByCustomer(customer)) {
+            Report report = findTodayCompletedReportsByPetId(pet.getId());
+            if (null == report) {
+                petWithoutReportList.add(pet);
+            }
+        }
+        return petWithoutReportList;
     }
 
+    public List<ReportPhoto> getAllPhotoByReportId(Long reportId) {
+        Report report = reportRepository.findById(reportId).orElse(null);
+        return reportPhotoRepository.findAllByReport(report);
+    }
 
+    public ReportPhoto getPhotoById(Long id) {
+        return reportPhotoRepository.findById(id).orElse(null);
+    }
+
+    /**
+     * Формирую список пользователей, которые не сдали сегодня отчет
+     *
+     * @return список пользователей без отчета сегодня
+     */
+    public List<Customer> findCustomersWithoutTodayReport() {
+        List<Customer> customerWithoutReportList = new ArrayList<>();
+        for (Pet pet : petService.findPetsWithCustomer()) {
+            Report report = findTodayCompletedReportsByPetId(pet.getId());
+            if (null == report) {
+                customerWithoutReportList.add(pet.getCustomer());
+            }
+        }
+        return customerWithoutReportList;
+    }
 }
 

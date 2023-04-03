@@ -1,6 +1,7 @@
 package ga.heaven.service;
 
-import com.pengrad.telegrambot.model.Message;
+import ga.heaven.model.TgIn;
+import ga.heaven.model.TgOut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -19,10 +20,17 @@ public class PetSelectorService {
         this.msgService = msgService;
     }
     
-    public void switchCmd(Message inputMessage) {
-        this.switchCmd(inputMessage.chat().id(), inputMessage.text());
-    }
-    
+    /*public void switchCmd(TgIn in) {
+        String Command = in.endpoint().getName();
+        switch (Command) {
+            case DATING_RULES_CMD:
+                appLogicService.sendDatingRules(in);
+                break;
+        }
+        
+        
+    }*/
+    /*
     public void switchCmd(Long chatId, String Command) {
         
         switch (Command) {
@@ -55,5 +63,24 @@ public class PetSelectorService {
                 break;
         }
     }
-    
+    */
+
+    /*private String getActualBodyText(String text, String alternativeText) {
+        return infoService.findInfoByArea(text) == null ? alternativeText : text;
+    }*/
+
+    /**
+     * Метод создает набор кнопок меню и подставляет переданный текст в сообщение бота
+     *
+     * @param text текст в тело сообщения
+     */
+   /* private void generateMenu(TgIn in, String text, Long level) {
+        new TgOut()
+                .tgIn(in)
+                .textBody(text)
+                .generateMarkup(level)
+                .send()
+                .save()
+        ;
+    }*/
 }

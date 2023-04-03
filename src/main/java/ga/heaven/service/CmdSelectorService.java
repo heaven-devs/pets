@@ -1,99 +1,150 @@
 package ga.heaven.service;
 
-import com.pengrad.telegrambot.model.CallbackQuery;
-import com.pengrad.telegrambot.model.Message;
-import ga.heaven.model.Customer;
-import ga.heaven.model.CustomerContext;
+import ga.heaven.model.Info;
+import ga.heaven.model.Navigation;
+import ga.heaven.model.TgIn;
+import ga.heaven.model.TgOut;
+import org.assertj.core.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Optional;
 
 import static ga.heaven.configuration.Constants.*;
+import static ga.heaven.model.TgIn.Endpoint.Type.*;
+import static ga.heaven.model.CustomerContext.Context.WAIT_REPORT;
 
 @Service
 public class CmdSelectorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CmdSelectorService.class);
-    private static final String DYNAMIC_ENDPOTINT_REGEXP = "^/(.*)/(.*)[0-9]*";
-    private static final String STATIC_ENDPOINT_REGEXP = "^/([^/]*)$";
-    private final MsgService msgService;
     private final AppLogicService appLogicService;
-    private final PetSelectorService petSelectorService;
     private final VolunteerSelectorService volunteerSelectorService;
     private final ReportSelectorService reportSelectorService;
-    private final ShelterService shelterService;
-    private final CustomerService customerService;
+    private final ShelterSelectorService shelterSelectorService;
     
-    public CmdSelectorService(MsgService msgService, AppLogicService appLogicService, PetSelectorService petSelectorService, VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService, ShelterService shelterService, CustomerService customerService) {
-        this.msgService = msgService;
+    public CmdSelectorService(AppLogicService appLogicService, VolunteerSelectorService volunteerSelectorService, ReportSelectorService reportSelectorService,ShelterSelectorService shelterSelectorService) {
         this.appLogicService = appLogicService;
-        this.petSelectorService = petSelectorService;
         this.volunteerSelectorService = volunteerSelectorService;
         this.reportSelectorService = reportSelectorService;
-        this.shelterService = shelterService;
-        this.customerService = customerService;
+        this.shelterSelectorService = shelterSelectorService;
     }
     
-    public void processingMsg(Message inputMessage) {
-        
-        if (inputMessage.text() != null || inputMessage.photo() != null) {
-            LOGGER.debug("Message\n{}\nsent to: reportSelectorService.switchCmd", inputMessage);
-            reportSelectorService.switchCmd(inputMessage);
+    public void processingMsg(TgIn in) {
+//        LOGGER.debug("current in: {}", in);
+        if (isNonCommandMessages(in)) {
+            reportSelectorService.processingNonCommandMessagesForReport(in);
+            shelterSelectorService.processingNonCommandMessagesForShelter(in);
+            return;
         }
-        
-        if ((inputMessage.text() != null)
-                && (inputMessage.chat() != null)
-                && (inputMessage.chat().id() != null)
+
+        if ((in.text() != null)
+                && (in.chatId() != null)
         ) {
-            if (Pattern.compile(DYNAMIC_ENDPOTINT_REGEXP).matcher(inputMessage.text()).matches()) {
-                LOGGER.debug("Dynamic endpoint message\n{}\nsent to: switchDynCmd methods", inputMessage);
-                
-            } else if (Pattern.compile(STATIC_ENDPOINT_REGEXP).matcher(inputMessage.text()).matches()) {
-                LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", inputMessage);
-                switch (inputMessage.text()) {
-                    
-                    case START_CMD:
-                        appLogicService.initConversation(inputMessage.chat().id());
+            if (DYNAMIC.equals(in.endpoint().getType())) {
+
+//                LOGGER.debug("Dynamic endpoint message\n{}\nsent to: switchDynCmd methods", in);
+                switch (in.endpoint().getName()) {
+                    case SHELTER_EPT:
+                        if (ENDPOINT_LIST.equals(in.endpoint().getValueAsLong())) {
+                            appLogicService.initConversation(in);
+                        } else {
+                            new TgOut()
+                                    .tgIn(in)
+                                    .setSelectedShelter(in.endpoint().getValueAsLong())
+                                    .textBody("For further work with the bot, was chosen " + in.currentShelter().getName())
+                                    .generateMarkup(MAIN_MENU_LEVEL)
+                                    .send()
+                                    .save()
+                            ;
+                        }
+                        return;
+                    case REPORT_EPT:
+                        new TgOut()
+                                .tgIn(in)
+                                .textBody(reportSelectorService.processingPetChoice(in))
+                                .setCustomerContext(WAIT_REPORT)
+                                .setCurrentPet(in.endpoint().getValueAsLong())
+                                .generateMarkup(REPORTS_MENU_LEVEL)
+                                .send()
+                                .save()
+                        ;
+                        return;
+                }
+
+            } else if (STATIC.equals(in.endpoint().getType())) {
+//                informationEndpoints(in);
+//                LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", in);
+                switch (in.endpoint().getName()) {
+                    case START_EPT:
+                        appLogicService.initConversation(in);
                         return;
                     
+                    case "submit_report":
+                        new TgOut()
+                                .tgIn(in)
+                                .setCustomerContext(WAIT_REPORT)
+                                .textBody(REPORT_CHOICE_PET)
+                                .generateMarkup(REPORTS_MENU_LEVEL)
+                                .send()
+                                .save()
+                        ;
+                        return;
+
                     default:
                         break;
                 }
-                
-                petSelectorService.switchCmd(inputMessage);
-                volunteerSelectorService.switchCmd(inputMessage);
+                informationEndpoints(in);
+                //petSelectorService.switchCmd(in);
+                volunteerSelectorService.switchCmd(in);
+                shelterSelectorService.switchCmd(in);
             }
         }
+    }
+
+    /**
+     * Проверяю введена команда или обычный текст/фото
+     *
+     * @param in сообщение от пользователя
+     * @return истина если от пользователя получина не команда, а обычный текст или фото
+     */
+    private boolean isNonCommandMessages(TgIn in) {
+        return (in.text() != null && !in.text().startsWith("/")) || in.message().photo() != null;
     }
     
-    public void processingCallBackQuery(CallbackQuery cbQuery) {
-        msgService.sendCallbackQueryResponse(cbQuery.id());
-        
-        if ((cbQuery.data() != null)
-                && (cbQuery.message() != null)
-                && (cbQuery.message().chat() != null)
-                && (cbQuery.message().chat().id() != null)
-        ) {
-            final Matcher matcher = Pattern.compile(DYNAMIC_ENDPOTINT_REGEXP).matcher(cbQuery.data());
-            if (matcher.matches()) {
-                LOGGER.debug("Dynamic endpoint message\n{}\nsent to: switchDynCmd methods", cbQuery);
-                msgService.sendMsg(cbQuery.message().chat().id(),
-                        shelterService.findById(Long.valueOf(matcher.group(2))).getName()
-                                + " selected."
-                );
-                msgService.deleteMsg(cbQuery.message().chat().id(), cbQuery.message().messageId());
-                Customer customer = customerService.findCustomerByChatId(cbQuery.message().chat().id());
-                customer.getCustomerContext().setShelterId(Long.valueOf(matcher.group(2)));
-                customerService.updateCustomer(customer);
-            } else if (Pattern.compile(STATIC_ENDPOINT_REGEXP).matcher(cbQuery.data()).matches()) {
-                LOGGER.debug("Constant endpoint message\n{}\nsent to: switchCmd methods", cbQuery);
-                petSelectorService.switchCmd(cbQuery.message().chat().id(), cbQuery.data());
-                volunteerSelectorService.switchCmd(cbQuery.message().chat().id(), cbQuery.data());
-            }
-        }
+    private void informationEndpoints(TgIn in) {
+        in
+                .getInfoList()
+                .stream()
+                .filter(i -> Optional.ofNullable(Strings.concat("/", i.getArea()))
+                        .equals(
+                                in.getNavigationList()
+                                        .stream()
+                                        .filter(n -> n.getEndpoint().equals(Strings.concat("/", in.endpoint().getName())))
+                                        .filter(n -> n.getLevelView().equals(in.getCustomer().getCustomerContext().getCurLevel()))
+                                        .findFirst()
+                                        .map(n -> {
+                                            in.setRefLevel(n.getLevelReference());
+                                            return n.getEndpoint();
+                                        })
+                        )
+                )
+                .findFirst()
+                .map(Info::getInstructions)
+                .ifPresent(instructions -> {
+                            new TgOut()
+                                    .tgIn(in)
+                                    .generateMarkup(in.getRefLevel())
+                                    //.generateMarkup(in.getCustomer().getCustomerContext().getCurLevel())
+                                    .textBody(instructions)
+                                    .send()
+                                    .save()
+                            ;
+                        }
+                )
+        ;
     }
+    
 }
     
     

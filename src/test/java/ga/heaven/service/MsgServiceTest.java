@@ -47,7 +47,7 @@ public class MsgServiceTest {
         expectedCustomer.setId(1L);
         expectedCustomer.setChatId(expectedChatId);
         expectedCustomer.setName("Ivan");
-        expectedCustomer.setCustomerContext(new CustomerContext(1L, CustomerContext.Context.FREE, 2L, 1L));
+        expectedCustomer.setCustomerContext(new CustomerContext(1L, CustomerContext.Context.FREE, 2L, 1L, null, null, null));
     }
 
     @Test

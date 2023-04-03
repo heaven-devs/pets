@@ -2,13 +2,13 @@ package ga.heaven.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
+
+import static java.util.Objects.isNull;
 
 @Getter
 @Setter
@@ -23,12 +23,23 @@ public class Shelter { // Таблица: Приют
     private String name; // название приюта питомцев
     private String address; // адрес
     private String locationMap; // ссылка на схему проезда
+    private String description; // описание приюта
+    private String rules; // правила приюта
+
     //@JsonIgnore
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "volunteer_shelter",
             joinColumns = @JoinColumn(name = "shelter_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "volunteer_id", referencedColumnName = "id"))
+    @JsonIgnore
     private Set<Volunteer> volunteers = new HashSet<>();
+    
+    /*public void addVolunteer(Volunteer volunteer) {
+        if (isNull(volunteers)) {
+            volunteers = new HashSet<>();
+        }
+        volunteers.add(volunteer);
+    }*/
 
     @Override
     public boolean equals(Object o) {

@@ -2,16 +2,16 @@ package ga.heaven.listener;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
-import com.pengrad.telegrambot.model.CallbackQuery;
-import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
-import ga.heaven.service.CmdSelectorService;
+import ga.heaven.model.TgIn;
+import ga.heaven.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class TelegramBotUpdatesListener implements UpdatesListener {
@@ -21,10 +21,37 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     private final TelegramBot telegramBot;
     
     private final CmdSelectorService cmdSelectorService;
-
-    public TelegramBotUpdatesListener(TelegramBot telegramBot, CmdSelectorService cmdSelectorService) {
+    
+    private final InfoService infoService;
+    private final MsgService msgService;
+    private final CustomerService customerService;
+    private final AppLogicService appLogicService;
+    private final ReportService reportService;
+    private final PetService petService;
+    
+    
+    private static TgIn tgInGlobal;
+    
+    private static long updateCounter;
+    
+    public TelegramBotUpdatesListener(TelegramBot telegramBot, CmdSelectorService cmdSelectorService, NavigationService navigationService, ShelterService shelterService, InfoService infoService, MsgService msgService, CustomerService customerService, AppLogicService appLogicService, ReportService reportService, PetService petService) {
         this.telegramBot = telegramBot;
         this.cmdSelectorService = cmdSelectorService;
+        this.infoService = infoService;
+        this.msgService = msgService;
+        this.customerService = customerService;
+        this.appLogicService = appLogicService;
+        this.reportService = reportService;
+        this.petService = petService;
+        
+        
+        tgInGlobal = new TgIn();
+        tgInGlobal
+                .injectServices(msgService, customerService, appLogicService, reportService, petService)
+                .setNavigationList(navigationService.findAll())
+                .setShelterList(shelterService.findAll())
+                .setInfoList(infoService.findAll())
+        ;
     }
     
     @PostConstruct
@@ -35,17 +62,22 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     @Override
     public int process(List<Update> updates) {
         updates.forEach(update -> {
-            LOGGER.info("Processing update: {}", update);
-            Message msg = update.message();
-            if (msg != null) {
-                cmdSelectorService.processingMsg(msg);
+            updateCounter++;
+            LOGGER.debug(">>>>>>>>>>>>>>>>>>> [" +
+                    updateCounter + "] >>>>>>>>>>>>>>>>>>");
+//            LOGGER.debug("Processing update: {}", update);
+            TgIn in = tgInGlobal
+                    .newInstance()
+                    .update(update)
+                    .initMsgInstanceEnvironment();
+            if (Objects.nonNull(in.chatId())) {
+                LOGGER.debug(">>>>>>>>>>>>>>>>>>> [" +
+                        updateCounter + "] input with chatId {} redirected to cmdSelectorService >>>>>>>>>>>>>>>>>>",in.chatId());
+                cmdSelectorService.processingMsg(in);
             }
-            CallbackQuery cbQuery = update.callbackQuery();
-            if (cbQuery != null) {
-                cmdSelectorService.processingCallBackQuery(cbQuery);
-            }
+            //LOGGER.debug("current in: {}", in);
         });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }
-
+    
 }

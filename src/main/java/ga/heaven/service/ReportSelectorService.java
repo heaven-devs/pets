@@ -1,176 +1,260 @@
 package ga.heaven.service;
 
-import com.pengrad.telegrambot.model.Message;
-import ga.heaven.model.Customer;
-import ga.heaven.model.CustomerContext;
+import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.model.File;
+import com.pengrad.telegrambot.model.PhotoSize;
+import com.pengrad.telegrambot.request.GetFile;
+import com.pengrad.telegrambot.response.GetFileResponse;
+import ga.heaven.model.*;
 import ga.heaven.model.CustomerContext.Context;
 import ga.heaven.model.Pet;
+import ga.heaven.model.Report;
+import ga.heaven.repository.ReportPhotoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 import static ga.heaven.configuration.Constants.*;
-import static ga.heaven.configuration.ReportConstants.*;
 import static ga.heaven.model.CustomerContext.Context.*;
 
 @Service
 public class ReportSelectorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportSelectorService.class);
 
-    private final MsgService msgService;
     private final ReportService reportService;
-    private final CustomerService customerService;
     private final PetService petService;
+    private final TelegramBot telegramBot;
+    private final ReportPhotoRepository reportPhotoRepository;
 
-    private Message inputMessage;
-    private Customer customer;
+    private TgIn in;
     private String responseText;
 
-    public ReportSelectorService(MsgService msgService, ReportService reportService, CustomerService customerService, PetService petService) {
-        this.msgService = msgService;
+    public ReportSelectorService(ReportService reportService, PetService petService,
+                                 TelegramBot telegramBot, ReportPhotoRepository reportPhotoRepository) {
         this.reportService = reportService;
-        this.customerService = customerService;
         this.petService = petService;
+        this.telegramBot = telegramBot;
+        this.reportPhotoRepository = reportPhotoRepository;
     }
 
     /**
-     * метод проверяет были ли вызваны команды по работе с отчетом, или было отправлено сообщение с текстом/фото
-     * @param inputMessage сообщение полученное от пользователя
+     * Обрабатываю текстовые сообщения пользователя (которые начинаются не с /) и фото
+     *
+     * @param in сообщение от пользователя
      */
-    public void switchCmd(Message inputMessage) {
-        this.inputMessage = inputMessage;
-        customer = customerService.findCustomerByChatId(inputMessage.chat().id());
+    public void processingNonCommandMessagesForReport(TgIn in) {
+        this.in = in;
+        Context context = in.getCustomer().getCustomerContext().getDialogContext();
 
-        if (customer != null && inputMessage.text() != null
-                && inputMessage.text().equals(REPORT_SUBMIT_CMD)) {
-            msgService.sendMsg(inputMessage.chat().id(), processingSubmitReport());
-        } else if (customer != null && inputMessage.text() == null || !inputMessage.text().startsWith("/") ) {
-            msgService.sendMsg(inputMessage.chat().id(), processingUserMessages());
-        }
-    }
-
-    /**
-     * метод запускается, если пользователь отправил команду "/submit_report" и отправляет ответ пользователю
-     * в зависимости от того сколько питомцев взял пользователь
-     */
-    private String processingSubmitReport() {
-        // todo: сделать проверку, сдавал ли пользователь сегодня отчет?
-
-        List<Pet> customerPetList = petService.findPetsByCustomerOrderById(customer);
-        responseText = ANSWER_DONT_HAVE_PETS;
-
-        if (customerPetList.size() == 1) {
-            responseText = ANSWER_ONE_PET;
-            updateCustomerContext(WAIT_REPORT, customerPetList.get(0).getId());
-        } else if (customerPetList.size() > 1) {
-            responseText = generateListOfCustomersPets(customerPetList);
-            updateCustomerContext(WAIT_PET_ID, 0);
-        }
-        return responseText;
-    }
-
-    /**
-     * Метод обновляет значения полей "context" и "petId"
-     * @param context новое значение поля "context"
-     * @param petId новое значение поля "petId"
-     */
-    private void updateCustomerContext(Context context, long petId) {
-        CustomerContext customerContext = customer.getCustomerContext();
-        customerContext.setCurrentPetId(petId);
-        customerService.updateCustomer(customer);
-        updateCustomerContext(context);
-    }
-
-    /**
-     * Метод обновляет значения полей "context"
-     * @param context новое значение поля "context"
-     */
-    private void updateCustomerContext(Context context) {
-        CustomerContext customerContext = customer.getCustomerContext();
-        customerContext.setDialogContext(context);
-        customerService.updateCustomer(customer);
-    }
-
-    /**
-     * Метод формирует сообщение пользователю, со списком его питомцев
-     * @param customerPetList Список питомцев, на поручении у пользователя
-     * @return список питомцев
-     */
-    private String generateListOfCustomersPets(List<Pet> customerPetList) {
-        StringBuilder sb = new StringBuilder(ANSWER_ENTER_PET_ID + CARRIAGE_RETURN);
-        for (Pet pet : customerPetList) {
-            sb.append(pet.getId()).append(". ").append(pet.getName()).append(CARRIAGE_RETURN);
-        }
-        return sb.toString();
-    }
-
-    /**
-     * Метод выбирает нужный для запуска метод в зависимости от контекста диалога с пользователем
-     * @return текст ответа пользователю
-     */
-    private String processingUserMessages() {
-        responseText = "";
-        Context context = customer.getCustomerContext().getDialogContext();
         switch (context) {
-            case WAIT_PET_ID: responseText = processingMsgWaitPetId(); break;
-            case WAIT_REPORT: responseText = processingMsgWaitReport(); break;
+            case WAIT_REPORT:
+                responseText = processingMsgWaitReport();
+                new TgOut()
+                        .tgIn(in)
+                        .textBody(responseText)
+                        .generateMarkup(REPORTS_MENU_LEVEL)
+                        .send()
+                        .save()
+                ;
+                break;
+            case FREE:
+                responseText = addAdditionalPhoto();
+                break;
         }
-        return responseText;
     }
 
     /**
-     * Метод формирует сообщение пользователю, когда пользователь выбирает для какого животного хочет сдать отчет
-     * @return текст ответа пользователю
-     */
-    private String processingMsgWaitPetId() {
-        responseText = ANSWER_NON_EXISTENT_PET;
-        List<String> validIdList = petService.findPetsByCustomerOrderById(customer).stream()
-                .map(Pet::getId)
-                .map(Object::toString)
-                .collect(Collectors.toList());
-
-        if (validIdList.contains(inputMessage.text())) {
-            responseText = ANSWER_SEND_REPORT_FOR_PET_WITH_ID + inputMessage.text();
-            updateCustomerContext(WAIT_REPORT, Long.parseLong(inputMessage.text()));
-        }
-        return responseText;
-    }
-
-    /**
-     * Метод формирует ответ пользоваетлю и записывает данные в БД, когда пользователь отправляет отчет
+     * Получил текст/фото от пользователя (не команду). Метод формирует ответ пользоваетлю
+     * и записывает данные в БД, когда пользователь отправляет отчет
+     *
      * @return текст ответа пользователю
      */
     private String processingMsgWaitReport() {
+        Long petId = in.getCustomer().getCustomerContext().getCurrentPetId();
+        Pet pet = petService.read(petId);
+        Report report = reportService.findTodayReportByPetId(petId);
+        report = (null == report) ? new Report() : report;
+        report.setPet(pet);
+        report.setDate(LocalDateTime.now());
+        responseText = REPORT_WAIT_REPORT;
 
-        // todo: реализовать запись данных в таблицу report
-
-        System.out.println("inputMessage.photo() = " + inputMessage.photo());
-        if (inputMessage.photo() != null && inputMessage.caption() != null) {
-            responseText = ANSWER_REPORT_ACCEPTED;
-            updateCustomerContext(FREE, 0);
-            savePhotoToDB();
-
-        } else if (inputMessage.photo() != null) {
-            responseText = ANSWER_REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED;
-            updateCustomerContext(WAIT_REPORT);
-            savePhotoToDB();
-
-        } else if (inputMessage.text() != null) {
-            responseText = ANSWER_REPORT_NOT_ACCEPTED_PHOTO_REQIRED;
-            updateCustomerContext(WAIT_REPORT);
+        if (isHavePhotoInReport()) {
+            savePhotoToDB(report);
+            responseText = REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED;
         }
 
+        if (isHaveTextInReport(report)) {
+            responseText = REPORT_NOT_ACCEPTED_PHOTO_REQIRED;
+            report.setPetReport(getReportText());
+            reportService.updateReport(report);
+        }
+
+        if (isHavePhotoAndTextInReport(report)) {
+            responseText = REPORT_ACCEPTED;
+            in.getCustomer().getCustomerContext().setDialogContext(FREE);
+        }
+
+        return responseText;
+    }
+
+    /**
+     * Обработка нажатия кнопки меню с одним из питомцев.
+     *
+     * @param in сообщение от пользователя (нажатие кнопки)
+     * @return ответ бота
+     */
+    public String processingPetChoice(TgIn in) {
+        this.in = in;
+        long petId = in.endpoint().getValueAsLong();
+        Pet pet = petService.read(petId);
+
+        in.getCustomer().getCustomerContext().setDialogContext(WAIT_REPORT);
+        in.getCustomer().getCustomerContext().setCurrentPetId(petId);
+
+        Report report = reportService.findTodayReportByPetId(petId);
+        if (report != null) {
+            report.setDate(LocalDateTime.now());
+        }
+
+        if (report == null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+            responseText = REPORT_WAIT_REPORT + "\"" + pet.getName() + "\"" + CR + CR +
+                    REPORT_SUBMIT_TEXT + CR + CR +
+                    REPORT_SUBMIT_PHOTO + CR + CR +
+                    REPORT_DECISION_DATE + pet.getDecisionDate().format(formatter);
+        } else if (report.getPetReport() != null && isHavePhotoInCurrentReportFromDB(report)) {
+            responseText = REPORT_ACCEPTED;
+        } else if (report.getPetReport() != null) {
+            responseText = REPORT_NOT_ACCEPTED_PHOTO_REQIRED;
+        } else {
+            responseText = REPORT_NOT_ACCEPTED_DESCRIPTION_REQUIRED;
+        }
+
+        return responseText;
+    }
+
+    /**
+     * Имеются ли в базе текст отчета, а в сообщении от пользователя фото,
+     * или наоборот в базе фото, а в сообщении от пользователя текст отчета? Т.е. есть и фото и текст отчета.
+     *
+     * @param report проверяемый отчет
+     * @return имеется или нет
+     */
+    private boolean isHavePhotoAndTextInReport(Report report) {
+        return (in.message().photo() != null || (report != null && isHavePhotoInCurrentReportFromDB(report)))
+                && (in.message().caption() != null || in.text() != null || (report != null && report.getPetReport() != null));
+    }
+
+    /**
+     * Имеется ли в текущем сообщении от пользователя картинка (фото)
+     *
+     * @return имеется или нет
+     */
+    private boolean isHavePhotoInReport() {
+        return in.message().photo() != null;
+    }
+
+    /**
+     * Имеется ли в текущем сообщении от пользователя фото
+     *
+     * @param todayReport текущий отчет
+     * @return имеется или нет
+     */
+    private boolean isHaveTextInReport(Report todayReport) {
+        return (todayReport == null || todayReport.getPetReport() == null)
+                && (in.text() != null || (in.text() == null && in.message().caption() != null));
+    }
+
+    /**
+     * Имеется ли фото в текущем отчете
+     *
+     * @param report текущий отчет
+     * @return имеется или нет
+     */
+    private boolean isHavePhotoInCurrentReportFromDB(Report report) {
+        return reportPhotoRepository.findFirstByReportId(report.getId()) != null;
+    }
+
+    /**
+     * Метод выбирает откуда брать текст отчета .text или .caption
+     *
+     * @return текст отчета
+     */
+    private String getReportText() {
+        return in.text() != null
+                ? in.text()
+                : in.message().caption();
+    }
+
+    /**
+     * Метод добавляет к отчету дополнительные фото и возвращает сообщение пользователю об успехе добавления картинки в отчет.
+     *
+     * @return Сообщение пользователю
+     */
+    private String addAdditionalPhoto() {
+        Long petId = in.getCustomer().getCustomerContext().getCurrentPetId();
+        Report todayReport = reportService.findTodayReportByPetId(petId);
+        if (in.message().photo() == null || todayReport == null) {
+            return "";
+        }
+        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime reportTime = todayReport.getDate();
+        long diffTime = ChronoUnit.SECONDS.between(reportTime, currentTime);
+        if (diffTime < 180) {
+            savePhotoToDB(todayReport);
+            responseText = REPORT_PHOTO_ADD_TO_REPORT;
+        } else {
+            in.getCustomer().getCustomerContext().setDialogContext(FREE);
+            in.getCustomer().getCustomerContext().setCurrentPetId(0L);
+            responseText = REPORT_UNRECOGNIZED_PHOTO;
+        }
         return responseText;
     }
 
     /**
      * Метод получает фото и записывает его в БД
      */
-    private void savePhotoToDB() {
-        // todo: получить фото от бота, разложить на байты, записать в базу. https://www.baeldung.com/java-download-file
+    private void savePhotoToDB(Report report) {
+        reportService.updateReport(report);
+        PhotoSize[] photoSizes = in.message().photo();
+        PhotoSize photoSize = Arrays.stream(photoSizes)
+                .max(Comparator.comparing(PhotoSize::fileSize))
+                .orElseThrow(RuntimeException::new);
+
+        ReportPhoto reportPhoto = new ReportPhoto();
+        reportPhoto.setReport(report);
+        GetFile getFile = new GetFile(photoSize.fileId());
+        GetFileResponse getFileResponse = telegramBot.execute(getFile);
+        if (getFileResponse.isOk()) {
+            File file = getFileResponse.file();
+            String extension = StringUtils.getFilenameExtension(file.filePath());
+            reportPhoto.setMediaType(generateMediaType(extension));
+            try {
+                byte[] image = telegramBot.getFileContent(file);
+                reportPhoto.setPhoto(image);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        reportPhotoRepository.save(reportPhoto);
     }
 
+    private String generateMediaType(String extension) {
+        if (extension != null) {
+            switch (extension) {
+                case "gif":
+                    return "image/gif";
+                case "png":
+                    return "image/png";
+            }
+        }
+        return "image/jpeg";
+    }
 }

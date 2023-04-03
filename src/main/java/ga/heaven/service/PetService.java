@@ -17,6 +17,7 @@ public interface PetService {
     
     Pet delete(Long id);
 
-    List<Pet> findPetsByCustomerOrderById(Customer customer);
-    
+    List<Pet> findPetsByCustomer(Customer customer);
+
+    List<Pet> findPetsWithCustomer();
 }
